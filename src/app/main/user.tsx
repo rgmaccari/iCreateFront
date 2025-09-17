@@ -1,16 +1,34 @@
+import ProjectCard from "@/src/components/project-card";
 import UserCard from "@/src/components/user-card";
 import { AuthService } from "@/src/services/api/auth.service";
+import { ProjectPreview } from "@/src/services/project/project.preview";
+import { ProjectService } from "@/src/services/project/project.service";
 import { useRouter } from "expo-router";
-import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
-
+import { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserScreen() {
   const router = useRouter();
   const userData = AuthService.getUser();
+  const [projects, setProjects] = useState<ProjectPreview[]>([]);
 
-  //Usar o trecho abaixo quando for passado o objeto por parâmetro.
-  // const { user } = useLocalSearchParams();
-  // const userData: User = user ? JSON.parse(user as string) : null;
+  const loadProjects = async () => {
+    console.log('acionado loadProjects')
+    if (userData?.code) {
+      console.log('tem user')
+      const data = await ProjectService.findAllPreview(userData.code);
+      setProjects(data);
+    }
+  };
+
+  const handleNewProject = () => {
+    Alert.alert("Novo projeto", "Botão de criar projeto clicado!");
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, [userData?.code]);
 
   if (!userData) {
     return (
@@ -30,49 +48,43 @@ export default function UserScreen() {
     }
   };
 
-  return(
-    
+  return (
     <SafeAreaView style={styles.container}>
-      <UserCard user={userData} onLogout={handleLogout}/>
+      <UserCard user={userData} onLogout={handleLogout} />
+
+      {/* Botso de teste */}
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.button} onPress={loadProjects}>
+          <Text style={styles.buttonText}>Reload</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleNewProject}>
+          <Text style={styles.buttonText}>Novo Projeto</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Lista de projects */}
+      <ProjectCard projects={projects} />
     </SafeAreaView>
-  )
-
-  // return (
-  //   <View style={styles.container}>
-  //     <View style={styles.userInfo}>
-  //       <Text style={styles.title}>Detalhes do Usuário</Text>
-  //       <Text style={styles.text}>Código: {userData.code}</Text>
-  //       <Text style={styles.text}>Nome: {userData.name}</Text>
-  //       <Text style={styles.text}>Apelido: {userData.nickname}</Text>
-  //       <Text style={styles.text}>Criado em: {userData.createdAt}</Text>
-  //       <Text style={styles.text}>Alterado em: {userData.alteratedAt}</Text>
-  //     </View>
-
-  //     <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-  //       <Text style={styles.logoutButtonText}>Sair</Text>
-  //     </TouchableOpacity>
-  //   </View>
-  // );
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     paddingTop: 30,
   },
-  
-  userInfo: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginVertical: 10,
   },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
-  text: { fontSize: 16, marginBottom: 10 },
-  logoutButton: {
-    backgroundColor: "#FF3B30",
-    padding: 15,
+  button: {
+    backgroundColor: "#362946",
+    padding: 10,
     borderRadius: 5,
-    alignItems: "center",
-    marginBottom: 30,
   },
-  logoutButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });
