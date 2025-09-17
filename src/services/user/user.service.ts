@@ -3,7 +3,7 @@ import { User } from "./user";
 
 
 export class UserService {
-  
+
   static async create(user: Omit<User, "code" | "createdAt" | "alteratedAt">): Promise<User> {
     const response = await api.post<User>("/users", user);
     return response.data;
