@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { User } from "../services/user/user";
 
 interface UserCardProps {
@@ -7,12 +7,25 @@ interface UserCardProps {
     onLogout: () => void,
 }
 
+const bufferToBase64 = (buffer: number[]): string => {
+    const binary = String.fromCharCode(...buffer);
+    return btoa(binary);
+};
+
 export default function UserCard({ user, onLogout }: UserCardProps) {
+    const avatarBase64 = user.avatarData?.data ? bufferToBase64(user.avatarData.data) : null;
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.avatar}>
-                    <FontAwesome name="user" size={32} color="#ffff" />
+                    {avatarBase64 && user.avatarMimeType ? (
+                        <Image
+                            style={{ width: 40, height: 40, borderRadius: 20 }}
+                            source={{ uri: `data:${user.avatarMimeType};base64,${avatarBase64}` }}
+                        />
+                    ) : (
+                        <FontAwesome name="user" size={32} color="#ffff" />
+                    )}
                 </View>
 
                 <Text style={styles.greeting}>Olá, {user.nickname}!</Text>
@@ -22,7 +35,7 @@ export default function UserCard({ user, onLogout }: UserCardProps) {
                 </TouchableOpacity>
             </View>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({

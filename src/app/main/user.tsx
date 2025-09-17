@@ -23,7 +23,7 @@ export default function UserScreen() {
   const handleLogout = async () => {
     try {
       await AuthService.logout();
-      router.replace("./index");
+      router.replace("/login");
     } catch (error) {
       console.error("Erro ao realizar logoff:", error);
       Alert.alert("Erro", "Não foi possível realizar o logoff.");
@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 30,
   },
+  
   userInfo: {
     flex: 1,
     justifyContent: "center",
