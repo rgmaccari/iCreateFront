@@ -18,7 +18,7 @@ export default function AuthLoader() {
         router.replace('/main/user'); //Vai direto para a tela de usuário
       } else {
         console.log('Token não localizado')
-        router.replace('./index');
+        router.replace('/login');
       }
       setLoading(false);
     };

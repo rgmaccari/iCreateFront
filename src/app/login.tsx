@@ -1,7 +1,8 @@
+import { AuthService } from "@/src/services/api/auth.service";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { AuthService } from "../services/api/auth.service";
+
 
 
 export default function LoginScreen() {
