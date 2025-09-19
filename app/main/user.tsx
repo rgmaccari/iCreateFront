@@ -3,8 +3,8 @@ import UserCard from "@/components/user-card";
 import { AuthService } from "@/services/api/auth.service";
 import { ProjectPreview } from "@/services/project/project.preview";
 import { ProjectService } from "@/services/project/project.service";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,13 +13,15 @@ export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      await AuthService.loadUserFromStorage();
-      setUserData(AuthService.getUser());
-    };
-    loadUser();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const loadUser = async () => {
+        await AuthService.loadUserFromStorage();
+        setUserData(AuthService.getUser());
+      };
+      loadUser();
+    }, [])
+  );
 
   const loadProjects = async () => {
     console.log('acionado loadProjects')

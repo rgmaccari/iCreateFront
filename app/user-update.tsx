@@ -32,6 +32,7 @@ export default function UserUpdateScreen() {
                 const updatedUser = await UserService.update(userCode, formData);
                 console.log("Usuário atualizado:", updatedUser);
                 router.back();
+                //router.push('/main/user');
             }
 
 
