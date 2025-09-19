@@ -1,8 +1,8 @@
-import ProjectCard from "@/src/components/project-card";
-import UserCard from "@/src/components/user-card";
-import { AuthService } from "@/src/services/api/auth.service";
-import { ProjectPreview } from "@/src/services/project/project.preview";
-import { ProjectService } from "@/src/services/project/project.service";
+import ProjectCard from "@/components/project-card";
+import UserCard from "@/components/user-card";
+import { AuthService } from "@/services/api/auth.service";
+import { ProjectPreview } from "@/services/project/project.preview";
+import { ProjectService } from "@/services/project/project.service";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -24,6 +24,10 @@ export default function UserScreen() {
 
   const handleNewProject = () => {
     Alert.alert("Novo projeto", "Botão de criar projeto clicado!");
+  };
+
+  const handleEditUser = () => {
+    router.push('/user-update')
   };
 
   useEffect(() => {
@@ -59,6 +63,9 @@ export default function UserScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleNewProject}>
           <Text style={styles.buttonText}>Novo Projeto</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleEditUser}>
+          <Text style={styles.buttonText}>Editar usuário</Text>
         </TouchableOpacity>
       </View>
 

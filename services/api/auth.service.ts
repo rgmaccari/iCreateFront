@@ -9,14 +9,18 @@ export class AuthService {
     const response = await api.post<{ access_token: string; user: User }>(`/auth/login`, { nickname, password });
     const { access_token, user } = response.data;
     console.log(user)
+    console.log(access_token);
 
     // salvar token e usuário
-    await AsyncStorage.setItem('access_token', access_token);
-    await AsyncStorage.setItem('current_user', JSON.stringify(user));
-
-    AuthService.currentUser = user;
+    await AuthService.registerInMemory(user, access_token);
 
     return user;
+  }
+
+  static async registerInMemory(user: User, accessToken: string): Promise<void> {
+    await AsyncStorage.setItem('access_token', accessToken);
+    await AsyncStorage.setItem('current_user', JSON.stringify(user));
+    AuthService.currentUser = user;
   }
 
   static async logout(): Promise<void> {

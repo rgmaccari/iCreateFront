@@ -1,4 +1,4 @@
-import { AuthService } from "@/src/services/api/auth.service";
+import { AuthService } from "@/services/api/auth.service";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -6,7 +6,7 @@ import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "reac
 
 
 export default function LoginScreen() {
-  
+
 
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +41,7 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      
+
       <TouchableOpacity style={styles.button} onPress={handleSearchUser}>
         <Text style={styles.buttonText}>Buscar Usuário</Text>
       </TouchableOpacity>

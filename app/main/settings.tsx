@@ -1,4 +1,4 @@
-import { User } from "@/src/services/user/user";
+import { User } from "@/services/user/user";
 import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 

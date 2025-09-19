@@ -1,4 +1,4 @@
-import AuthLoader from "@/src/components/auth-loader";
+import AuthLoader from "@/components/auth-loader";
 import { ActivityIndicator, View } from "react-native";
 
 
