@@ -10,8 +10,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserScreen() {
   const router = useRouter();
-  const userData = AuthService.getUser();
+  const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      await AuthService.loadUserFromStorage();
+      setUserData(AuthService.getUser());
+    };
+    loadUser();
+  }, []);
 
   const loadProjects = async () => {
     console.log('acionado loadProjects')
