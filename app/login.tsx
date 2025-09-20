@@ -17,12 +17,16 @@ export default function LoginScreen() {
     console.log("Botão clicado, código digitado:", nickname);
     try {
       const user = await AuthService.login(nickname, password);
-      router.push({ pathname: "/main/user", params: { user: JSON.stringify(user) } });
+      router.replace({ pathname: "/main/user", params: { user: JSON.stringify(user) } });
     } catch (error) {
       console.error("Erro na requisição:", error);
       Alert.alert("Erro", "Não foi possível buscar o usuário. Verifique o código ou a conexão com a API.");
     }
   };
+
+  const handleCreateUser = () => {
+    router.push('/user-create');
+  }
 
   return (
     <View style={styles.container}>
@@ -45,6 +49,11 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.button} onPress={handleSearchUser}>
         <Text style={styles.buttonText}>Buscar Usuário</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleCreateUser}>
+        <Text style={styles.linkText}>Cadastro</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
@@ -75,5 +84,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  linkText: {
+    color: '#007BFF',
+    fontSize: 16,
+    textDecorationLine: 'underline',
+    marginTop: 10,
   },
 });

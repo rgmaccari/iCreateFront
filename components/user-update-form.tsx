@@ -1,16 +1,16 @@
 import { useImagePicker } from "@/hooks/use-image-picker";
-import { UserUpdateDto } from "@/services/user/user.update.dto";
+import { UserDto } from "@/services/user/user.update.dto";
 import React, { useEffect, useState } from "react";
 import { Button, Image, StyleSheet, TextInput, View } from "react-native";
 
 interface UpdateUserFormProps {
-    onSubmit: (data: UserUpdateDto) => void;
+    onSubmit: (data: UserDto) => void;
 }
 
-export default function UserUpdateForm({ onSubmit }: UpdateUserFormProps) {
+export default function UserForm({ onSubmit }: UpdateUserFormProps) {
     const { image, pickImage } = useImagePicker();
 
-    const [form, setForm] = useState<UserUpdateDto>({
+    const [form, setForm] = useState<UserDto>({
         name: "",
         nickname: "",
         password: "",

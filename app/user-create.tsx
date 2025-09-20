@@ -1,13 +1,11 @@
 import UserForm from "@/components/user-update-form";
-import { AuthService } from "@/services/api/auth.service";
 import { UserService } from "@/services/user/user.service";
 import { UserDto } from "@/services/user/user.update.dto";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function UserUpdateScreen() {
-    const userData = AuthService.getUser();
+export default function UserCreateScreen() {
     const router = useRouter();
 
     const handleSubmit = async (form: UserDto) => {
@@ -26,25 +24,20 @@ export default function UserUpdateScreen() {
                 } as any);
             };
 
-            const userCode = userData?.code;
+            console.log('Enviando dados do formulário:', formData);
 
-            if (userCode) {
-                const updatedUser = await UserService.update(userCode, formData);
-                console.log("Usuário atualizado:", updatedUser);
-                router.back();
-                //router.push('/main/user');
-            }
-
-
+            const User = await UserService.create(formData);
+            console.log('Usuário criado:', User);
+            router.back();
         } catch (err) {
             console.error(err);
-            throw new Error("Erro ao atualizar usuário");
         }
-    };
+    }
 
     return (
         <SafeAreaView style={styles.container}>
-            <UserForm onSubmit={handleSubmit}></UserForm>
+            <UserForm
+                onSubmit={handleSubmit}></UserForm>
 
             <TouchableOpacity style={styles.button} onPress={() => router.back()}>
                 <Text style={styles.buttonText}>Voltar</Text>

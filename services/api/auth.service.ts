@@ -6,8 +6,10 @@ export class AuthService {
   private static currentUser: User | null = null;
 
   static async login(nickname: string, password: string): Promise<User> {
+    console.log('acionando login')
     const response = await api.post<{ access_token: string; user: User }>(`/auth/login`, { nickname, password });
     const { access_token, user } = response.data;
+    console.log(response.data)
     console.log(user)
     console.log(access_token);
 

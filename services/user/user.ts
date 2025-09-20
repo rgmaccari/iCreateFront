@@ -4,10 +4,7 @@ export interface User {
   nickname: string;
   createdAt: string;
   alteratedAt: string;
-  avatarData?: {
-    type: string;
-    data: number[];
-  };
+  avatarBase64?: string;
   avatarMimeType?: string;
 }
 
