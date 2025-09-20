@@ -25,7 +25,7 @@ export function useImagePicker() {
                 const asset = result.assets[0];
                 setImage({
                     uri: asset.uri,
-                    mimeType: asset.type ?? 'image/jpeg',
+                    mimeType: asset.mimeType ?? 'image/jpeg',
                     name: asset.fileName ?? 'image.jpg',
                 });
             }

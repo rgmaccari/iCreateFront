@@ -19,7 +19,7 @@ export default function UserCreateScreen() {
             if (form.avatar) {
                 formData.append("avatar", {
                     uri: form.avatar.uri,
-                    mimeType: form.avatar.mimeType,
+                    type: form.avatar.mimeType,
                     name: form.avatar.name
                 } as any);
             };
@@ -27,7 +27,7 @@ export default function UserCreateScreen() {
             console.log('Enviando dados do formulário:', formData);
 
             const User = await UserService.create(formData);
-            console.log('Usuário criado:', User);
+            console.log('Usuário criado (resposta crua):', JSON.stringify(User, null, 2));
             router.back();
         } catch (err) {
             console.error(err);

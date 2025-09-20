@@ -21,7 +21,7 @@ export default function UserUpdateScreen() {
             if (form.avatar) {
                 formData.append("avatar", {
                     uri: form.avatar.uri,
-                    mimeType: form.avatar.mimeType,
+                    type: form.avatar.mimeType,
                     name: form.avatar.name
                 } as any);
             };
