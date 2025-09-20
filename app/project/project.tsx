@@ -1,28 +1,48 @@
-import { User } from "@/services/user/user";
-import { useLocalSearchParams } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Project } from "@/services/project/project";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import ProjectForm from "../../components/project-form";
 
 
 export default function ProjectScreen() {
-  const { user } = useLocalSearchParams();
-  const userData: User = user ? JSON.parse(user as string) : null;
+  const params = useLocalSearchParams<{ project?: string }>();
+  const project: Project | undefined = params.project
+    ? JSON.parse(params.project)
+    : undefined;
 
-  if (!userData) {
-    return (
-      <View style={styles.container}>
-        <Text>Usuário não encontrado</Text>
-      </View>
-    );
-  }
+  const [formData, setFormData] = useState<Partial<Project>>({});
+
+  const handleSave = () => {
+    if (project) {
+      console.log("Atualizando projeto:", { ...project, ...formData });
+      // chamar service update
+    } else {
+      console.log("Criando projeto:", formData);
+      // chamar service create
+    }
+    router.back();
+  };
+
+  const handleReturn = () => {
+    router.back();
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Detalhes do Usuário</Text>
-      <Text style={styles.text}>Código: {userData.code}</Text>
-      <Text style={styles.text}>Nome: {userData.name}</Text>
-      <Text style={styles.text}>Apelido: {userData.nickname}</Text>
-      <Text style={styles.text}>Criado em: {userData.createdAt}</Text>
-      <Text style={styles.text}>Alterado em: {userData.alteratedAt}</Text>
+      <ProjectForm project={project} onChange={setFormData} />
+
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.buttonSecondary} onPress={handleReturn}>
+          <Text style={styles.buttonText}>Cancelar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buttonPrimary} onPress={handleSave}>
+          <Text style={styles.buttonText}>
+            {project ? "Atualizar Projeto" : "Criar Projeto"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -30,17 +50,34 @@ export default function ProjectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    backgroundColor: "#F5F5F5",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  buttonPrimary: {
+    flex: 1,
+    backgroundColor: "#362946",
+    padding: 14,
+    borderRadius: 8,
+    marginLeft: 8,
     alignItems: "center",
-    padding: 20,
   },
-  title: {
-    fontSize: 24,
+  buttonSecondary: {
+    flex: 1,
+    backgroundColor: "#aaa",
+    padding: 14,
+    borderRadius: 8,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: 20,
-  },
-  text: {
     fontSize: 16,
-    marginBottom: 10,
   },
 });

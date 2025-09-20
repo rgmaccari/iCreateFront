@@ -30,8 +30,6 @@ export default function UserForm({ onSubmit }: UpdateUserFormProps) {
         }
     }, [image])
 
-
-
     return (
         <View style={styles.container}>
             <TextInput

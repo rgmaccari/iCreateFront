@@ -33,11 +33,11 @@ export default function UserScreen() {
   };
 
   const handleNewProject = () => {
-    Alert.alert("Novo projeto", "Botão de criar projeto clicado!");
+    router.push('/project/project');
   };
 
   const handleEditUser = () => {
-    router.push('/user-update')
+    router.push('/user-update');
   };
 
   useEffect(() => {
