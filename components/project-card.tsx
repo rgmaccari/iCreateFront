@@ -1,4 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
+import { router } from "expo-router";
 import {
   Alert,
   Image,
@@ -11,7 +12,7 @@ import {
 import { ProjectPreview } from "../services/project/project.preview";
 import { ProjectService } from "../services/project/project.service";
 
-async function handleDelete(projectId: number, projectTitle: string, refresh: () => void) {
+async function handleDelete(projectCode: number, projectTitle: string, refresh: () => void) {
   Alert.alert(
     "Excluir Projeto",
     `Deseja realmente excluir "${projectTitle}"?`,
@@ -22,7 +23,7 @@ async function handleDelete(projectId: number, projectTitle: string, refresh: ()
         style: "destructive",
         onPress: async () => {
           try {
-            await ProjectService.deleteByCode(projectId);
+            await ProjectService.deleteByCode(projectCode);
             refresh(); //Rcarrega lista após deletar
           } catch (error) {
             console.error("Erro ao excluir projeto:", error);
@@ -39,6 +40,17 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
+
+
+  const onClickProject = (projectCode: number) => {
+    console.log("Clicou no projeto, id: ", projectCode);
+    router.push({
+      pathname: "/project/project",
+      params: { projectCode: projectCode.toString() },
+    });
+  }
+
+
   if (!projects || projects.length === 0) {
     return (
       <View style={styles.noProjectCard}>
@@ -59,6 +71,7 @@ export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
           <TouchableOpacity
             key={index}
             style={styles.projectCard}
+            onPress={() => onClickProject(project.projectCode!)}
             onLongPress={() =>
               handleDelete(project.projectCode!, project.title, refresh)
             }

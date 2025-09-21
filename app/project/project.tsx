@@ -1,20 +1,35 @@
 import { Project } from "@/services/project/project";
-import { ProjectCreateDto } from "@/services/project/project.create.dto";
+import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProjectForm from "../../components/project-form";
 
-
 export default function ProjectScreen() {
-  const params = useLocalSearchParams<{ project?: string }>();
-  const project: Project | undefined = params.project
-    ? JSON.parse(params.project)
-    : undefined;
+  const params = useLocalSearchParams<{ projectCode?: string }>();
+  const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
 
-
+  const [project, setProject] = useState<Project | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<Project>>({});
+  const [loading, setLoading] = useState(true);
+
+  //Buscar o projeto do backend
+  useEffect(() => {
+    const load = async () => {
+      if (projectCode) {
+        try {
+          const actualProject = await ProjectService.findByCode(projectCode);
+          setProject(actualProject);
+          setFormData(actualProject);//inicializa o form
+        } catch (err) {
+          console.error("Erro ao carregar projeto:", err);
+        }
+      }
+      setLoading(false);
+    };
+    load();
+  }, [projectCode]);
 
   const handleReturn = () => {
     router.back();
@@ -22,7 +37,7 @@ export default function ProjectScreen() {
 
   const handleSave = async () => {
     try {
-      const dto: ProjectCreateDto = {
+      const dto: ProjectInfoDto = {
         title: formData.title!,
         sketch: formData.sketch!,
       };
@@ -39,6 +54,14 @@ export default function ProjectScreen() {
       console.error("Erro ao salvar projeto:", err);
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#362946" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

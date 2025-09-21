@@ -1,15 +1,15 @@
 import api from "../api/api";
 import { Project } from "./project";
-import { ProjectCreateDto } from "./project.create.dto";
+import { ProjectInfoDto } from "./project.create.dto";
 import { ProjectPreview } from "./project.preview";
 
 export class ProjectService {
-    static async create(project: ProjectCreateDto): Promise<Project> {
+    static async create(project: ProjectInfoDto): Promise<Project> {
         const response = await api.post<Project>("/projects", project);
         return response.data;
     }
 
-    static async update(code: number, project: ProjectCreateDto): Promise<Project> {
+    static async update(code: number, project: ProjectInfoDto): Promise<Project> {
         const response = await api.put<Project>(`/projects/${code}`, project);
         return response.data;
     }
