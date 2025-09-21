@@ -6,7 +6,6 @@ import { User } from "./user";
 export class UserService {
 
   static async create(user: Omit<FormData, "code" | "createdAt" | "alteratedAt">): Promise<User> {
-    console.log('user meu no comeceoemn', user);
     const response = await api.post<User>("/users", user, {
       headers: {
         "Content-Type": "multipart/form-data"

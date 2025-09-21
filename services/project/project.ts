@@ -1,6 +1,3 @@
-import { Image } from "../image/image";
-import { Link } from "../link/link";
-import { User } from "../user/user";
 
 export interface Project {
     code: number;
@@ -8,7 +5,18 @@ export interface Project {
     sketch: string;
     createdAt: string;
     alteratedAt: string;
-    images: Image[];
-    links: Link[];
-    user: User;
+    userCode: number;
 }
+
+/*
+{
+    "code": 24,
+    "title": "Not Nineteen Forever",
+    "sketch": "ih, sentindo a onda bater.",
+    "createdAt": "2025-09-20T23:16:52.457Z",
+    "alteratedAt": "2025-09-20T23:17:32.181Z",
+    "userCode": 23
+}
+
+
+*/
