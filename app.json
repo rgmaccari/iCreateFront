@@ -4,35 +4,61 @@
     "slug": "iMusicianFront",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-with-name.png",
+    "icon": "./assets/from-figma/adaptive-icon.png",
     "scheme": "imusicianfront",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": {
+        "tinted": "./assets/from-figma/ios/ios-tinted.png",
+        "dark": "./assets/from-figma/ios/ios-dark.png",
+        "light": "./assets/from-figma/ios/ios-light.png"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon-with-name.png"
+        "foregroundImage": "./assets/from-figma/adaptive-icon.png",
+        "monochromeImage": "./assets/from-figma/adaptive-icon.png",
+        "backgroundImage": "./assets/from-figma/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "splash": {
         "image": "./assets/images/icon-with-name.png",
-        "resizeMode": "contain",
         "backgroundColor": "#000000",
         "dark": {
           "backgroundColor": "#000000"
         }
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.iMusicianFront"
     },
     "plugins": [
       "expo-router",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/from-figma/from-figma/splash-icon-dark.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "image": "./assets/from-figma/from-figma/splash-icon-light.png",
+            "backgroundColor": "#000000"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "59b100b3-bdab-477e-90b5-726b55e689f5"
+      }
     }
   }
 }
