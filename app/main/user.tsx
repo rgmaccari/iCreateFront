@@ -15,11 +15,17 @@ export default function UserScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      const loadUser = async () => {
+      const loadUserAndProjects = async () => {
         await AuthService.loadUserFromStorage();
         setUserData(AuthService.getUser());
+
+        if (AuthService.getUser()?.code) {
+          const data = await ProjectService.findAllPreview();
+          setProjects(data);
+        }
+
       };
-      loadUser();
+      loadUserAndProjects();
     }, [])
   );
 
@@ -27,7 +33,7 @@ export default function UserScreen() {
     console.log('acionado loadProjects')
     if (userData?.code) {
       console.log('tem user')
-      const data = await ProjectService.findAllPreview(userData.code);
+      const data = await ProjectService.findAllPreview();
       setProjects(data);
     }
   };
@@ -80,7 +86,7 @@ export default function UserScreen() {
       </View>
 
       {/* Lista de projects */}
-      <ProjectCard projects={projects} />
+      <ProjectCard projects={projects} refresh={loadProjects} />
     </SafeAreaView>
   );
 }

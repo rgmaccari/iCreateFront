@@ -1,4 +1,6 @@
 import { Project } from "@/services/project/project";
+import { ProjectCreateDto } from "@/services/project/project.create.dto";
+import { ProjectService } from "@/services/project/project.service";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -11,21 +13,31 @@ export default function ProjectScreen() {
     ? JSON.parse(params.project)
     : undefined;
 
-  const [formData, setFormData] = useState<Partial<Project>>({});
 
-  const handleSave = () => {
-    if (project) {
-      console.log("Atualizando projeto:", { ...project, ...formData });
-      // chamar service update
-    } else {
-      console.log("Criando projeto:", formData);
-      // chamar service create
-    }
-    router.back();
-  };
+  const [formData, setFormData] = useState<Partial<Project>>({});
 
   const handleReturn = () => {
     router.back();
+  };
+
+  const handleSave = async () => {
+    try {
+      const dto: ProjectCreateDto = {
+        title: formData.title!,
+        sketch: formData.sketch!,
+      };
+
+      if (project) {
+        await ProjectService.update(project.code!, dto);
+      } else {
+        const createdProject = await ProjectService.create(dto);
+        console.log("Projeto criado:", createdProject);
+      }
+
+      router.back();
+    } catch (err) {
+      console.error("Erro ao salvar projeto:", err);
+    }
   };
 
   return (

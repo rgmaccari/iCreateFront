@@ -1,12 +1,44 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ProjectPreview } from "../services/project/project.preview";
+import { ProjectService } from "../services/project/project.service";
+
+async function handleDelete(projectId: number, projectTitle: string, refresh: () => void) {
+  Alert.alert(
+    "Excluir Projeto",
+    `Deseja realmente excluir "${projectTitle}"?`,
+    [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await ProjectService.deleteByCode(projectId);
+            refresh(); //Rcarrega lista após deletar
+          } catch (error) {
+            console.error("Erro ao excluir projeto:", error);
+          }
+        },
+      },
+    ]
+  );
+}
 
 interface ProjectCardProps {
   projects: ProjectPreview[];
+  refresh: () => void; //Função do pai só para recarregar lista
 }
 
-export default function ProjectCard({ projects }: ProjectCardProps) {
+export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
   if (!projects || projects.length === 0) {
     return (
       <View style={styles.noProjectCard}>
@@ -16,7 +48,7 @@ export default function ProjectCard({ projects }: ProjectCardProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {projects.map((project, index) => {
         const hasImage = project.imageBase64 && project.imageMimeType;
         const imageUri = hasImage
@@ -24,7 +56,14 @@ export default function ProjectCard({ projects }: ProjectCardProps) {
           : "";
 
         return (
-          <View key={index} style={styles.projectCard}>
+          <TouchableOpacity
+            key={index}
+            style={styles.projectCard}
+            onLongPress={() =>
+              handleDelete(project.projectCode!, project.title, refresh)
+            }
+            delayLongPress={500}
+          >
             {hasImage ? (
               <Image source={{ uri: imageUri }} style={styles.projectImage} />
             ) : (
@@ -33,22 +72,22 @@ export default function ProjectCard({ projects }: ProjectCardProps) {
               </View>
             )}
             <Text style={styles.projectTitle}>{project.title}</Text>
-          </View>
+          </TouchableOpacity>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    flexWrap: "wrap",   //quebrar em linhas automaticamente
+    flexWrap: "wrap",
     justifyContent: "space-between",
     padding: 10,
   },
   projectCard: {
-    width: "48%",       //dois por linha
+    width: "48%",
     borderRadius: 10,
     backgroundColor: "#EBE1F6",
     padding: 10,
