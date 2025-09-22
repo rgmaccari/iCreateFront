@@ -1,24 +1,64 @@
+import LinkCard from "@/components/link-card";
+import { Link } from "@/services/link/link";
+import { LinkService } from "@/services/link/link.service";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LinkScreen() {
     const params = useLocalSearchParams<{ projectCode?: string }>();
     const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
 
+    const [links, setLinks] = useState<Link[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            if (projectCode) {
+                console.log('acionado o useEffect')
+                try {
+                    console.log('acionado o try')
+                    const actualLinks = await LinkService.findAllByProjectCode(projectCode);
+                    console.log(actualLinks)
+                    setLinks(actualLinks);
+                } catch (err) {
+                    console.error("Erro ao carregar links:", err);
+                }
+            }
+            setLoading(false);
+        };
+        load();
+    }, [projectCode]);
+
     const handleReturn = () => {
-        router.back()
+        router.back();
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <Text>Carregando links...</Text>
+            </View>
+        );
     }
 
     return (
-        <View style={styles.container}>
-            <Text>Links do projeto {projectCode}</Text>
-            <TouchableOpacity style={styles.buttonsContainer} onPress={handleReturn}>
-                <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-        </View>
+        <SafeAreaView style={styles.container}>
+            <LinkCard refresh={() => console.log('opa')} links={links} />
 
+            <Text>Links do projeto {projectCode}</Text>
+            {links.map(link => (
+                <Text key={link.code}>{link.title}</Text>
+            ))}
+
+            <TouchableOpacity style={styles.button} onPress={handleReturn}>
+                <Text style={styles.buttonText}>Voltar</Text>
+            </TouchableOpacity>
+        </SafeAreaView>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -32,15 +72,13 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#362946",
     },
-    buttonsContainer: {
+    button: {
         backgroundColor: "#362946",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 20,
+        padding: 10,
+        borderRadius: 5,
     },
     buttonText: {
         color: "#fff",
         fontWeight: "bold",
-        fontSize: 16,
     },
 });
