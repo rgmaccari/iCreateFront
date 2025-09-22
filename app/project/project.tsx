@@ -1,6 +1,8 @@
+import ProjectContentCard from "@/components/project-content-card";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
+import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -31,10 +33,12 @@ export default function ProjectScreen() {
     load();
   }, [projectCode]);
 
+  //Voltar para tela anterior
   const handleReturn = () => {
     router.back();
   };
 
+  //Salvar o projeto ou criar
   const handleSave = async () => {
     try {
       const dto: ProjectInfoDto = {
@@ -55,6 +59,14 @@ export default function ProjectScreen() {
     }
   };
 
+  //Buscar os links:
+  const handleOpenLinks = () => {
+    router.push({
+      pathname: "/project/links",
+      params: { projectCode: project?.code?.toString() || "" },
+    });
+  }
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -66,6 +78,19 @@ export default function ProjectScreen() {
   return (
     <View style={styles.container}>
       <ProjectForm project={project} onChange={setFormData} />
+
+      <ProjectContentCard
+        title="Meus Links"
+        onPress={handleOpenLinks}
+        icon={<FontAwesome name="link" size={40} color="#362946" />}
+      />
+
+      <ProjectContentCard
+        title="Minhas Imagens"
+        onPress={() => console.log("Abrir imagens")}
+        icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
+      />
+
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.buttonSecondary} onPress={handleReturn}>
