@@ -4,8 +4,8 @@ import { LinkCreateDto } from "./link.create.dto";
 
 export class LinkService {
     //create, updated, findByCode, findAllByProjectCode, delete
-    static async create(link: LinkCreateDto): Promise<Link> {
-        const response = await api.post<Link>("/links", link);
+    static async create(projectCode: number, link: LinkCreateDto): Promise<Link> {
+        const response = await api.post<Link>(`/links/${projectCode}`, link);
         return response.data;
     }
 

@@ -1,5 +1,7 @@
+import InputField from "@/components/input-field";
 import LinkCard from "@/components/link-card";
 import { Link } from "@/services/link/link";
+import { LinkCreateDto } from "@/services/link/link.create.dto";
 import { LinkService } from "@/services/link/link.service";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -35,6 +37,25 @@ export default function LinkScreen() {
         router.back();
     };
 
+    const handleSubmit = async (value: string) => {
+        console.log('e ai ', value);
+        if(projectCode){
+            if (value) {
+            try {
+                const link = new LinkCreateDto();
+                link.url = value;
+                link.title = "Teste";
+
+                await LinkService.create(projectCode, link);
+
+            } catch (err) {
+                console.error(err);
+                throw new Error("Erro ao criar link");
+            }
+        }
+        }
+    }
+
     if (loading) {
         return (
             <View style={styles.container}>
@@ -45,6 +66,8 @@ export default function LinkScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <InputField placeholder="Digite seu link..." buttonLabel="Salvar" onPress={handleSubmit}></InputField>
+
             <LinkCard refresh={() => console.log('opa')} links={links} />
 
             <Text>Links do projeto {projectCode}</Text>
