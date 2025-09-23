@@ -104,9 +104,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     linkImage: {
-        width: 100,  // largura fixa só para testar
-        height: 100, // altura fixa
+        width: "100%",
+        aspectRatio: 1,
         borderRadius: 10,
+        marginBottom: 8,
         resizeMode: "cover",
     },
     placeholder: {
