@@ -6,6 +6,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ProjectForm from "../../components/project-form";
 
 export default function ProjectScreen() {
@@ -83,7 +84,7 @@ export default function ProjectScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ProjectForm project={project} onChange={setFormData} />
 
       <ProjectContentCard
@@ -110,7 +111,7 @@ export default function ProjectScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

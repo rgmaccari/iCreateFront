@@ -1,5 +1,5 @@
 import { Link } from "@/services/link/link";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface EditLinkModalProps {
     visible: boolean;
@@ -14,35 +14,42 @@ export default function EditLinkModal({ visible, link, formData, onChange, onClo
     if (!visible || !link) return null;
 
     return (
-        <View style={styles.overlay}>
-            <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Editar Link</Text>
+        <Modal
+            visible={visible}
+            animationType="slide"
+            transparent
+            onRequestClose={onClose}
+        >
+            <KeyboardAvoidingView style={styles.overlay}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>Editar Link</Text>
 
-                <TextInput
-                    style={styles.input}
-                    value={formData.title}
-                    onChangeText={(text) => onChange({ ...formData, title: text })}
-                    placeholder="Título"
-                />
+                    <TextInput
+                        style={styles.input}
+                        value={formData.title}
+                        onChangeText={(text) => onChange({ ...formData, title: text })}
+                        placeholder="Título"
+                    />
 
-                <TextInput
-                    style={styles.input}
-                    value={formData.url}
-                    onChangeText={(text) => onChange({ ...formData, url: text })}
-                    placeholder="URL"
-                />
+                    <TextInput
+                        style={styles.input}
+                        value={formData.url}
+                        onChangeText={(text) => onChange({ ...formData, url: text })}
+                        placeholder="URL"
+                    />
 
-                <View style={styles.buttonRow}>
-                    <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
-                        <Text style={styles.buttonText}>Cancelar</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonRow}>
+                        <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
+                            <Text style={styles.buttonText}>Cancelar</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, styles.save]} onPress={onSave}>
-                        <Text style={styles.buttonText}>Salvar</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, styles.save]} onPress={onSave}>
+                            <Text style={styles.buttonText}>Salvar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </View>
+            </KeyboardAvoidingView>
+        </Modal>
     );
 }
 
