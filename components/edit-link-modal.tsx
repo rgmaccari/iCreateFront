@@ -1,5 +1,5 @@
 import { Link } from "@/services/link/link";
-import { KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface EditLinkModalProps {
     visible: boolean;
@@ -20,7 +20,7 @@ export default function EditLinkModal({ visible, link, formData, onChange, onClo
             transparent
             onRequestClose={onClose}
         >
-            <KeyboardAvoidingView style={styles.overlay}>
+            <View style={styles.overlay}>
                 <View style={styles.modalContainer}>
                     <Text style={styles.modalTitle}>Editar Link</Text>
 
@@ -48,7 +48,7 @@ export default function EditLinkModal({ visible, link, formData, onChange, onClo
                         </TouchableOpacity>
                     </View>
                 </View>
-            </KeyboardAvoidingView>
+            </View>
         </Modal>
     );
 }
