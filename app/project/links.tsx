@@ -121,9 +121,7 @@ export default function LinkScreen() {
             <InputField type="default" placeholder="Digite seu link..." buttonLabel="Salvar" onPress={create} />
             <InputField type="numeric" placeholder="Pesquise uma imagem..." buttonLabel="Buscar" onPress={findByCode} />
 
-            <LinkCard
-                refresh={() => findAllByProjectCode(projectCode)}
-                links={links}
+            <LinkCard refresh={() => findAllByProjectCode(projectCode)} links={links}
                 onDelete={deleteByCode}
                 onEdit={(link) => {
                     setSelectedLink(link);
@@ -142,7 +140,7 @@ export default function LinkScreen() {
                 <Text style={styles.buttonText}>Voltar</Text>
             </TouchableOpacity>
 
-            {/* Modal de edição */}
+            {/* Modal de edição: setVisible false faz com que ele nem carregue ou seja destruído */}
             {selectedLink && (
                 <EditLinkModal
                     visible={editVisible}

@@ -63,8 +63,15 @@ export default function ProjectScreen() {
   const handleOpenLinks = () => {
     router.push({
       pathname: "/project/links",
-      params: { projectCode: project?.code?.toString() || "" },
+      params: { projectCode: project?.code?.toString() || '' },
     });
+  }
+
+  const handleOpenImages = () => {
+    router.push({
+      pathname: "/project/images",
+      params: { projectCode: project?.code?.toString() || '' }
+    })
   }
 
   if (loading) {
@@ -87,7 +94,7 @@ export default function ProjectScreen() {
 
       <ProjectContentCard
         title="Minhas Imagens"
-        onPress={() => console.log("Abrir imagens")}
+        onPress={handleOpenImages}
         icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
       />
 
