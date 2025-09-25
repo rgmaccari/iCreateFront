@@ -1,8 +1,10 @@
+import EditLinkModal from "@/components/edit-link-modal";
 import InputField from "@/components/input-field";
 import LinkCard from "@/components/link-card";
 import { Link } from "@/services/link/link";
 import { LinkCreateDto } from "@/services/link/link.create.dto";
 import { LinkService } from "@/services/link/link.service";
+import { LinkUpdateDto } from "@/services/link/link.update.dto";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -15,46 +17,96 @@ export default function LinkScreen() {
     const [links, setLinks] = useState<Link[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const load = async () => {
-            if (projectCode) {
-                console.log('acionado o useEffect')
-                try {
-                    console.log('acionado o try')
-                    const actualLinks = await LinkService.findAllByProjectCode(projectCode);
-                    console.log(actualLinks)
-                    setLinks(actualLinks);
-                } catch (err) {
-                    console.error("Erro ao carregar links:", err);
-                }
-            }
-            setLoading(false);
-        };
-        load();
-    }, [projectCode]);
+    const [formData, setFormData] = useState<Partial<Link>>({});
+    const [selectedLink, setSelectedLink] = useState<Link | null>(null);
+    const [editVisible, setEditVisible] = useState(false);
 
+    //Retornar a tela.
     const handleReturn = () => {
         router.back();
     };
 
-    const handleSubmit = async (value: string) => {
-        console.log('e ai ', value);
-        if(projectCode){
-            if (value) {
+    const findAllByProjectCode = async (projectCode: any) => {
+        if (projectCode) {
+            const parsedProjectCode = parseInt(projectCode);
+            const foundedLinks = await LinkService.findAllByProjectCode(parsedProjectCode);
+            if (foundedLinks) {
+                console.log(foundedLinks);
+                setLinks(foundedLinks);
+            } else {
+                setLinks([]);
+            }
+        }
+    };
+
+    const create = async (value: any) => {
+        if (projectCode && value) {
             try {
                 const link = new LinkCreateDto();
                 link.url = value;
                 link.title = "Teste";
-
                 await LinkService.create(projectCode, link);
-
+                findAllByProjectCode(projectCode); // Recarregar lista
             } catch (err) {
                 console.error(err);
                 throw new Error("Erro ao criar link");
             }
         }
+    };
+
+    const findByCode = async (code: any) => {
+        if (code) {
+            const parsedCode = parseInt(code);
+            try {
+                const foundedLink = await LinkService.findByCode(parsedCode);
+                setLinks(foundedLink ? [foundedLink] : []);
+            } catch (err) {
+                console.error(err);
+                throw new Error("Erro ao buscar link");
+            }
         }
-    }
+    };
+
+    const deleteByCode = async (code: any) => {
+        if (code) {
+            const parsedCode = parseInt(code);
+            try {
+                await LinkService.deleteByCode(parsedCode);
+                findAllByProjectCode(projectCode);
+            } catch (err) {
+                console.error(err);
+                throw new Error("Erro ao deletar o link.");
+            }
+        }
+    };
+
+    const update = async () => {
+        if (selectedLink) {
+            try {
+                const dto: LinkUpdateDto = {
+                    title: formData.title!,
+                    url: formData.url!,
+                };
+                await LinkService.update(selectedLink.code!, dto);
+                console.log("Link atualizado:", dto);
+                setEditVisible(false);
+                findAllByProjectCode(projectCode);
+            } catch (err) {
+                console.error(err);
+                throw new Error("Erro ao atualizar link");
+            }
+        }
+    };
+
+    useEffect(() => {
+        const load = async () => {
+            if (projectCode) {
+                await findAllByProjectCode(projectCode);
+            }
+            setLoading(false);
+        };
+        load();
+    }, [projectCode]);
 
     if (loading) {
         return (
@@ -66,42 +118,64 @@ export default function LinkScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <InputField placeholder="Digite seu link..." buttonLabel="Salvar" onPress={handleSubmit}></InputField>
+            <InputField type="default" placeholder="Digite seu link..." buttonLabel="Salvar" onPress={create} />
+            <InputField type="numeric" placeholder="Pesquise uma imagem..." buttonLabel="Buscar" onPress={findByCode} />
 
-            <LinkCard refresh={() => console.log('opa')} links={links} />
+            <LinkCard
+                refresh={() => findAllByProjectCode(projectCode)}
+                links={links}
+                onDelete={deleteByCode}
+                onEdit={(link) => {
+                    setSelectedLink(link);
+                    setFormData(link);
+                    setEditVisible(true);
+                }}
+            />
+
+            <TouchableOpacity style={styles.button} onPress={() => findAllByProjectCode(projectCode)}>
+                <Text style={styles.buttonText}>Mostrar todos</Text>
+            </TouchableOpacity>
 
             <Text>Links do projeto {projectCode}</Text>
-            {links.map(link => (
-                <Text key={link.code}>{link.title}</Text>
-            ))}
 
             <TouchableOpacity style={styles.button} onPress={handleReturn}>
                 <Text style={styles.buttonText}>Voltar</Text>
             </TouchableOpacity>
+
+            {/* Modal de edição */}
+            {selectedLink && (
+                <EditLinkModal
+                    visible={editVisible}
+                    link={selectedLink}
+                    formData={formData}
+                    onChange={setFormData}
+                    onClose={() => setEditVisible(false)}
+                    onSave={update}
+                />
+            )}
         </SafeAreaView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: "#F5F5F5"
     },
     text: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "#362946",
+        color: "#362946"
     },
     button: {
         backgroundColor: "#362946",
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 5
     },
     buttonText: {
         color: "#fff",
-        fontWeight: "bold",
+        fontWeight: "bold"
     },
 });

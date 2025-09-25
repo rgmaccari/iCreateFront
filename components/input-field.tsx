@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardTypeOptions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface InputFieldProps {
   placeholder: string;
   buttonLabel: string;
   onPress: (value: string) => void;
+  type: KeyboardTypeOptions;
 }
 
 export default function InputField(props: InputFieldProps) {
@@ -26,6 +27,7 @@ export default function InputField(props: InputFieldProps) {
         placeholder={placeholder}
         onChangeText={setValue}
         autoCapitalize="none"
+        keyboardType={props.type}
       />
       <TouchableOpacity style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonText}>{buttonLabel}</Text>

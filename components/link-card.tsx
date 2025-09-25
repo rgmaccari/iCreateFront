@@ -1,55 +1,18 @@
 import { Link } from "@/services/link/link";
-import { LinkService } from "@/services/link/link.service";
 import { FontAwesome } from "@expo/vector-icons";
-import {
-    Alert,
-    Image,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
-
-async function handleDelete(linkCode: number, linkTitle: string, refresh: () => void) {
-    Alert.alert(
-        "Excluir Link",
-        `Deseja realmente excluir "${linkTitle}"?`,
-        [
-            { text: "Cancelar", style: "cancel" },
-            {
-                text: "Excluir",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        await LinkService.deleteByCode(linkCode);
-                        refresh(); //Rcarrega lista após deletar
-                    } catch (error) {
-                        console.error("Erro ao excluir link:", error);
-                    }
-                },
-            },
-        ]
-    );
-}
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface LinkCardProps {
     links: Link[];
-    refresh: () => void; //Função do pai só para recarregar lista
+    refresh: () => void; // Função para recarregar lista
+    onDelete: (code: number) => void; // Método enviado da tela
+    onEdit: (link: Link) => void; // Método enviado da tela
 }
 
-export default function LinkCard({ links, refresh }: LinkCardProps) {
-
-
-    // const onClickLink = (linkCode: number) => {
-    //     console.log("Clicou no link, id: ", linkCode);
-    // }
-
+export default function LinkCard({ links, refresh, onDelete, onEdit }: LinkCardProps) {
     const onClickLink = (url: string) => {
         Linking.openURL(url).catch(err => console.error("Erro ao abrir link:", err));
     };
-
 
     if (!links || links.length === 0) {
         return (
@@ -64,24 +27,23 @@ export default function LinkCard({ links, refresh }: LinkCardProps) {
             {links.map((link, index) => {
                 const hasImage = !!link.previewImageUrl;
                 return (
-                    <TouchableOpacity
-                        key={index}
-                        style={styles.linkCard}
-                        onPress={() => onClickLink(link.url!)}
-                        onLongPress={() =>
-                            handleDelete(link.code!, link.title, refresh)
-                        }
-                        delayLongPress={500}
-                    >
-                        {hasImage ? (
-                            <Image source={{ uri: link.previewImageUrl }} style={styles.linkImage} />
-                        ) : (
-                            <View style={[styles.linkImage, styles.placeholder]}>
-                                <FontAwesome name="file-image-o" size={40} color="#362946" />
-                            </View>
-                        )}
-                        <Text style={styles.linkTitle}>{link.title}</Text>
-                    </TouchableOpacity>
+                    <View key={index} style={styles.linkCard}>
+                        <TouchableOpacity style={{ flex: 1, alignItems: "center" }} onPress={() => onClickLink(link.url!)} onLongPress={() => onDelete(link.code)}>
+                            {hasImage ? (
+                                <Image source={{ uri: link.previewImageUrl }} style={styles.linkImage} />
+                            ) : (
+                                <View style={[styles.linkImage, styles.placeholder]}>
+                                    <FontAwesome name="file-image-o" size={40} color="#362946" />
+                                </View>
+                            )}
+                            <Text style={styles.linkTitle}>{link.title}</Text>
+                        </TouchableOpacity>
+
+                        {/* Ícone editar */}
+                        <TouchableOpacity style={{ marginTop: 8 }} onPress={() => onEdit(link)}>
+                            <FontAwesome name="pencil" size={20} color="#362946" />
+                        </TouchableOpacity>
+                    </View>
                 );
             })}
         </ScrollView>
@@ -93,7 +55,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         justifyContent: "space-between",
-        padding: 10,
+        padding: 10
     },
     linkCard: {
         width: "48%",
@@ -101,36 +63,36 @@ const styles = StyleSheet.create({
         backgroundColor: "#EBE1F6",
         padding: 10,
         marginBottom: 12,
-        alignItems: "center",
+        alignItems: "center"
     },
     linkImage: {
         width: "100%",
         aspectRatio: 1,
         borderRadius: 10,
         marginBottom: 8,
-        resizeMode: "cover",
+        resizeMode: "cover"
     },
     placeholder: {
         backgroundColor: "#ccc",
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "center"
     },
     linkTitle: {
         fontSize: 14,
         fontWeight: "bold",
         color: "#362946",
-        textAlign: "center",
+        textAlign: "center"
     },
     noLinkCard: {
         marginHorizontal: 20,
         padding: 20,
         borderRadius: 10,
         backgroundColor: "#EBE1F6",
-        alignItems: "center",
+        alignItems: "center"
     },
     noLinkText: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#362946",
+        color: "#362946"
     },
 });
