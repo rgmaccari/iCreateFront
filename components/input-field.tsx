@@ -4,30 +4,43 @@ import { KeyboardTypeOptions, StyleSheet, Text, TextInput, TouchableOpacity, Vie
 interface InputFieldProps {
   placeholder: string;
   buttonLabel: string;
-  onPress: (value: string) => void;
+  onPress?: (value: string) => void;
   type: KeyboardTypeOptions;
+  value?: string;                //opcional para controle externo
+  onChangeText?: (text: string) => void; //opcional para filtro em tempo real
 }
 
 export default function InputField(props: InputFieldProps) {
-  const { placeholder, buttonLabel, onPress } = props;
-  const [value, setValue] = useState("");
+  const { placeholder, buttonLabel, onPress, value, onChangeText, type } = props;
+  const [internalValue, setInternalValue] = useState("");
 
-  const handlePress = () => {
-    if (value.trim() !== "") {
-      onPress(value.trim());
-      setValue(""); // limpa o campo após salvar
+  const currentValue = value !== undefined ? value : internalValue;
+
+  const handleChangeText = (text: string) => {
+    if (onChangeText) {
+      onChangeText(text); //Deixa o pae controlar
+    } else {
+      setInternalValue(text); //ou controla internamente
     }
   };
+
+  const handlePress = () => {
+    if (currentValue.trim() !== "" && onPress) {
+      onPress(currentValue.trim());
+      if (value === undefined) setInternalValue("");
+    }
+  };
+
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        value={value}
+        value={currentValue}
         placeholder={placeholder}
-        onChangeText={setValue}
+        onChangeText={handleChangeText}
         autoCapitalize="none"
-        keyboardType={props.type}
+        keyboardType={type}
       />
       <TouchableOpacity style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonText}>{buttonLabel}</Text>
@@ -35,6 +48,7 @@ export default function InputField(props: InputFieldProps) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

@@ -21,6 +21,8 @@ export default function LinkScreen() {
     const [selectedLink, setSelectedLink] = useState<Link | null>(null);
     const [editVisible, setEditVisible] = useState(false);
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     //Retornar a tela.
     const handleReturn = () => {
         router.back();
@@ -98,6 +100,15 @@ export default function LinkScreen() {
         }
     };
 
+    const getFilteredLinks = () => {
+        if (!searchTerm.trim()) return links;
+
+        return links.filter(link =>
+            link.code?.toString().includes(searchTerm) ||
+            link.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    }
+
     useEffect(() => {
         const load = async () => {
             if (projectCode) {
@@ -119,9 +130,17 @@ export default function LinkScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <InputField type="default" placeholder="Digite seu link..." buttonLabel="Salvar" onPress={create} />
-            <InputField type="numeric" placeholder="Pesquise uma imagem..." buttonLabel="Buscar" onPress={findByCode} />
+            <InputField
+                type="default"
+                placeholder="Pesquise um link..."
+                buttonLabel="Filtrar"
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+            />
 
-            <LinkCard refresh={() => findAllByProjectCode(projectCode)} links={links}
+            <LinkCard
+                refresh={() => findAllByProjectCode(projectCode)}
+                links={getFilteredLinks()}
                 onDelete={deleteByCode}
                 onEdit={(link) => {
                     setSelectedLink(link);

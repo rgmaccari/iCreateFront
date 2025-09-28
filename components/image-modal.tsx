@@ -58,7 +58,6 @@ export default function ImageModal({ visible, initialData, onClose, onSave }: Im
     );
 }
 
-
 const styles = StyleSheet.create({
     modal: {
         flex: 1,
