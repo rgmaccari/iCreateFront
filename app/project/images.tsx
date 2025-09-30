@@ -25,8 +25,10 @@ export default function ImageScreen() {
         try {
             const formData = new FormData();
 
-            forms.forEach((form) => {
+            forms.forEach((form, index) => {
                 if (form.data) {
+                    console.log(`[Front] Adicionando imagem ${index}:`, form);
+
                     formData.append("images", {
                         uri: form.data.uri,
                         type: form.data.mimeType,
@@ -34,9 +36,14 @@ export default function ImageScreen() {
                     } as any);
                 }
 
-                if (form.filename) formData.append("filename", form.filename);
-                if (form.isCover !== undefined) formData.append("isCover", String(form.isCover));
+                if (form.filename)
+                    formData.append("filename", form.filename);
+
+                if (form.isCover !== undefined)
+                    formData.append("isCover", String(form.isCover));
             });
+
+            console.log('[Front] Enviando FormData...');
 
             if (projectCode) formData.append("projectCode", String(projectCode));
 
@@ -48,6 +55,7 @@ export default function ImageScreen() {
             throw err;
         }
     };
+
 
     useEffect(() => {
         findAllByProjectCode().finally(() => setLoading(false));
