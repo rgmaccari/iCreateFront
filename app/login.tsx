@@ -39,6 +39,7 @@ export default function LoginScreen() {
         placeholder="senha"
         keyboardType="default"
         value={password}
+        secureTextEntry
         onChangeText={setPassword}
       />
 
