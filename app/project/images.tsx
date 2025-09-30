@@ -3,7 +3,16 @@ import { Image } from "@/services/image/image";
 import { ImageService } from "@/services/image/image.service";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+    FlatList,
+    Image as RNImage,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import ImageViewing from "react-native-image-viewing";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
@@ -13,6 +22,9 @@ export default function ImageScreen() {
     const [images, setImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
+    const [viewerVisible, setViewerVisible] = useState(false);
+    const [viewerIndex, setViewerIndex] = useState(0);
+    const [viewMode, setViewMode] = useState<"list" | "grid" | "carousel">("list");
 
     const findAllByProjectCode = async () => {
         if (projectCode) {
@@ -56,53 +68,185 @@ export default function ImageScreen() {
         }
     };
 
+    const openViewer = (index: number) => {
+        setViewerIndex(index);
+        setViewerVisible(true);
+    };
 
     useEffect(() => {
         findAllByProjectCode().finally(() => setLoading(false));
     }, [projectCode]);
 
+    const imageSources = images.map(img => ({
+        uri: `data:${img.mimeType};base64,${img.dataBase64}`,
+    }));
+
+    const renderList = () => (
+        <ScrollView contentContainerStyle={styles.scroll}>
+            {images.map((img, index) => (
+                <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItem}>
+                    <Text style={styles.filename}>{img.filename}</Text>
+                    {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
+
+    const renderGrid = () => (
+        <FlatList
+            data={images}
+            keyExtractor={(item) => item.code.toString()}
+            numColumns={3}
+            contentContainerStyle={styles.gridContainer}
+            renderItem={({ item, index }) => (
+                <TouchableOpacity onPress={() => openViewer(index)}>
+                    <RNImage
+                        source={{ uri: `data:${item.mimeType};base64,${item.dataBase64}` }}
+                        style={styles.gridImage}
+                    />
+                </TouchableOpacity>
+            )}
+        />
+    );
+
+    const renderCarousel = () => (
+        <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselContainer}
+        >
+            {images.map((img, index) => (
+                <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
+                    <RNImage
+                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+                        style={styles.carouselImage}
+                    />
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
+
+    const renderView = () => {
+        switch (viewMode) {
+            case "grid":
+                return renderGrid();
+            case "carousel":
+                return renderCarousel();
+            case "list":
+            default:
+                return renderList();
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-                <Text style={styles.buttonText}>Adicionar imagem</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+                    <Text style={styles.buttonText}>Adicionar imagem</Text>
+                </TouchableOpacity>
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                {images.map((img) => (
-                    <Text key={img.code}>{img.filename}</Text>
-                ))}
-            </ScrollView>
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "list" && styles.activeButton]}
+                    onPress={() => setViewMode("list")}
+                >
+                    <Text style={styles.buttonText}>Lista</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "grid" && styles.activeButton]}
+                    onPress={() => setViewMode("grid")}
+                >
+                    <Text style={styles.buttonText}>Grade</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "carousel" && styles.activeButton]}
+                    onPress={() => setViewMode("carousel")}
+                >
+                    <Text style={styles.buttonText}>Carrossel</Text>
+                </TouchableOpacity>
+            </View>
+
+            {renderView()}
 
             <ImageModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={create}
             />
+
+            <ImageViewing
+                images={imageSources}
+                imageIndex={viewerIndex}
+                visible={viewerVisible}
+                onRequestClose={() => setViewerVisible(false)}
+            />
         </SafeAreaView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#F5F5F5",
-        justifyContent: "center",
-        alignItems: "center",
         padding: 10
     },
-    scroll: {
-        width: "100%",
-        padding: 10
+    buttonRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 10,
+        flexWrap: "wrap",
     },
     button: {
         backgroundColor: "#362946",
-        padding: 12,
+        padding: 8,
         borderRadius: 8,
-        marginBottom: 10
+        marginHorizontal: 4,
+        marginBottom: 4
+    },
+    activeButton: {
+        backgroundColor: "#6947b9"
     },
     buttonText: {
         color: "#fff",
         fontWeight: "bold"
     },
+    scroll: {
+        width: "100%",
+        padding: 10
+    },
+    listItem: {
+        marginBottom: 10,
+        padding: 10,
+        backgroundColor: "#fff",
+        borderRadius: 8
+    },
+    filename: {
+        fontWeight: "bold",
+        marginBottom: 4
+    },
+    coverBadge: {
+        color: "green",
+        fontSize: 12,
+        fontWeight: "bold"
+    },
+    gridContainer: {
+        alignItems: "center"
+    },
+    gridImage: {
+        width: 100,
+        height: 100,
+        margin: 5,
+        borderRadius: 8
+    },
+    carouselContainer: {
+        alignItems: "center"
+    },
+    carouselImage: {
+        width: 300,
+        height: 300,
+        marginHorizontal: 10,
+        borderRadius: 8
+    }
 });

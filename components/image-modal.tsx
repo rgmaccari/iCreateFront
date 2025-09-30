@@ -15,6 +15,10 @@ export interface ImageCreateDto {
     data?: { uri: string; mimeType: string; name: string };
 }
 
+/**Lib para conhecer:
+ * react-native-fast-image: melhora o carregamento de imagens.
+ */
+
 export default function ImageModal({ visible, initialData, onClose, onSave }: ImageModalProps) {
     const [filename, setFilename] = useState(initialData?.filename || "");
     const { image, pickImage } = useImagePicker();
