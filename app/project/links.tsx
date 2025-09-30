@@ -7,7 +7,7 @@ import { LinkService } from "@/services/link/link.service";
 import { LinkUpdateDto } from "@/services/link/link.update.dto";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LinkScreen() {
@@ -74,18 +74,22 @@ export default function LinkScreen() {
         }
     };
 
-    const deleteByCode = async (code: any) => {
-        if (code) {
-            const parsedCode = parseInt(code);
-            try {
-                await LinkService.deleteByCode(parsedCode);
-                findAllByProjectCode(projectCode);
-            } catch (err) {
-                console.error(err);
-                throw new Error("Erro ao deletar o link.");
+
+
+    const deleteByCode = async (code: number) => {
+        Alert.alert(
+            "Excluir link",
+            "Deseja realmente excluir o link?",
+            [{ text: "Cancelar", style: "cancel" },
+            {
+                text: "Excluir", style: "destructive", onPress: async () => {
+                    await LinkService.deleteByCode(code);
+                    findAllByProjectCode(projectCode);
+                }
             }
-        }
-    };
+            ]
+        )
+    }
 
     const getFilteredLinks = () => {
         if (!searchTerm.trim()) return links;
