@@ -16,7 +16,6 @@ export default function LinkCard({ links, refresh, onDelete, onEdit }: LinkCardP
     };
 
     const handleCopy = async (url: string) => {
-        console.log("url copiada ", url)
         await Clipboard.setStringAsync(url);
         Alert.alert('Link copiado!');
     };

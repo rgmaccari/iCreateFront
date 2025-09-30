@@ -35,7 +35,6 @@ export default function LinkScreen() {
             const parsedProjectCode = parseInt(projectCode);
             const foundedLinks = await LinkService.findAllByProjectCode(parsedProjectCode);
             if (foundedLinks) {
-                console.log(foundedLinks);
                 setLinks(foundedLinks);
             } else {
                 setLinks([]);
@@ -66,7 +65,6 @@ export default function LinkScreen() {
                     url: formData.url!,
                 };
                 await LinkService.update(selectedLink.code!, dto);
-                console.log("Link atualizado:", dto);
                 setEditVisible(false);
                 findAllByProjectCode(projectCode);
             } catch (err) {

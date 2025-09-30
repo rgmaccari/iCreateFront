@@ -8,16 +8,13 @@ export default function AuthLoader() {
   const router = useRouter();
 
   useEffect(() => {
-    //console.log('auth loader chamado')
     const checkToken = async () => {
       const token = await AuthService.getToken();
-      //console.log(token)
       if (token) {
         //Carrega o usuário do storage e seta em memória
         await AuthService.loadUserFromStorage();
         router.replace('/main/user'); //Vai direto para a tela de usuário
       } else {
-        //console.log('Token não localizado')
         router.replace('/login');
       }
       setLoading(false);

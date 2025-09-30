@@ -40,8 +40,6 @@ export default function ImageScreen() {
 
             if (projectCode) formData.append("projectCode", String(projectCode));
 
-            console.log("Enviando imagens:", formData);
-
             const result = await ImageService.create(projectCode!, formData);
 
             await findAllByProjectCode(); // Atualiza lista após salvar
