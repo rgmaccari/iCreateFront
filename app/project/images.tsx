@@ -84,13 +84,20 @@ export default function ImageScreen() {
     const renderList = () => (
         <ScrollView contentContainerStyle={styles.scroll}>
             {images.map((img, index) => (
-                <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItem}>
-                    <Text style={styles.filename}>{img.filename}</Text>
-                    {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+                <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItemRow}>
+                    <RNImage
+                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+                        style={styles.thumbnail}
+                    />
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.filename}>{img.filename}</Text>
+                        {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+                    </View>
                 </TouchableOpacity>
             ))}
         </ScrollView>
     );
+
 
     const renderGrid = () => (
         <FlatList
@@ -248,5 +255,20 @@ const styles = StyleSheet.create({
         height: 300,
         marginHorizontal: 10,
         borderRadius: 8
-    }
+    },
+    listItemRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10,
+        padding: 10,
+        backgroundColor: "#fff",
+        borderRadius: 8
+    },
+    thumbnail: {
+        width: 40,
+        height: 40,
+        borderRadius: 6,
+        marginRight: 10
+    },
+
 });
