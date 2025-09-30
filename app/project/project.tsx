@@ -34,33 +34,50 @@ export default function ProjectScreen() {
     load();
   }, [projectCode]);
 
-  //Voltar para tela anterior
+  const create = async (dto: ProjectInfoDto) => {
+    try {
+      const createdProject = await ProjectService.create(dto);
+      setProject(createdProject);
+      router.back();
+    } catch (err) {
+      console.error("Erro ao criar projeto:", err);
+    }
+  };
+
+  const update = async (dto: ProjectInfoDto) => {
+    try {
+      if (!project) return;
+      const updatedProject = await ProjectService.update(project.code!, dto);
+      setProject(updatedProject);
+      router.back();
+    } catch (err) {
+      console.error("Erro ao atualizar projeto:", err);
+    }
+  };
+
+
+  const handleSubmit = async () => {
+    const dto: ProjectInfoDto = {
+      title: formData.title!,
+      sketch: formData.sketch!,
+    };
+
+    if (project) {
+      update(dto);
+    } else {
+      create(dto);
+    }
+  };
+
+  const deleteProject = async (projectCode: number) => {
+    await ProjectService.deleteByCode(projectCode);
+    router.back();
+  }
+
   const handleReturn = () => {
     router.back();
   };
 
-  //Salvar o projeto ou criar
-  const handleSave = async () => {
-    try {
-      const dto: ProjectInfoDto = {
-        title: formData.title!,
-        sketch: formData.sketch!,
-      };
-
-      if (project) {
-        await ProjectService.update(project.code!, dto);
-      } else {
-        const createdProject = await ProjectService.create(dto);
-        console.log("Projeto criado:", createdProject);
-      }
-
-      router.back();
-    } catch (err) {
-      console.error("Erro ao salvar projeto:", err);
-    }
-  };
-
-  //Buscar os links:
   const handleOpenLinks = () => {
     router.push({
       pathname: "/project/links",
@@ -105,12 +122,22 @@ export default function ProjectScreen() {
           <Text style={styles.buttonText}>Cancelar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonPrimary} onPress={handleSave}>
+        <TouchableOpacity style={styles.buttonPrimary} onPress={handleSubmit}>
           <Text style={styles.buttonText}>
             {project ? "Atualizar Projeto" : "Criar Projeto"}
           </Text>
         </TouchableOpacity>
+
+        {project && (
+          <TouchableOpacity style={styles.buttonPrimary} onPress={() => deleteProject(project!.code)}>
+            <Text style={styles.buttonText}>
+              Deletar
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+
     </SafeAreaView>
   );
 }
