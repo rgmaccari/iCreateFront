@@ -6,7 +6,7 @@ interface ImageModalProps {
     visible: boolean;
     initialData?: { filename?: string; dataBase64?: string };
     onClose: () => void;
-    onSave: (data: ImageCreateDto[]) => void; // Agora envia lista
+    onSave: (data: ImageCreateDto[]) => void; //Envia lista
 }
 
 export interface ImageCreateDto {
@@ -48,16 +48,14 @@ export default function ImageModal({ visible, initialData, onClose, onSave }: Im
                     onPress={() => {
                         if (!image) return;
 
-                        onSave([
-                            {
-                                filename: filename || image.name || "image.jpg",
-                                data: {
-                                    uri: image.uri,
-                                    mimeType: image.mimeType || "image/jpeg",
-                                    name: image.name || "image.jpg",
-                                },
+                        onSave([{
+                            filename: filename || image.name || "image.jpg",
+                            data: {
+                                uri: image.uri,
+                                mimeType: image.mimeType || "image/jpeg",
+                                name: image.name || "image.jpg",
                             },
-                        ]);
+                        }]);
 
                         onClose();
                     }}
@@ -68,6 +66,7 @@ export default function ImageModal({ visible, initialData, onClose, onSave }: Im
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     modal: {

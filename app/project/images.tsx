@@ -3,7 +3,7 @@ import { Image } from "@/services/image/image";
 import { ImageService } from "@/services/image/image.service";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
@@ -30,7 +30,7 @@ export default function ImageScreen() {
                     formData.append("images", {
                         uri: form.data.uri,
                         type: form.data.mimeType,
-                        name: form.data.name,
+                        name: form.filename || form.data.name || "image.jpg",
                     } as any);
                 }
 
@@ -40,10 +40,9 @@ export default function ImageScreen() {
 
             if (projectCode) formData.append("projectCode", String(projectCode));
 
-            const result = await ImageService.create(projectCode!, formData);
+            await ImageService.create(projectCode!, formData);
 
-            await findAllByProjectCode(); // Atualiza lista após salvar
-            return result;
+            await findAllByProjectCode();
         } catch (err) {
             console.error("Erro ao criar imagens:", err);
             throw err;
@@ -54,21 +53,9 @@ export default function ImageScreen() {
         findAllByProjectCode().finally(() => setLoading(false));
     }, [projectCode]);
 
-    const handleAddImage = () => {
-        setModalVisible(true);
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.container}>
-                <Text>Carregando imagens...</Text>
-            </View>
-        );
-    }
-
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={handleAddImage}>
+            <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
                 <Text style={styles.buttonText}>Adicionar imagem</Text>
             </TouchableOpacity>
 
@@ -86,6 +73,7 @@ export default function ImageScreen() {
         </SafeAreaView>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {

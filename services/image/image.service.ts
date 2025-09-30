@@ -3,10 +3,11 @@ import { Image } from "./image";
 import { ImageCreateDto } from "./image.create.dto";
 
 export class ImageService {
-    static async create(projectCode: number, formData: FormData): Promise<Image> {
-        const response = await api.post<Image>(`/images/${projectCode}`, formData, {
+    static async create(projectCode: number, formData: FormData): Promise<Image[]> {
+        const response = await api.post<Image[]>(`/images/${projectCode}`, formData, {
             headers: {
                 "Accept": "application/json",
+                "Content-Type": "multipart/form-data",
             }
         });
         return response.data;
