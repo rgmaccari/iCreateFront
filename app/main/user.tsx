@@ -4,7 +4,7 @@ import { AuthService } from "@/services/api/auth.service";
 import { ProjectPreview } from "@/services/project/project.preview";
 import { ProjectService } from "@/services/project/project.service";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,50 +13,16 @@ export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      const loadUserAndProjects = async () => {
-        await AuthService.loadUserFromStorage();
-        setUserData(AuthService.getUser());
+  const loadUserAndProjects = async () => {
+    await AuthService.loadUserFromStorage();
+    setUserData(AuthService.getUser());
 
-        if (AuthService.getUser()?.code) {
-          const data = await ProjectService.findAllPreview();
-          setProjects(data);
-        }
-
-      };
-      loadUserAndProjects();
-    }, [])
-  );
-
-  const loadProjects = async () => {
-    console.log('acionado loadProjects')
-    if (userData?.code) {
-      console.log('tem user')
+    if (AuthService.getUser()?.code) {
       const data = await ProjectService.findAllPreview();
       setProjects(data);
     }
+
   };
-
-  const handleNewProject = () => {
-    router.push('/project/project');
-  };
-
-  const handleEditUser = () => {
-    router.push('/user-register');
-  };
-
-  useEffect(() => {
-    loadProjects();
-  }, [userData?.code]);
-
-  if (!userData) {
-    return (
-      <View style={styles.container}>
-        <Text>Usuário não encontrado</Text>
-      </View>
-    );
-  }
 
   const handleLogout = async () => {
     try {
@@ -68,13 +34,35 @@ export default function UserScreen() {
     }
   };
 
+  const handleNewProject = () => {
+    router.push('/project/project');
+  };
+
+  const handleEditUser = () => {
+    router.push('/user-register');
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserAndProjects();
+    }, [])
+  );
+
+  if (!userData) {
+    return (
+      <View style={styles.container}>
+        <Text>Usuário não encontrado</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <UserCard user={userData} onLogout={handleLogout} />
 
       {/* Botso de teste */}
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.button} onPress={loadProjects}>
+        <TouchableOpacity style={styles.button} onPress={loadUserAndProjects}>
           <Text style={styles.buttonText}>Reload</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleNewProject}>
@@ -86,7 +74,7 @@ export default function UserScreen() {
       </View>
 
       {/* Lista de projects */}
-      <ProjectCard projects={projects} refresh={loadProjects} />
+      <ProjectCard projects={projects} refresh={loadUserAndProjects} />
     </SafeAreaView>
   );
 }

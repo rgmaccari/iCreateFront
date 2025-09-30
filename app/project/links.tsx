@@ -46,38 +46,12 @@ export default function LinkScreen() {
             try {
                 const link = new LinkCreateDto();
                 link.url = value;
-                link.title = "Teste";
+                link.title = "";
                 await LinkService.create(projectCode, link);
                 findAllByProjectCode(projectCode); // Recarregar lista
             } catch (err) {
                 console.error(err);
                 throw new Error("Erro ao criar link");
-            }
-        }
-    };
-
-    const findByCode = async (code: any) => {
-        if (code) {
-            const parsedCode = parseInt(code);
-            try {
-                const foundedLink = await LinkService.findByCode(parsedCode);
-                setLinks(foundedLink ? [foundedLink] : []);
-            } catch (err) {
-                console.error(err);
-                throw new Error("Erro ao buscar link");
-            }
-        }
-    };
-
-    const deleteByCode = async (code: any) => {
-        if (code) {
-            const parsedCode = parseInt(code);
-            try {
-                await LinkService.deleteByCode(parsedCode);
-                findAllByProjectCode(projectCode);
-            } catch (err) {
-                console.error(err);
-                throw new Error("Erro ao deletar o link.");
             }
         }
     };
@@ -96,6 +70,19 @@ export default function LinkScreen() {
             } catch (err) {
                 console.error(err);
                 throw new Error("Erro ao atualizar link");
+            }
+        }
+    };
+
+    const deleteByCode = async (code: any) => {
+        if (code) {
+            const parsedCode = parseInt(code);
+            try {
+                await LinkService.deleteByCode(parsedCode);
+                findAllByProjectCode(projectCode);
+            } catch (err) {
+                console.error(err);
+                throw new Error("Erro ao deletar o link.");
             }
         }
     };

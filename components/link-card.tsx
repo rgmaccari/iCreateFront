@@ -1,6 +1,7 @@
 import { Link } from "@/services/link/link";
 import { FontAwesome } from "@expo/vector-icons";
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Clipboard from 'expo-clipboard';
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface LinkCardProps {
     links: Link[];
@@ -12,6 +13,12 @@ interface LinkCardProps {
 export default function LinkCard({ links, refresh, onDelete, onEdit }: LinkCardProps) {
     const onClickLink = (url: string) => {
         Linking.openURL(url).catch(err => console.error("Erro ao abrir link:", err));
+    };
+
+    const handleCopy = async (url: string) => {
+        console.log("url copiada ", url)
+        await Clipboard.setStringAsync(url);
+        Alert.alert('Link copiado!');
     };
 
     if (!links || links.length === 0) {
@@ -40,9 +47,14 @@ export default function LinkCard({ links, refresh, onDelete, onEdit }: LinkCardP
                         </TouchableOpacity>
 
                         {/* Ícone editar */}
-                        <TouchableOpacity style={{ marginTop: 8 }} onPress={() => onEdit(link)}>
-                            <FontAwesome name="pencil" size={20} color="#362946" />
-                        </TouchableOpacity>
+                        <View style={styles.options}>
+                            <TouchableOpacity style={{ marginTop: 8 }} onPress={() => onEdit(link)}>
+                                <FontAwesome name="pencil" size={20} color="#362946" />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ marginTop: 8 }} onPress={() => handleCopy(link.url!)}>
+                                <FontAwesome name="copy" size={20} color="#362946" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 );
             })}
@@ -95,4 +107,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#362946"
     },
+    options: {
+        alignItems: "flex-start"
+    }
 });
