@@ -1,15 +1,18 @@
 import ImageModal, { ImageCreateDto } from "@/components/image-modal";
-import { ImageViewerPanel } from "@/components/image-viewer-panel";
 import { Image } from "@/services/image/image";
 import { ImageService } from "@/services/image/image.service";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+    FlatList,
+    Image as RNImage,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
+import ImageViewing from "react-native-image-viewing";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
@@ -78,13 +81,101 @@ export default function ImageScreen() {
         uri: `data:${img.mimeType};base64,${img.dataBase64}`,
     }));
 
+    const renderList = () => (
+        <ScrollView contentContainerStyle={styles.scroll}>
+            {images.map((img, index) => (
+                <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItemRow}>
+                    <RNImage
+                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+                        style={styles.thumbnail}
+                    />
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.filename}>{img.filename}</Text>
+                        {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+                    </View>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
+
+
+    const renderGrid = () => (
+        <FlatList
+            data={images}
+            keyExtractor={(item) => item.code.toString()}
+            numColumns={3}
+            contentContainerStyle={styles.gridContainer}
+            renderItem={({ item, index }) => (
+                <TouchableOpacity onPress={() => openViewer(index)}>
+                    <RNImage
+                        source={{ uri: `data:${item.mimeType};base64,${item.dataBase64}` }}
+                        style={styles.gridImage}
+                    />
+                </TouchableOpacity>
+            )}
+        />
+    );
+
+    const renderCarousel = () => (
+        <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselContainer}
+        >
+            {images.map((img, index) => (
+                <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
+                    <RNImage
+                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+                        style={styles.carouselImage}
+                    />
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
+
+    const renderView = () => {
+        switch (viewMode) {
+            case "grid":
+                return renderGrid();
+            case "carousel":
+                return renderCarousel();
+            case "list":
+            default:
+                return renderList();
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
                     <Text style={styles.buttonText}>Adicionar imagem</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "list" && styles.activeButton]}
+                    onPress={() => setViewMode("list")}
+                >
+                    <Text style={styles.buttonText}>Lista</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "grid" && styles.activeButton]}
+                    onPress={() => setViewMode("grid")}
+                >
+                    <Text style={styles.buttonText}>Grade</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, viewMode === "carousel" && styles.activeButton]}
+                    onPress={() => setViewMode("carousel")}
+                >
+                    <Text style={styles.buttonText}>Carrossel</Text>
+                </TouchableOpacity>
             </View>
+
+            {renderView()}
 
             <ImageModal
                 visible={modalVisible}
@@ -92,11 +183,11 @@ export default function ImageScreen() {
                 onSave={create}
             />
 
-            <ImageViewerPanel
-                images={images}
-                viewMode={viewMode}
-                onChangeViewMode={setViewMode}
-                onImagePress={openViewer}
+            <ImageViewing
+                images={imageSources}
+                imageIndex={viewerIndex}
+                visible={viewerVisible}
+                onRequestClose={() => setViewerVisible(false)}
             />
         </SafeAreaView>
     );
