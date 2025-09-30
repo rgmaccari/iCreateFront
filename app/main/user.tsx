@@ -13,6 +13,12 @@ export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
 
+  useFocusEffect(
+    useCallback(() => {
+      loadUserAndProjects();
+    }, [])
+  );
+
   const loadUserAndProjects = async () => {
     await AuthService.loadUserFromStorage();
     setUserData(AuthService.getUser());
@@ -41,12 +47,6 @@ export default function UserScreen() {
   const handleEditUser = () => {
     router.push('/user-register');
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadUserAndProjects();
-    }, [])
-  );
 
   if (!userData) {
     return (

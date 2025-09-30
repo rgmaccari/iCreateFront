@@ -20,7 +20,7 @@ export default function LoginScreen() {
     }
   };
 
-  const create = () => {
+  const handleCreate = () => {
     router.push('/user-register');
   }
 
@@ -47,7 +47,7 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>Buscar Usuário</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={create}>
+      <TouchableOpacity onPress={handleCreate}>
         <Text style={styles.linkText}>Cadastro</Text>
       </TouchableOpacity>
 

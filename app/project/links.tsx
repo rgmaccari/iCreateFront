@@ -20,10 +20,15 @@ export default function LinkScreen() {
     const [editVisible, setEditVisible] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    //Retornar a tela.
-    const handleReturn = () => {
-        router.back();
-    };
+    useEffect(() => {
+        const load = async () => {
+            if (projectCode) {
+                await findAllByProjectCode(projectCode);
+            }
+            setLoading(false);
+        };
+        load();
+    }, [projectCode]);
 
     const findAllByProjectCode = async (projectCode: any) => {
         if (projectCode) {
@@ -95,15 +100,10 @@ export default function LinkScreen() {
         )
     }
 
-    useEffect(() => {
-        const load = async () => {
-            if (projectCode) {
-                await findAllByProjectCode(projectCode);
-            }
-            setLoading(false);
-        };
-        load();
-    }, [projectCode]);
+    //Retornar a tela.
+    const handleReturn = () => {
+        router.back();
+    };
 
     if (loading) {
         return (

@@ -32,6 +32,26 @@ export default function UserRegisterScreen() {
         }
     };
 
+    const deleteUser = (userCode: number) => {
+        Alert.alert(
+            "Excluir o usuário",
+            "Deseja realmente excluir o usuário?",
+            [{ text: "Cancelar", style: "cancel" },
+            {
+                text: "Excluir", style: "destructive", onPress: async () => {
+                    try {
+                        const code = userData!.code;
+                        await UserService.delete(code);
+                        AuthService.logout()
+                        router.navigate('/login');
+                    } catch (err) {
+                        console.error("Erro ao usuário projeto:", err);
+                    }
+                }
+            }
+            ]
+        )
+    }
 
     const handleSubmit = async (form: UserDto) => {
         const formData = new FormData();
@@ -54,31 +74,6 @@ export default function UserRegisterScreen() {
             create(formData);
         }
     };
-
-
-    const deleteUser = (userCode: number) => {
-        Alert.alert(
-            "Excluir o usuário",
-            "Deseja realmente excluir o usuário?",
-            [{ text: "Cancelar", style: "cancel" },
-            {
-                text: "Excluir", style: "destructive", onPress: async () => {
-                    try {
-                        const code = userData!.code;
-                        await UserService.delete(code);
-                        AuthService.logout()
-                        router.navigate('/login');
-                    } catch (err) {
-                        console.error("Erro ao usuário projeto:", err);
-                    }
-                }
-            }
-            ]
-        )
-
-
-
-    }
 
     return (
         <SafeAreaView style={styles.container}>
