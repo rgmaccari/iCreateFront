@@ -43,7 +43,6 @@ export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
 
 
   const onClickProject = (projectCode: number) => {
-    console.log("Clicou no projeto, id: ", projectCode);
     router.push({
       pathname: "/project/project",
       params: { projectCode: projectCode.toString() },

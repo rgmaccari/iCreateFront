@@ -5,7 +5,7 @@ import { ProjectService } from "@/services/project/project.service";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProjectForm from "../../components/project-form";
 
@@ -19,7 +19,7 @@ export default function ProjectScreen() {
 
   //Buscar o projeto do backend
   useEffect(() => {
-    const load = async () => {
+    const findByCode = async () => {
       if (projectCode) {
         try {
           const actualProject = await ProjectService.findByCode(projectCode);
@@ -31,7 +31,7 @@ export default function ProjectScreen() {
       }
       setLoading(false);
     };
-    load();
+    findByCode();
   }, [projectCode]);
 
   const create = async (dto: ProjectInfoDto) => {
@@ -55,7 +55,6 @@ export default function ProjectScreen() {
     }
   };
 
-
   const handleSubmit = async () => {
     const dto: ProjectInfoDto = {
       title: formData.title!,
@@ -70,8 +69,18 @@ export default function ProjectScreen() {
   };
 
   const deleteProject = async (projectCode: number) => {
-    await ProjectService.deleteByCode(projectCode);
-    router.back();
+    Alert.alert(
+      "Excluir projeto",
+      "Deseja realmente excluir o projeto?",
+      [{ text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir", style: "destructive", onPress: async () => {
+          await ProjectService.deleteByCode(projectCode);
+          router.back();
+        }
+      }
+      ]
+    )
   }
 
   const handleReturn = () => {
