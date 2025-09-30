@@ -6,26 +6,22 @@ import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "reac
 
 
 export default function LoginScreen() {
-
-
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  //Realiza a busca do user acionando AuthService.login mn
-  const handleSearchUser = async () => {
-    console.log("Botão clicado, código digitado:", nickname);
+  const login = async () => {
     try {
       const user = await AuthService.login(nickname, password);
-      router.replace({ pathname: "/main/user", params: { user: JSON.stringify(user) } });
+      if (user) router.replace("/main/user");
     } catch (error) {
       console.error("Erro na requisição:", error);
       Alert.alert("Erro", "Não foi possível buscar o usuário. Verifique o código ou a conexão com a API.");
     }
   };
 
-  const handleCreateUser = () => {
-    router.push('/user-create');
+  const create = () => {
+    router.push('/user-register');
   }
 
   return (
@@ -46,11 +42,11 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSearchUser}>
+      <TouchableOpacity style={styles.button} onPress={login}>
         <Text style={styles.buttonText}>Buscar Usuário</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleCreateUser}>
+      <TouchableOpacity onPress={create}>
         <Text style={styles.linkText}>Cadastro</Text>
       </TouchableOpacity>
 

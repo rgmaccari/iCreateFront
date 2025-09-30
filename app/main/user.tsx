@@ -43,7 +43,7 @@ export default function UserScreen() {
   };
 
   const handleEditUser = () => {
-    router.push('/user-update');
+    router.push('/user-register');
   };
 
   useEffect(() => {

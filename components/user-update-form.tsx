@@ -4,10 +4,12 @@ import React, { useEffect, useState } from "react";
 import { Button, Image, StyleSheet, TextInput, View } from "react-native";
 
 interface UpdateUserFormProps {
+    hasUser?: boolean;
     onSubmit: (data: UserDto) => void;
+    onDelete?: () => void;
 }
 
-export default function UserForm({ onSubmit }: UpdateUserFormProps) {
+export default function UserForm(props: UpdateUserFormProps) {
     const { image, pickImage } = useImagePicker();
 
     const [form, setForm] = useState<UserDto>({
@@ -57,7 +59,12 @@ export default function UserForm({ onSubmit }: UpdateUserFormProps) {
                 <Image source={{ uri: form.avatar.uri }} style={styles.preview} />
             )}
 
-            <Button title="Salvar" onPress={() => onSubmit(form)} />
+            <Button title="Salvar" onPress={() => props.onSubmit(form)} />
+
+            {props.hasUser && (
+                <Button title="Deletar Usuário" onPress={props.onDelete} color="red" />
+            )}
+
         </View>
     );
 }

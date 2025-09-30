@@ -11,7 +11,6 @@ export class UserService {
         "Content-Type": "multipart/form-data"
       }
     });
-    console.log('response meu emn', response);
 
     if (response && response.data) {
       AuthService.registerInMemory(response.data, await AuthService.getToken() || '');
@@ -26,8 +25,6 @@ export class UserService {
         "Content-Type": "multipart/form-data"
       }
     });
-
-    console.log('response meu emn', response)
 
     if (response && response.data) {
       AuthService.registerInMemory(response.data, await AuthService.getToken() || '');
