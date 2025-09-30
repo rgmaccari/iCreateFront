@@ -13,14 +13,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function LinkScreen() {
     const params = useLocalSearchParams<{ projectCode?: string }>();
     const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
-
     const [links, setLinks] = useState<Link[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [formData, setFormData] = useState<Partial<Link>>({});
     const [selectedLink, setSelectedLink] = useState<Link | null>(null);
     const [editVisible, setEditVisible] = useState(false);
-
     const [searchTerm, setSearchTerm] = useState('');
 
     //Retornar a tela.
@@ -73,8 +70,6 @@ export default function LinkScreen() {
             }
         }
     };
-
-
 
     const deleteByCode = async (code: number) => {
         Alert.alert(
