@@ -2,7 +2,7 @@ import ImageModal, { ImageCreateDto } from "@/components/image-modal";
 import ImageViewerPanel from "@/components/image-viewer-panel";
 import { Image } from "@/services/image/image";
 import { ImageService } from "@/services/image/image.service";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
@@ -24,12 +24,9 @@ export default function ImageScreen() {
     const [viewerIndex, setViewerIndex] = useState(0);
     const [viewMode, setViewMode] = useState<"list" | "grid" | "carousel">("list");
 
-    // const findAllByProjectCode = async () => {
-    //     if (projectCode) {
-    //         const result = await ImageService.findAllByProjectCode(projectCode);
-    //         setImages(result || []);
-    //     }
-    // };
+    useEffect(() => {
+        findAllByProjectCode().finally(() => setLoading(false));
+    });
 
     const findAllByProjectCode = async () => {
         if (projectCode) {
@@ -43,7 +40,6 @@ export default function ImageScreen() {
             setImages(result || []);
         }
     };
-
 
     const create = async (forms: ImageCreateDto[]) => {
         try {
@@ -80,86 +76,16 @@ export default function ImageScreen() {
         }
     };
 
-    // const openViewer = (index: number) => {
-    //     setViewerIndex(index);
-    //     setViewerVisible(true);
-    // };
-
-    useEffect(() => {
-        findAllByProjectCode().finally(() => setLoading(false));
-    }, [projectCode]);
-
+    //verificar depois se vai ficar aqui ou no item
     const imageSources = images.map((img, idx) => {
         return {
             uri: img.url,
         };
     });
 
-
-    // const renderList = () => (
-    //     <ScrollView contentContainerStyle={styles.scroll}>
-    //         {images.map((img, index) => (
-    //             <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItemRow}>
-    //                 <RNImage
-    //                     source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
-    //                     style={styles.thumbnail}
-    //                 />
-    //                 <View style={{ flex: 1 }}>
-    //                     <Text style={styles.filename}>{img.filename}</Text>
-    //                     {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
-    //                 </View>
-    //             </TouchableOpacity>
-    //         ))}
-    //     </ScrollView>
-    // );
-
-
-    // const renderGrid = () => (
-    //     <FlatList
-    //         data={images}
-    //         keyExtractor={(item) => item.code.toString()}
-    //         numColumns={3}
-    //         contentContainerStyle={styles.gridContainer}
-    //         renderItem={({ item, index }) => (
-    //             <TouchableOpacity onPress={() => openViewer(index)}>
-    //                 <RNImage
-    //                     source={{ uri: `data:${item.mimeType};base64,${item.dataBase64}` }}
-    //                     style={styles.gridImage}
-    //                 />
-    //             </TouchableOpacity>
-    //         )}
-    //     />
-    // );
-
-    // const renderCarousel = () => (
-    //     <ScrollView
-    //         horizontal
-    //         pagingEnabled
-    //         showsHorizontalScrollIndicator={false}
-    //         contentContainerStyle={styles.carouselContainer}
-    //     >
-    //         {images.map((img, index) => (
-    //             <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
-    //                 <RNImage
-    //                     source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
-    //                     style={styles.carouselImage}
-    //                 />
-    //             </TouchableOpacity>
-    //         ))}
-    //     </ScrollView>
-    // );
-
-    // const renderView = () => {
-    //     switch (viewMode) {
-    //         case "grid":
-    //             return renderGrid();
-    //         case "carousel":
-    //             return renderCarousel();
-    //         case "list":
-    //         default:
-    //             return renderList();
-    //     }
-    // };
+    const handleReturn = () => {
+        router.back();
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -208,6 +134,10 @@ export default function ImageScreen() {
                 visible={viewerVisible}
                 onRequestClose={() => setViewerVisible(false)}
             />
+
+            <TouchableOpacity style={styles.button} onPress={handleReturn}>
+                <Text style={styles.buttonText}>Voltar</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     );
 }
