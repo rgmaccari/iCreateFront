@@ -1,16 +1,14 @@
 import ImageModal, { ImageCreateDto } from "@/components/image-modal";
+import ImageViewerPanel from "@/components/image-viewer-panel";
 import { Image } from "@/services/image/image";
 import { ImageService } from "@/services/image/image.service";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    FlatList,
-    Image as RNImage,
-    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import ImageViewing from "react-native-image-viewing";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,12 +24,26 @@ export default function ImageScreen() {
     const [viewerIndex, setViewerIndex] = useState(0);
     const [viewMode, setViewMode] = useState<"list" | "grid" | "carousel">("list");
 
+    // const findAllByProjectCode = async () => {
+    //     if (projectCode) {
+    //         const result = await ImageService.findAllByProjectCode(projectCode);
+    //         setImages(result || []);
+    //     }
+    // };
+
     const findAllByProjectCode = async () => {
         if (projectCode) {
             const result = await ImageService.findAllByProjectCode(projectCode);
+
+            if (Array.isArray(result) && result.length > 0) {
+            } else {
+                console.log("[Front] Nenhum resultado ou formato inesperado:", result);
+            }
+
             setImages(result || []);
         }
     };
+
 
     const create = async (forms: ImageCreateDto[]) => {
         try {
@@ -68,83 +80,86 @@ export default function ImageScreen() {
         }
     };
 
-    const openViewer = (index: number) => {
-        setViewerIndex(index);
-        setViewerVisible(true);
-    };
+    // const openViewer = (index: number) => {
+    //     setViewerIndex(index);
+    //     setViewerVisible(true);
+    // };
 
     useEffect(() => {
         findAllByProjectCode().finally(() => setLoading(false));
     }, [projectCode]);
 
-    const imageSources = images.map(img => ({
-        uri: `data:${img.mimeType};base64,${img.dataBase64}`,
-    }));
-
-    const renderList = () => (
-        <ScrollView contentContainerStyle={styles.scroll}>
-            {images.map((img, index) => (
-                <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItemRow}>
-                    <RNImage
-                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
-                        style={styles.thumbnail}
-                    />
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.filename}>{img.filename}</Text>
-                        {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
-                    </View>
-                </TouchableOpacity>
-            ))}
-        </ScrollView>
-    );
+    const imageSources = images.map((img, idx) => {
+        return {
+            uri: img.url,
+        };
+    });
 
 
-    const renderGrid = () => (
-        <FlatList
-            data={images}
-            keyExtractor={(item) => item.code.toString()}
-            numColumns={3}
-            contentContainerStyle={styles.gridContainer}
-            renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => openViewer(index)}>
-                    <RNImage
-                        source={{ uri: `data:${item.mimeType};base64,${item.dataBase64}` }}
-                        style={styles.gridImage}
-                    />
-                </TouchableOpacity>
-            )}
-        />
-    );
+    // const renderList = () => (
+    //     <ScrollView contentContainerStyle={styles.scroll}>
+    //         {images.map((img, index) => (
+    //             <TouchableOpacity key={img.code} onPress={() => openViewer(index)} style={styles.listItemRow}>
+    //                 <RNImage
+    //                     source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+    //                     style={styles.thumbnail}
+    //                 />
+    //                 <View style={{ flex: 1 }}>
+    //                     <Text style={styles.filename}>{img.filename}</Text>
+    //                     {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+    //                 </View>
+    //             </TouchableOpacity>
+    //         ))}
+    //     </ScrollView>
+    // );
 
-    const renderCarousel = () => (
-        <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carouselContainer}
-        >
-            {images.map((img, index) => (
-                <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
-                    <RNImage
-                        source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
-                        style={styles.carouselImage}
-                    />
-                </TouchableOpacity>
-            ))}
-        </ScrollView>
-    );
 
-    const renderView = () => {
-        switch (viewMode) {
-            case "grid":
-                return renderGrid();
-            case "carousel":
-                return renderCarousel();
-            case "list":
-            default:
-                return renderList();
-        }
-    };
+    // const renderGrid = () => (
+    //     <FlatList
+    //         data={images}
+    //         keyExtractor={(item) => item.code.toString()}
+    //         numColumns={3}
+    //         contentContainerStyle={styles.gridContainer}
+    //         renderItem={({ item, index }) => (
+    //             <TouchableOpacity onPress={() => openViewer(index)}>
+    //                 <RNImage
+    //                     source={{ uri: `data:${item.mimeType};base64,${item.dataBase64}` }}
+    //                     style={styles.gridImage}
+    //                 />
+    //             </TouchableOpacity>
+    //         )}
+    //     />
+    // );
+
+    // const renderCarousel = () => (
+    //     <ScrollView
+    //         horizontal
+    //         pagingEnabled
+    //         showsHorizontalScrollIndicator={false}
+    //         contentContainerStyle={styles.carouselContainer}
+    //     >
+    //         {images.map((img, index) => (
+    //             <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
+    //                 <RNImage
+    //                     source={{ uri: `data:${img.mimeType};base64,${img.dataBase64}` }}
+    //                     style={styles.carouselImage}
+    //                 />
+    //             </TouchableOpacity>
+    //         ))}
+    //     </ScrollView>
+    // );
+
+    // const renderView = () => {
+    //     switch (viewMode) {
+    //         case "grid":
+    //             return renderGrid();
+    //         case "carousel":
+    //             return renderCarousel();
+    //         case "list":
+    //         default:
+    //             return renderList();
+    //     }
+    // };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -175,7 +190,11 @@ export default function ImageScreen() {
                 </TouchableOpacity>
             </View>
 
-            {renderView()}
+            {/*renderView()*/}
+            { /* Substitua a chamada de renderView() */}
+            <ImageViewerPanel
+                images={images} viewMode={viewMode} />
+
 
             <ImageModal
                 visible={modalVisible}

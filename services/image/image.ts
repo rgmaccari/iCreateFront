@@ -3,8 +3,8 @@ export interface Image {
     code: number;
     filename: string;
     isCover: boolean;
-    dataBase64: string;
+    url: string;
     mimeType: string;
-    createdAt: string;
+    createdAt: string
     projectCode: number;
 }
