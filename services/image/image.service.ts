@@ -13,7 +13,6 @@ export class ImageService {
         return response.data;
     }
 
-
     static async update(code: number, image: ImageCreateDto): Promise<Image> {
         const response = await api.put<Image>(`/images/${code}`, image);
         return response.data;
