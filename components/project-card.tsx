@@ -61,10 +61,8 @@ export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {projects.map((project, index) => {
-        const hasImage = project.imageBase64 && project.imageMimeType;
-        const imageUri = hasImage
-          ? `data:${project.imageMimeType};base64,${project.imageBase64}`
-          : "";
+        const hasImage = project.imageUrl && project.imageMimeType;
+        const imageUri = hasImage ? project.imageUrl : "";
 
         return (
           <TouchableOpacity

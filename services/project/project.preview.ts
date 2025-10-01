@@ -1,7 +1,7 @@
 export interface ProjectPreview {
     projectCode: number;
     title: string;
-    imageBase64: string;
+    imageUrl: string;
     imageMimeType: string;
     createdAt: string;
     updateAt: string;

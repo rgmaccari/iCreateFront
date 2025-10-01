@@ -13,12 +13,13 @@ import ImageViewing from "react-native-image-viewing";
 
 type ViewMode = "list" | "grid" | "carousel";
 
-interface Props {
+interface ImageViewerProps {
     images: Image[];
     viewMode: ViewMode;
+    onDelete: (code: number) => void;
 }
 
-export default function ImageViewerPanel({ images, viewMode }: Props) {
+export default function ImageViewerPanel(props: ImageViewerProps) {
     const [viewerVisible, setViewerVisible] = useState(false);
     const [viewerIndex, setViewerIndex] = useState(0);
 
@@ -27,16 +28,17 @@ export default function ImageViewerPanel({ images, viewMode }: Props) {
         setViewerVisible(true);
     };
 
-    const imageSources = images.map((img) => ({
+    const imageSources = props.images.map((img) => ({
         uri: img.url,
     }));
 
     const renderList = () => (
         <ScrollView contentContainerStyle={styles.scroll}>
-            {images.map((img, index) => (
+            {props.images.map((img, index) => (
                 <TouchableOpacity
                     key={img.code}
                     onPress={() => openViewer(index)}
+                    onLongPress={() => props.onDelete(img.code)}
                     style={styles.listItemRow}
                 >
                     <RNImage
@@ -54,12 +56,14 @@ export default function ImageViewerPanel({ images, viewMode }: Props) {
 
     const renderGrid = () => (
         <FlatList
-            data={images}
-            keyExtractor={(item) => item.code.toString()}
+            data={props.images}
+            keyExtractor={(img) => img.code.toString()}
             numColumns={3}
             contentContainerStyle={styles.gridContainer}
             renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => openViewer(index)}>
+                <TouchableOpacity
+                    onPress={() => openViewer(index)}
+                    onLongPress={() => props.onDelete(item.code)}>
                     <RNImage
                         source={{ uri: item.url }}
                         style={styles.gridImage}
@@ -76,8 +80,10 @@ export default function ImageViewerPanel({ images, viewMode }: Props) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.carouselContainer}
         >
-            {images.map((img, index) => (
-                <TouchableOpacity key={img.code} onPress={() => openViewer(index)}>
+            {props.images.map((img, index) => (
+                <TouchableOpacity key={img.code}
+                    onPress={() => openViewer(index)}
+                    onLongPress={() => props.onDelete(img.code)}>
                     <RNImage
                         source={{ uri: img.url }}
                         style={styles.carouselImage}
@@ -88,7 +94,7 @@ export default function ImageViewerPanel({ images, viewMode }: Props) {
     );
 
     const renderView = () => {
-        switch (viewMode) {
+        switch (props.viewMode) {
             case "grid":
                 return renderGrid();
             case "carousel":

@@ -1,16 +1,17 @@
-import ImageModal, { ImageCreateDto } from "@/components/image-modal";
+import ImageModal from "@/components/image-modal";
 import ImageViewerPanel from "@/components/image-viewer-panel";
 import { Image } from "@/services/image/image";
+import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+    Alert,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from "react-native";
-import ImageViewing from "react-native-image-viewing";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
@@ -56,11 +57,13 @@ export default function ImageScreen() {
                     } as any);
                 }
 
-                if (form.filename)
-                    formData.append("filename", form.filename);
+                if (form.filename) formData.append("filename", form.filename);
 
-                if (form.isCover !== undefined)
+                if (form.isCover !== undefined) {
                     formData.append("isCover", String(form.isCover));
+                } else {
+                    console.log('acionou aqui en')
+                }
             });
 
             console.log('[Front] Enviando FormData...');
@@ -75,6 +78,21 @@ export default function ImageScreen() {
             throw err;
         }
     };
+
+    const deleteByCode = async (code: number) => {
+        Alert.alert(
+            "Excluir link",
+            "Deseja realmente excluir o link?",
+            [{ text: "Cancelar", style: "cancel" },
+            {
+                text: "Excluir", style: "destructive", onPress: async () => {
+                    await ImageService.deleteByCode(code);
+                    findAllByProjectCode();
+                }
+            }
+            ]
+        )
+    }
 
     //verificar depois se vai ficar aqui ou no item
     const imageSources = images.map((img, idx) => {
@@ -119,20 +137,13 @@ export default function ImageScreen() {
             {/*renderView()*/}
             { /* Substitua a chamada de renderView() */}
             <ImageViewerPanel
-                images={images} viewMode={viewMode} />
+                images={images} viewMode={viewMode} onDelete={deleteByCode} />
 
 
             <ImageModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={create}
-            />
-
-            <ImageViewing
-                images={imageSources}
-                imageIndex={viewerIndex}
-                visible={viewerVisible}
-                onRequestClose={() => setViewerVisible(false)}
             />
 
             <TouchableOpacity style={styles.button} onPress={handleReturn}>

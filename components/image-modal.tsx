@@ -1,4 +1,5 @@
 import { useImagePicker } from "@/hooks/use-image-picker";
+import { ImageCreateDto } from "@/services/image/image.create.dto";
 import React, { useState } from "react";
 import { Image as RNImage, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -7,12 +8,6 @@ interface ImageModalProps {
     initialData?: { filename?: string; dataBase64?: string };
     onClose: () => void;
     onSave: (data: ImageCreateDto[]) => void; //Envia lista
-}
-
-export interface ImageCreateDto {
-    filename?: string;
-    isCover?: boolean;
-    data?: { uri: string; mimeType: string; name: string };
 }
 
 /**Lib para conhecer:
