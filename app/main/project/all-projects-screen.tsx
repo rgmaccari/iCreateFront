@@ -1,11 +1,10 @@
 import ProjectCard from "@/components/project-card";
-import UserCard from "@/components/user-card";
 import { AuthService } from "@/services/api/auth.service";
 import { ProjectPreview } from "@/services/project/project.preview";
 import { ProjectService } from "@/services/project/project.service";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AllProjectsScreen() {
@@ -30,22 +29,8 @@ export default function AllProjectsScreen() {
 
   };
 
-  const handleLogout = async () => {
-    try {
-      await AuthService.logout();
-      router.replace("/login");
-    } catch (error) {
-      console.error("Erro ao realizar logoff:", error);
-      Alert.alert("Erro", "Não foi possível realizar o logoff.");
-    }
-  };
-
   const handleNewProject = () => {
     router.push('/main/project/project');
-  };
-
-  const handleEditUser = () => {
-    router.push('/user-register');
   };
 
   if (!userData) {
@@ -58,7 +43,6 @@ export default function AllProjectsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <UserCard user={userData} onLogout={handleLogout} />
 
       {/* Botso de teste */}
       <View style={styles.buttonsContainer}>
@@ -67,9 +51,6 @@ export default function AllProjectsScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleNewProject}>
           <Text style={styles.buttonText}>Novo Projeto</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleEditUser}>
-          <Text style={styles.buttonText}>Editar usuário</Text>
         </TouchableOpacity>
       </View>
 
