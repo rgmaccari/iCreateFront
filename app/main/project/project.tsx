@@ -1,4 +1,5 @@
 import ProjectContentCard from "@/components/project-content-card";
+import ProjectForm from "@/components/project-form";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -7,7 +8,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ProjectForm from "../../components/project-form";
 
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();

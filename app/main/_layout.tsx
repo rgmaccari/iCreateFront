@@ -1,44 +1,42 @@
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { FontAwesome } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useLocalSearchParams } from 'expo-router';
 
-export default function HomeScreen() {
+export default function MainLayout() {
+    const { username } = useLocalSearchParams();
     return (
-        <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: Colors['light'].tint,
-                headerShown: false,
-                tabBarButton: HapticTab,
-            }}>
+        <Tabs screenOptions={{ tabBarActiveTintColor: Colors['light'].tint, headerShown: false, tabBarButton: HapticTab }}>
             <Tabs.Screen
                 name="user"
                 options={{
-                    title: 'Usuário',
-                    tabBarIcon: ({ color }) => <FontAwesome name="user-circle" size={24} color={color} />,
-                }}
-            />
+                    title: username ? `${username}` : 'Perfil',
+                    tabBarIcon: ({ color }) =>
+                        <FontAwesome name="user-circle" size={24} color={color} />
+                }} />
+
             <Tabs.Screen
-                name="for-you"
+                name="project"
+                options={{
+                    title: 'Projetos',
+                    tabBarIcon: ({ color }) =>
+                        <FontAwesome name="book" size={24} color={color} />
+                }} />
+
+            <Tabs.Screen
+                name="feed"
                 options={{
                     title: 'Para você',
-                    tabBarIcon: ({ color }) => <FontAwesome name="user" size={24} color={color} />,
-                }}
-            />
+                    tabBarIcon: ({ color }) =>
+                        <FontAwesome name="user" size={24} color={color} />
+                }} />
+
             <Tabs.Screen
                 name="settings"
                 options={{
-                    title: 'Configurações',
-                    tabBarIcon: ({ color }) => <FontAwesome name="gear" size={24} color={color} />,
-                }}
-            />
-            <Tabs.Screen
-                name="about"
-                options={{
-                    title: 'Utilidades',
-                    tabBarIcon: ({ color }) => <FontAwesome name="book" size={24} color={color} />,
-                }}
-            />
+                    title: 'Configurações', tabBarIcon: ({ color }) =>
+                        <FontAwesome name="gear" size={24} color={color} />
+                }} />
         </Tabs>
     );
 }

@@ -14,12 +14,6 @@ export class AuthService {
     return user;
   }
 
-  static async registerInMemory(user: User, accessToken: string): Promise<void> {
-    await AsyncStorage.setItem('access_token', accessToken);
-    await AsyncStorage.setItem('current_user', JSON.stringify(user));
-    AuthService.currentUser = user;
-  }
-
   static async logout(): Promise<void> {
     await AsyncStorage.removeItem('access_token');
     await AsyncStorage.removeItem('current_user');
@@ -30,12 +24,22 @@ export class AuthService {
     return AuthService.currentUser;
   }
 
-  static async loadUserFromStorage(): Promise<void> {
+  static async registerInMemory(user: User, accessToken: string): Promise<void> {
+    await AsyncStorage.setItem('access_token', accessToken);
+    await AsyncStorage.setItem('current_user', JSON.stringify(user));
+    AuthService.currentUser = user;
+  }
+
+  static async loadUserFromStorage(): Promise<User | null> {
     const token = await AsyncStorage.getItem('access_token');
     const userString = await AsyncStorage.getItem('current_user');
     if (token && userString) {
-      AuthService.currentUser = JSON.parse(userString);
+      const user = JSON.parse(userString);
+      AuthService.currentUser = user;
+      return user
     }
+
+    return null;
   }
 
   static async getToken(): Promise<string | null> {

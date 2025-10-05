@@ -11,9 +11,11 @@ export default function AuthLoader() {
     const checkToken = async () => {
       const token = await AuthService.getToken();
       if (token) {
-        //Carrega o usuário do storage e seta em memória
-        await AuthService.loadUserFromStorage();
-        router.replace('/main/user'); //Vai direto para a tela de usuário
+        const user = await AuthService.loadUserFromStorage();
+        router.replace({
+          pathname: '/main/user',
+          params: { username: user?.nickname },
+        });
       } else {
         router.replace('/login');
       }
@@ -22,13 +24,6 @@ export default function AuthLoader() {
     checkToken();
   }, []);
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
+  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator size="large" /></View>;
   return null;
 }

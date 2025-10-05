@@ -8,7 +8,7 @@ import { useCallback, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function UserScreen() {
+export default function AllProjectsScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);

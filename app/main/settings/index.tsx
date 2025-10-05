@@ -1,7 +1,6 @@
-import { User } from "@/services/user/user";
 import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-
+import { User } from '../../../services/user/user';
 
 export default function UserScreen() {
   const { user } = useLocalSearchParams();
