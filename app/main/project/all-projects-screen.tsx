@@ -41,7 +41,7 @@ export default function AllProjectsScreen() {
   };
 
   const handleNewProject = () => {
-    router.push('/project/project');
+    router.push('/main/project/project');
   };
 
   const handleEditUser = () => {
