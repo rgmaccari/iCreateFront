@@ -89,20 +89,20 @@ export default function ProjectScreen() {
 
   const handleOpenLinks = () => {
     router.push({
-      pathname: "/project/links",
+      pathname: "/main/project/links",
       params: { projectCode: project?.code?.toString() || '' },
     });
   }
 
   const handleOpenImages = () => {
     router.push({
-      pathname: "/project/images",
+      pathname: "/main/project/images",
       params: { projectCode: project?.code?.toString() || '' }
     })
   }
 
   const handleOpenAiFeatures = () => {
-    router.push('/project/ai-features')
+    router.push('/main/project/ai-features')
   }
 
   if (loading) {
