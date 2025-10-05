@@ -5,13 +5,7 @@ import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-    Alert,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
@@ -93,13 +87,6 @@ export default function ImageScreen() {
             ]
         )
     }
-
-    //verificar depois se vai ficar aqui ou no item
-    const imageSources = images.map((img, idx) => {
-        return {
-            uri: img.url,
-        };
-    });
 
     const handleReturn = () => {
         router.back();

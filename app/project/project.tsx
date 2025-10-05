@@ -101,6 +101,10 @@ export default function ProjectScreen() {
     })
   }
 
+  const handleOpenAiFeatures = () => {
+    router.push('/project/ai-features')
+  }
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -125,6 +129,11 @@ export default function ProjectScreen() {
         icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
       />
 
+      <ProjectContentCard
+        title="I.A."
+        onPress={handleOpenAiFeatures}
+        icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
+      />
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.buttonSecondary} onPress={handleReturn}>
