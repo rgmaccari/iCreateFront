@@ -44,7 +44,7 @@ export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
 
   const onClickProject = (projectCode: number) => {
     router.push({
-      pathname: "/project/project",
+      pathname: "/main/project/project",
       params: { projectCode: projectCode.toString() },
     });
   }
