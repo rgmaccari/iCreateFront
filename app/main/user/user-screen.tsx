@@ -1,4 +1,7 @@
 import UserCard from "@/components/user-card";
+import UserInterestsCard from "@/components/user-interests-card";
+import UserStats from "@/components/user-stats-card";
+
 import { AuthService } from "@/services/api/auth.service";
 import { router, useFocusEffect } from "expo-router";
 import { useState } from "react";
@@ -9,8 +12,8 @@ export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
 
   useFocusEffect(() => {
-    loadUserAndProjects()
-  })
+    loadUserAndProjects();
+  });
 
   const loadUserAndProjects = async () => {
     try {
@@ -20,7 +23,6 @@ export default function UserScreen() {
       console.error("Erro ao localizar user:", error);
       Alert.alert("Erro", "Não foi possível encontrar o user ativo.");
     }
-
   };
 
   const handleLogout = async () => {
@@ -34,23 +36,28 @@ export default function UserScreen() {
   };
 
   const handleEditUser = () => {
-    router.push('/user-register');
+    router.push("/user-register");
   };
 
   if (!userData) {
     return (
-      <SafeAreaView>
+      <SafeAreaView style={styles.container}>
         <Text>Não foi possível obter os dados do usuário!</Text>
       </SafeAreaView>
-    )
+    );
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <UserCard user={userData!} onLogout={handleLogout} />
-      <TouchableOpacity style={styles.button} onPress={handleEditUser}>
-        <Text style={styles.buttonText}>Editar usuário</Text>
+
+      <TouchableOpacity style={styles.editButton} onPress={handleEditUser}>
+        <Text style={styles.buttonText}>Editar perfil</Text>
       </TouchableOpacity>
+
+      <UserInterestsCard />
+
+      <UserStats />
     </SafeAreaView>
   );
 }
@@ -58,26 +65,22 @@ export default function UserScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 10,
+    paddingTop: 20,
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  button: {
+  editButton: {
     backgroundColor: "#362946",
-    padding: 10,
-    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignSelf: "stretch",
+    marginVertical: 10,
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 16,
   },
 });

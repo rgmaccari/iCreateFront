@@ -1,4 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { User } from "../services/user/user";
 
@@ -9,9 +10,9 @@ interface UserCardProps {
 
 // Converte buffer (número[]) em Base64
 const bufferToBase64 = (buffer: number[] | string): string => {
-    if (typeof buffer === "string") return buffer; // já é Base64
+    if (typeof buffer === "string") return buffer;
     let binary = "";
-    const chunkSize = 0x8000; // evita estouro de stack em buffers grandes
+    const chunkSize = 0x8000;
     for (let i = 0; i < buffer.length; i += chunkSize) {
         const chunk = buffer.slice(i, i + chunkSize);
         binary += String.fromCharCode(...chunk);
@@ -28,63 +29,86 @@ export default function UserCard({ user, onLogout }: UserCardProps) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <View style={styles.avatar}>
+        <LinearGradient
+            colors={["#cab0e6ff", "#ebebebff"]}
+            style={styles.gradientContainer}
+        >
+            <View style={styles.row}>
+                {/* Avatar */}
+                <View style={styles.avatarWrapper}>
                     {avatarUri ? (
-                        <Image
-                            style={{ width: 40, height: 40, borderRadius: 20 }}
-                            source={{ uri: avatarUri }}
-                        />
+                        <Image source={{ uri: avatarUri }} style={styles.avatar} />
                     ) : (
-                        <FontAwesome name="user" size={32} color="#ffff" />
+                        <View style={styles.placeholder}>
+                            <FontAwesome name="user" size={40} color="#fff" />
+                        </View>
                     )}
                 </View>
 
-                <Text style={styles.greeting}>Olá, {user.nickname}!</Text>
+                {/* Nickname */}
+                <Text style={styles.nickname}>@{user.nickname}</Text>
 
-                <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
-                    <FontAwesome name="sign-out" size={24} color="#362946" />
+                {/* Botão sair */}
+                <TouchableOpacity onPress={onLogout}>
+                    <FontAwesome name="sign-out" size={20} color="#fff" />
                 </TouchableOpacity>
             </View>
-        </View>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        marginHorizontal: 20,
+    gradientContainer: {
+        borderRadius: 20,
+        marginTop: 0,
         marginVertical: 20,
-        backgroundColor: "#EBE1F6",
-        paddingHorizontal: 20,
-        padding: 10,
-        borderRadius: 10,
+        marginHorizontal: 0,
+        padding: 20,
     },
-    header: {
+    row: {
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
+    },
+    avatarWrapper: {
+        marginRight: 10,
     },
     avatar: {
-        width: 40,
-        height: 40,
+        width: 60,
+        height: 60,
         borderRadius: 30,
-        backgroundColor: "#362946",
+        borderWidth: 2,
+        borderColor: "#fff",
+    },
+    placeholder: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: "#8888",
         justifyContent: "center",
         alignItems: "center",
+        borderWidth: 2,
+        borderColor: "#fff",
     },
-    greeting: {
-        flex: 1,
-        fontSize: 20,
+    nickname: {
+        fontSize: 18,
         fontWeight: "bold",
-        color: "#362946",
-        marginLeft: 15,
+        color: "#fff",
+        flex: 1,
+        marginLeft: 10,
     },
     logoutButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 15,
-        backgroundColor: "#D9CEE8",
-        justifyContent: "center",
+        flexDirection: "row",
         alignItems: "center",
+        backgroundColor: "#e74c3c",
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+    logoutText: {
+        color: "#fff",
+        fontWeight: "bold",
+        marginLeft: 6,
+        fontSize: 14,
     },
 });
