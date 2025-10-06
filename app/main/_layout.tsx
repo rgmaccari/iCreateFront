@@ -28,7 +28,7 @@ export default function MainLayout() {
                 options={{
                     title: 'Para você',
                     tabBarIcon: ({ color }) =>
-                        <FontAwesome name="user" size={24} color={color} />
+                        <FontAwesome name="lightbulb-o" size={24} color={color} />
                 }} />
 
             <Tabs.Screen
