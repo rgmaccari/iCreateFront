@@ -4,27 +4,28 @@ import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
 import { FontAwesome } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
   const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
+  const navigation = useNavigation();
 
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<Project>>({});
   const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false); //Variável de controle
 
-  //Buscar o projeto do backend
   useEffect(() => {
     const findByCode = async () => {
       if (projectCode) {
         try {
           const actualProject = await ProjectService.findByCode(projectCode);
           setProject(actualProject);
-          setFormData(actualProject);//inicializa o form
+          setFormData(actualProject);
         } catch (err) {
           console.error("Erro ao carregar projeto:", err);
         }
@@ -34,11 +35,48 @@ export default function ProjectScreen() {
     findByCode();
   }, [projectCode]);
 
+  //Capturar alterações no project
+  useEffect(() => {
+    if (project) {
+      const isChanged = project.title !== formData.title || project.sketch !== formData.sketch;
+      setIsDirty(isChanged);
+    } else {
+      setIsDirty(!!formData.title || !!formData.sketch);
+    }
+  }, [formData, project]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBeforeRemove = (e: any) => {
+        if (!isDirty) { //Se não foi alterado
+          return;
+        }
+
+        e.preventDefault(); //Bloqueia a nevagação
+
+        Alert.alert(
+          "Salvar projeto",
+          "Deseja salvar as alterações antes de voltar?",
+          [
+            { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } }, //Setta como false e desbloqueia a navegalção
+            { text: "Sim", onPress: () => { handleSubmit(); } },
+            { text: "Cancelar", style: "cancel" },
+          ]
+        );
+      };
+
+      const unsubscribe = navigation.addListener('beforeRemove', onBeforeRemove);
+
+      return unsubscribe;
+    }, [navigation, isDirty])
+  );
+
   const create = async (dto: ProjectInfoDto) => {
     try {
       const createdProject = await ProjectService.create(dto);
       setProject(createdProject);
-      router.back();
+      setIsDirty(false); //Reseta o flag após salvar
+      setTimeout(() => router.back(), 300); //Atraso para fechamento do alerta
     } catch (err) {
       console.error("Erro ao criar projeto:", err);
     }
@@ -49,7 +87,8 @@ export default function ProjectScreen() {
       if (!project) return;
       const updatedProject = await ProjectService.update(project.code!, dto);
       setProject(updatedProject);
-      router.back();
+      setIsDirty(false); //Reseta o flag após salvar
+      setTimeout(() => router.back(), 300); //Atraso para fechamento do alerta
     } catch (err) {
       console.error("Erro ao atualizar projeto:", err);
     }
@@ -72,38 +111,51 @@ export default function ProjectScreen() {
     Alert.alert(
       "Excluir projeto",
       "Deseja realmente excluir o projeto?",
-      [{ text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir", style: "destructive", onPress: async () => {
-          await ProjectService.deleteByCode(projectCode);
-          router.back();
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir", style: "destructive", onPress: async () => {
+            await ProjectService.deleteByCode(projectCode);
+            router.back();
+          }
         }
-      }
       ]
-    )
-  }
+    );
+  };
 
+  //Se o cara clicou para sair
   const handleReturn = () => {
-    router.back();
+    if (isDirty) {
+      Alert.alert(
+        "Salvar alterações",
+        "Deseja salvar as alterações antes de sair?",
+        [
+          { text: "Não", onPress: () => { setIsDirty(false); router.back(); }, style: "cancel" },
+          { text: "Sim", onPress: handleSubmit },
+        ]
+      );
+    } else {
+      router.back();
+    }
   };
 
   const handleOpenLinks = () => {
     router.push({
-      pathname: "/main/project/links",
+      pathname: "/main/project/links-screen",
       params: { projectCode: project?.code?.toString() || '' },
     });
-  }
+  };
 
   const handleOpenImages = () => {
     router.push({
-      pathname: "/main/project/images",
-      params: { projectCode: project?.code?.toString() || '' }
-    })
-  }
+      pathname: "/main/project/images-screen",
+      params: { projectCode: project?.code?.toString() || '' },
+    });
+  };
 
   const handleOpenAiFeatures = () => {
-    router.push('/main/project/ai-features')
-  }
+    router.push('/main/project/ai-features');
+  };
 
   if (loading) {
     return (
@@ -148,14 +200,10 @@ export default function ProjectScreen() {
 
         {project && (
           <TouchableOpacity style={styles.buttonPrimary} onPress={() => deleteProject(project!.code)}>
-            <Text style={styles.buttonText}>
-              Deletar
-            </Text>
+            <Text style={styles.buttonText}>Deletar</Text>
           </TouchableOpacity>
         )}
       </View>
-
-
     </SafeAreaView>
   );
 }
