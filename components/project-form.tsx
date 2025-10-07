@@ -28,7 +28,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Carregar dados das requisições
+    //Carregar dados das requisições
     useEffect(() => {
         const loadData = async () => {
             if (project?.code) {
@@ -52,30 +52,30 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         loadData();
     }, [project?.code]);
 
-    // Notificar a tela pai quando o form mudar
+    //Notificar a tela pai quando o form mudar
     useEffect(() => {
         onChange(form);
     }, [form, onChange]);
 
-    // Toggle para expandir/colapsar seções
+    //Toggle para expandir/colapsar seções
     const toggleSection = (section: string) => {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    // Abrir modal tela cheia
+    //Abrir modal tela cheia
     const openItemModal = (item: Image | Link | Note) => {
         setSelectedItem(item);
         setModalVisible(true);
     };
 
-    // Renderizar item de imagem no carrossel
+    //Renderizar item de imagem no carrossel
     const renderImageItem = ({ item }: { item: Image }) => (
         <TouchableOpacity style={styles.carouselItem} onPress={() => openItemModal(item)}>
             <RNImage source={{ uri: item.url }} style={styles.carouselImage} />
         </TouchableOpacity>
     );
 
-    // Renderizar item de link no carrossel
+    //Renderizar item de link no carrossel
     const renderLinkItem = ({ item }: { item: Link }) => (
         <TouchableOpacity style={styles.carouselItem} onPress={() => openItemModal(item)}>
             {item.previewImageUrl ? (
@@ -89,7 +89,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         </TouchableOpacity>
     );
 
-    // Renderizar item de nota no carrossel
+    //Renderizar item de nota no carrossel
     const renderNoteItem = ({ item }: { item: Note }) => (
         <TouchableOpacity style={styles.carouselItem} onPress={() => openItemModal(item)}>
             <View style={styles.placeholderImage}>
@@ -99,12 +99,12 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         </TouchableOpacity>
     );
 
-    // Renderizar modal tela cheia
+    //Renderizar modal tela cheia
     const renderItemModal = () => {
         if (!selectedItem) return null;
 
         if ("url" in selectedItem && "filename" in selectedItem) {
-            // Imagem
+            //Imagens
             return (
                 <View style={styles.modalContent}>
                     <RNImage source={{ uri: selectedItem.url }} style={styles.fullImage} resizeMode="contain" />
@@ -116,7 +116,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                 </View>
             );
         } else if ("url" in selectedItem && "title" in selectedItem) {
-            // Link
+            //Links
             return (
                 <View style={styles.modalContent}>
                     {selectedItem.previewImageUrl && (
@@ -134,7 +134,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                 </View>
             );
         } else {
-            // Nota
+            //Notas
             return (
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>{(selectedItem as Note).title || "Sem título"}</Text>
