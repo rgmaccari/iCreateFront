@@ -1,4 +1,3 @@
-import ProjectContentCard from "@/components/project-content-card";
 import ProjectForm from "@/components/project-form";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
@@ -6,7 +5,7 @@ import { ProjectService } from "@/services/project/project.service";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -20,6 +19,7 @@ export default function ProjectScreen() {
   const [loading, setLoading] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const findByCode = async () => {
@@ -109,7 +109,6 @@ export default function ProjectScreen() {
   };
 
   const handleReturn = () => {
-
     if (isDirty) {
       Alert.alert(
         "Salvar alterações",
@@ -129,6 +128,7 @@ export default function ProjectScreen() {
   };
 
   const handleOpenLinks = () => {
+    setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/links-screen",
@@ -137,6 +137,7 @@ export default function ProjectScreen() {
   };
 
   const handleOpenImages = () => {
+    setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/images-screen",
@@ -145,16 +146,22 @@ export default function ProjectScreen() {
   };
 
   const handleOpenAiFeatures = () => {
+    setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
     router.push('/main/project/ai-features');
   };
 
   const handleOpenNotes = () => {
+    setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/notes-screen",
       params: { projectCode: project?.code?.toString() || '' },
     });
+  };
+
+  const handleOptions = () => {
+    setIsModalVisible(true);
   };
 
   if (loading) {
@@ -171,7 +178,6 @@ export default function ProjectScreen() {
         <TouchableOpacity onPress={handleReturn} style={styles.headerButton}>
           <FontAwesome name="arrow-left" size={20} color="#666" />
         </TouchableOpacity>
-
         <View style={{ flex: 1, alignItems: "center" }}>
           {isEditingTitle ? (
             <TextInput
@@ -192,11 +198,10 @@ export default function ProjectScreen() {
             />
           ) : (
             <TouchableOpacity onPress={() => setIsEditingTitle(true)}>
-              <Text numberOfLines={1}>{formData.title || "Sem título"}</Text>
+              <Text numberOfLines={1} style={styles.titleText}>{formData.title || "Sem título"}</Text>
             </TouchableOpacity>
           )}
         </View>
-
         <TouchableOpacity onPress={handleSubmit} style={styles.headerButton}>
           <FontAwesome name="save" size={20} color="#666" />
         </TouchableOpacity>
@@ -204,28 +209,35 @@ export default function ProjectScreen() {
 
       <ProjectForm project={project} onChange={setFormData} />
 
-      <ScrollView>
-        <ProjectContentCard
-          title="Meus Links"
-          onPress={handleOpenLinks}
-          icon={<FontAwesome name="link" size={40} color="#362946" />}
-        />
-        <ProjectContentCard
-          title="Minhas Imagens"
-          onPress={handleOpenImages}
-          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
-        />
-        <ProjectContentCard
-          title="I.A."
-          onPress={handleOpenAiFeatures}
-          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
-        />
-        <ProjectContentCard
-          title="Notas"
-          onPress={handleOpenNotes}
-          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
-        />
-      </ScrollView>
+      <TouchableOpacity style={styles.optionsButton} onPress={handleOptions}>
+        <FontAwesome name="file" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      <Modal
+        visible={isModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <TouchableOpacity style={styles.modalOption} onPress={handleOpenLinks}>
+                <Text style={styles.modalOptionText}>Links</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalOption} onPress={handleOpenImages}>
+                <Text style={styles.modalOptionText}>Imagens</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalOption} onPress={handleOpenAiFeatures}>
+                <Text style={styles.modalOptionText}>I.A.</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalOption} onPress={handleOpenNotes}>
+                <Text style={styles.modalOptionText}>Notas</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -245,8 +257,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   titleText: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 14,
     color: "#362946",
   },
   titleInput: {
@@ -254,6 +265,42 @@ const styles = StyleSheet.create({
     borderColor: "#CCC",
     fontSize: 18,
     minWidth: 150,
+    color: "#362946",
+  },
+  optionsButton: {
+    backgroundColor: "#362946",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    margin: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "transparent", // Sem fundo escurecido
+  },
+  modalContainer: {
+    position: "absolute",
+    bottom: 64, // Mais próximo do botão (48px do botão + 16px de margem)
+    right: 16, // Alinhado com o botão
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 8,
+    width: 150,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  modalOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  modalOptionText: {
+    fontSize: 16,
     color: "#362946",
   },
 });
