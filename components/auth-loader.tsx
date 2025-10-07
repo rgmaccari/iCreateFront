@@ -13,7 +13,7 @@ export default function AuthLoader() {
       if (token) {
         const user = await AuthService.loadUserFromStorage();
         router.replace({
-          pathname: '/main/user',
+          pathname: '/main/project/all-projects-screen',
           params: { username: user?.nickname },
         });
       } else {

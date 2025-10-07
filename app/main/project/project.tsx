@@ -6,7 +6,7 @@ import { ProjectService } from "@/services/project/project.service";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProjectScreen() {
@@ -22,6 +22,7 @@ export default function ProjectScreen() {
   useEffect(() => {
     const findByCode = async () => {
       if (projectCode) {
+        console.log("Carregando projeto com código:", projectCode);
         try {
           const actualProject = await ProjectService.findByCode(projectCode);
           setProject(actualProject);
@@ -140,6 +141,7 @@ export default function ProjectScreen() {
   };
 
   const handleOpenLinks = () => {
+    console.log(project?.code?.toString() || '')
     router.push({
       pathname: "/main/project/links-screen",
       params: { projectCode: project?.code?.toString() || '' },
@@ -147,6 +149,7 @@ export default function ProjectScreen() {
   };
 
   const handleOpenImages = () => {
+    console.log(project?.code?.toString() || '')
     router.push({
       pathname: "/main/project/images-screen",
       params: { projectCode: project?.code?.toString() || '' },
@@ -154,7 +157,16 @@ export default function ProjectScreen() {
   };
 
   const handleOpenAiFeatures = () => {
+    console.log(project?.code?.toString() || '')
     router.push('/main/project/ai-features');
+  };
+
+  const handleOpenNotes = () => {
+    console.log(project?.code?.toString() || '')
+    router.push({
+      pathname: "/main/project/notes-screen",
+      params: { projectCode: project?.code?.toString() || '' },
+    });
   };
 
   if (loading) {
@@ -169,23 +181,31 @@ export default function ProjectScreen() {
     <SafeAreaView style={styles.container}>
       <ProjectForm project={project} onChange={setFormData} />
 
-      <ProjectContentCard
-        title="Meus Links"
-        onPress={handleOpenLinks}
-        icon={<FontAwesome name="link" size={40} color="#362946" />}
-      />
+      <ScrollView>
+        <ProjectContentCard
+          title="Meus Links"
+          onPress={handleOpenLinks}
+          icon={<FontAwesome name="link" size={40} color="#362946" />}
+        />
 
-      <ProjectContentCard
-        title="Minhas Imagens"
-        onPress={handleOpenImages}
-        icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
-      />
+        <ProjectContentCard
+          title="Minhas Imagens"
+          onPress={handleOpenImages}
+          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
+        />
 
-      <ProjectContentCard
-        title="I.A."
-        onPress={handleOpenAiFeatures}
-        icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
-      />
+        <ProjectContentCard
+          title="I.A."
+          onPress={handleOpenAiFeatures}
+          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
+        />
+
+        <ProjectContentCard
+          title="Notas"
+          onPress={handleOpenNotes}
+          icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
+        />
+      </ScrollView>
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.buttonSecondary} onPress={handleReturn}>
