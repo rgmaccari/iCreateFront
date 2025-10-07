@@ -7,6 +7,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProjectScreen() {
@@ -17,7 +18,8 @@ export default function ProjectScreen() {
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<Project>>({});
   const [loading, setLoading] = useState(true);
-  const [isDirty, setIsDirty] = useState(false); //Variável de controle
+  const [isDirty, setIsDirty] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   useEffect(() => {
     const findByCode = async () => {
@@ -36,7 +38,6 @@ export default function ProjectScreen() {
     findByCode();
   }, [projectCode]);
 
-  //Capturar alterações no project
   useEffect(() => {
     if (project) {
       const isChanged = project.title !== formData.title || project.sketch !== formData.sketch;
@@ -49,25 +50,24 @@ export default function ProjectScreen() {
   useFocusEffect(
     useCallback(() => {
       const onBeforeRemove = (e: any) => {
-        if (!isDirty) { //Se não foi alterado
+        if (!isDirty) {
           return;
         }
 
-        e.preventDefault(); //Bloqueia a nevagação
+        e.preventDefault();
 
         Alert.alert(
           "Salvar projeto",
           "Deseja salvar as alterações antes de voltar?",
           [
-            { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } }, //Setta como false e desbloqueia a navegalção
+            { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } },
             { text: "Sim", onPress: () => { handleSubmit(); } },
             { text: "Cancelar", style: "cancel" },
           ]
         );
       };
 
-      const unsubscribe = navigation.addListener('beforeRemove', onBeforeRemove);
-
+      const unsubscribe = navigation.addListener("beforeRemove", onBeforeRemove);
       return unsubscribe;
     }, [navigation, isDirty])
   );
@@ -76,8 +76,8 @@ export default function ProjectScreen() {
     try {
       const createdProject = await ProjectService.create(dto);
       setProject(createdProject);
-      setIsDirty(false); //Reseta o flag após salvar
-      setTimeout(() => router.back(), 300); //Atraso para fechamento do alerta
+      setIsDirty(false);
+      setTimeout(() => router.back(), 300);
     } catch (err) {
       console.error("Erro ao criar projeto:", err);
     }
@@ -88,8 +88,8 @@ export default function ProjectScreen() {
       if (!project) return;
       const updatedProject = await ProjectService.update(project.code!, dto);
       setProject(updatedProject);
-      setIsDirty(false); //Reseta o flag após salvar
-      setTimeout(() => router.back(), 300); //Atraso para fechamento do alerta
+      setIsDirty(false);
+      setTimeout(() => router.back(), 300);
     } catch (err) {
       console.error("Erro ao atualizar projeto:", err);
     }
@@ -102,30 +102,14 @@ export default function ProjectScreen() {
     };
 
     if (project) {
-      update(dto);
+      await update(dto);
     } else {
-      create(dto);
+      await create(dto);
     }
   };
 
-  const deleteProject = async (projectCode: number) => {
-    Alert.alert(
-      "Excluir projeto",
-      "Deseja realmente excluir o projeto?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir", style: "destructive", onPress: async () => {
-            await ProjectService.deleteByCode(projectCode);
-            router.back();
-          }
-        }
-      ]
-    );
-  };
-
-  //Se o cara clicou para sair
   const handleReturn = () => {
+
     if (isDirty) {
       Alert.alert(
         "Salvar alterações",
@@ -140,8 +124,12 @@ export default function ProjectScreen() {
     }
   };
 
+  const handleTitleChange = (newTitle: string) => {
+    setFormData((prev) => ({ ...prev, title: newTitle }));
+  };
+
   const handleOpenLinks = () => {
-    console.log(project?.code?.toString() || '')
+    console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/links-screen",
       params: { projectCode: project?.code?.toString() || '' },
@@ -149,7 +137,7 @@ export default function ProjectScreen() {
   };
 
   const handleOpenImages = () => {
-    console.log(project?.code?.toString() || '')
+    console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/images-screen",
       params: { projectCode: project?.code?.toString() || '' },
@@ -157,12 +145,12 @@ export default function ProjectScreen() {
   };
 
   const handleOpenAiFeatures = () => {
-    console.log(project?.code?.toString() || '')
+    console.log(project?.code?.toString() || '');
     router.push('/main/project/ai-features');
   };
 
   const handleOpenNotes = () => {
-    console.log(project?.code?.toString() || '')
+    console.log(project?.code?.toString() || '');
     router.push({
       pathname: "/main/project/notes-screen",
       params: { projectCode: project?.code?.toString() || '' },
@@ -179,6 +167,41 @@ export default function ProjectScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleReturn} style={styles.headerButton}>
+          <FontAwesome name="arrow-left" size={20} color="#666" />
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, alignItems: "center" }}>
+          {isEditingTitle ? (
+            <TextInput
+              mode="flat"
+              value={formData.title || ""}
+              onChangeText={handleTitleChange}
+              onBlur={() => setIsEditingTitle(false)}
+              onSubmitEditing={() => setIsEditingTitle(false)}
+              autoFocus
+              dense
+              style={{
+                backgroundColor: "transparent",
+                height: 40,
+                paddingHorizontal: 0,
+                textAlign: "center",
+                width: Math.max((formData.title?.length || 1) * 10, 100),
+              }}
+            />
+          ) : (
+            <TouchableOpacity onPress={() => setIsEditingTitle(true)}>
+              <Text numberOfLines={1}>{formData.title || "Sem título"}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <TouchableOpacity onPress={handleSubmit} style={styles.headerButton}>
+          <FontAwesome name="save" size={20} color="#666" />
+        </TouchableOpacity>
+      </View>
+
       <ProjectForm project={project} onChange={setFormData} />
 
       <ScrollView>
@@ -187,43 +210,22 @@ export default function ProjectScreen() {
           onPress={handleOpenLinks}
           icon={<FontAwesome name="link" size={40} color="#362946" />}
         />
-
         <ProjectContentCard
           title="Minhas Imagens"
           onPress={handleOpenImages}
           icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
         />
-
         <ProjectContentCard
           title="I.A."
           onPress={handleOpenAiFeatures}
           icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
         />
-
         <ProjectContentCard
           title="Notas"
           onPress={handleOpenNotes}
           icon={<FontAwesome name="file-image-o" size={40} color="#362946" />}
         />
       </ScrollView>
-
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.buttonSecondary} onPress={handleReturn}>
-          <Text style={styles.buttonText}>Cancelar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.buttonPrimary} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>
-            {project ? "Atualizar Projeto" : "Criar Projeto"}
-          </Text>
-        </TouchableOpacity>
-
-        {project && (
-          <TouchableOpacity style={styles.buttonPrimary} onPress={() => deleteProject(project!.code)}>
-            <Text style={styles.buttonText}>Deletar</Text>
-          </TouchableOpacity>
-        )}
-      </View>
     </SafeAreaView>
   );
 }
@@ -231,34 +233,27 @@ export default function ProjectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "space-between",
-    padding: 16,
     backgroundColor: "#F5F5F5",
   },
-  buttonsContainer: {
+  header: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 20,
+    padding: 12,
   },
-  buttonPrimary: {
-    flex: 1,
-    backgroundColor: "#362946",
-    padding: 14,
-    borderRadius: 8,
-    marginLeft: 8,
-    alignItems: "center",
+  headerButton: {
+    padding: 8,
   },
-  buttonSecondary: {
-    flex: 1,
-    backgroundColor: "#aaa",
-    padding: 14,
-    borderRadius: 8,
-    marginRight: 8,
-    alignItems: "center",
+  titleText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#362946",
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+  titleInput: {
+    borderBottomWidth: 1,
+    borderColor: "#CCC",
+    fontSize: 18,
+    minWidth: 150,
+    color: "#362946",
   },
 });
