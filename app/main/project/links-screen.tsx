@@ -137,7 +137,6 @@ export default function LinkScreen() {
                 <Text style={styles.buttonText}>Mostrar todos</Text>
             </TouchableOpacity>
 
-            <Text>Links do projeto {projectCode}</Text>
 
             <TouchableOpacity style={styles.button} onPress={handleReturn}>
                 <Text style={styles.buttonText}>Voltar</Text>
