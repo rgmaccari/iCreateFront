@@ -21,6 +21,7 @@ export default function ProjectScreen() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  //Carrega o projeto atual
   useEffect(() => {
     const findByCode = async () => {
       if (projectCode) {
@@ -38,6 +39,7 @@ export default function ProjectScreen() {
     findByCode();
   }, [projectCode]);
 
+  //Detecta mudanças no projeto
   useEffect(() => {
     if (project) {
       const isChanged = project.title !== formData.title || project.sketch !== formData.sketch;
@@ -47,6 +49,7 @@ export default function ProjectScreen() {
     }
   }, [formData, project]);
 
+  //Previne a saída da tela sem salvar alterações
   useFocusEffect(
     useCallback(() => {
       const onBeforeRemove = (e: any) => {
@@ -72,6 +75,7 @@ export default function ProjectScreen() {
     }, [navigation, isDirty])
   );
 
+  //Criar
   const create = async (dto: ProjectInfoDto) => {
     try {
       const createdProject = await ProjectService.create(dto);
@@ -83,6 +87,7 @@ export default function ProjectScreen() {
     }
   };
 
+  //Att
   const update = async (dto: ProjectInfoDto) => {
     try {
       if (!project) return;
@@ -95,6 +100,7 @@ export default function ProjectScreen() {
     }
   };
 
+  //Salvar: direciona para o create ou Update
   const handleSubmit = async () => {
     const dto: ProjectInfoDto = {
       title: formData.title!,
@@ -108,6 +114,7 @@ export default function ProjectScreen() {
     }
   };
 
+  //Realiza o return para a tela anterior
   const handleReturn = () => {
     if (isDirty) {
       Alert.alert(
@@ -123,10 +130,12 @@ export default function ProjectScreen() {
     }
   };
 
+  //Alteração dinâmica no título (barra superior)
   const handleTitleChange = (newTitle: string) => {
     setFormData((prev) => ({ ...prev, title: newTitle }));
   };
 
+  //Abrir tela de links
   const handleOpenLinks = () => {
     setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
@@ -136,6 +145,7 @@ export default function ProjectScreen() {
     });
   };
 
+  //Abrir tela de imagens
   const handleOpenImages = () => {
     setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
@@ -145,12 +155,14 @@ export default function ProjectScreen() {
     });
   };
 
+  //Abrir tela de I.A.
   const handleOpenAiFeatures = () => {
     setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
     router.push('/main/project/ai-features');
   };
 
+  //Abrir anotações
   const handleOpenNotes = () => {
     setIsModalVisible(false);
     console.log(project?.code?.toString() || '');
@@ -160,6 +172,7 @@ export default function ProjectScreen() {
     });
   };
 
+  //Abrir o modal com as opções
   const handleOptions = () => {
     setIsModalVisible(true);
   };
@@ -174,6 +187,7 @@ export default function ProjectScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/*Cabeçalho*/}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleReturn} style={styles.headerButton}>
           <FontAwesome name="arrow-left" size={20} color="#666" />
@@ -207,18 +221,22 @@ export default function ProjectScreen() {
         </TouchableOpacity>
       </View>
 
+      {/*ProjectForm -> Componentizar*/}    
       <ProjectForm project={project} onChange={setFormData} />
 
+      {/*Botão que abre o Modal -> Componentizar*/}    
       <TouchableOpacity style={styles.optionsButton} onPress={handleOptions}>
         <FontAwesome name="file" size={24} color="#fff" />
       </TouchableOpacity>
 
+      {/*Modal -> Componentizar*/}    
       <Modal
         visible={isModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
+        {/*Opções do Modal -> Talvez seja bom componentizar, mas não é tão necessário */}
         <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>

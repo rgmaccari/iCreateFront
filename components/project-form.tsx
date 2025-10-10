@@ -28,7 +28,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    //Carregar dados das requisições
+    //Carregar todos os dados do Project (tudo bem pois são dados leves. Se a imagem estivesse no banco, seria inviável).
     useEffect(() => {
         const loadData = async () => {
             if (project?.code) {
@@ -52,7 +52,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         loadData();
     }, [project?.code]);
 
-    //Notificar a tela pai quando o form mudar
+    //Notificar a tela pai (projectScreen) quando o form mudar
     useEffect(() => {
         onChange(form);
     }, [form, onChange]);
@@ -62,7 +62,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    //Abrir modal tela cheia
+    //Abrir modal com o objeto em tela cheia
     const openItemModal = (item: Image | Link | Note) => {
         setSelectedItem(item);
         setModalVisible(true);
@@ -99,7 +99,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
         </TouchableOpacity>
     );
 
-    //Renderizar modal tela cheia
+    //Renderizar o item modal tela cheia (imagem, link ou nota)
     const renderItemModal = () => {
         if (!selectedItem) return null;
 
@@ -201,6 +201,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                         color="#362946"
                     />
                 </TouchableOpacity>
+                
                 {expandedSection === "links" && (
                     <View style={styles.carouselContainer}>
                         {loading ? (
