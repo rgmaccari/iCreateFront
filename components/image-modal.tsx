@@ -1,34 +1,35 @@
-// src/components/image-modal.tsx (ou onde estiver seu ImageModal)
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-// Interface corrigida - deve ser um objeto, não um array
 export interface ImageCreateDto {
   uri: string;
+  filename?: string;
+  isCover?: boolean;
 }
 
 interface ImageModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (data: ImageCreateDto) => void; // Mudado para objeto único, não array
+  onSave: (data: ImageCreateDto[]) => void;
 }
 
 const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
-  const [selectedImage, setSelectedImage] = useState<ImageCreateDto | null>(null);
+  const [selectedImages, setSelectedImages] = useState<ImageCreateDto[]>([]);
 
-  const pickImage = async () => {
+  const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar imagens.');
       return;
@@ -36,25 +37,35 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsEditing: false, //Permite múltiplas
+      allowsMultipleSelection: true, //Seleção múltipla
       aspect: [4, 3],
       quality: 0.8,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setSelectedImage({ uri: result.assets[0].uri });
+      const newImages = result.assets.map(asset => ({
+        uri: asset.uri,
+        filename: asset.fileName || `image_${Date.now()}.jpg`,
+      }));
+
+      setSelectedImages(prev => [...prev, ...newImages]);
     }
   };
 
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = () => {
-    if (selectedImage) {
-      onSave(selectedImage); // Agora passa um objeto único
-      setSelectedImage(null);
+    if (selectedImages.length > 0) {
+      onSave(selectedImages);
+      setSelectedImages([]);
     }
   };
 
   const handleClose = () => {
-    setSelectedImage(null);
+    setSelectedImages([]);
     onClose();
   };
 
@@ -67,43 +78,66 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Adicionar Imagem</Text>
+          <Text style={styles.title}>
+            Adicionar Imagens ({selectedImages.length})
+          </Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
-          {selectedImage ? (
-            <View style={styles.imagePreview}>
-              <Image
-                source={{ uri: selectedImage.uri }}
-                style={styles.image}
-                resizeMode="contain"
-              />
+          {selectedImages.length > 0 ? (
+            <View style={styles.imagesPreview}>
+              <ScrollView style={styles.imagesList}>
+                {selectedImages.map((image, index) => (
+                  <View key={index} style={styles.imageItem}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.thumbnail}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.imageInfo}>
+                      <Text style={styles.filename} numberOfLines={1}>
+                        {image.filename || `Imagem ${index + 1}`}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#ff3b30" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+
               <TouchableOpacity
-                style={styles.changeImageButton}
-                onPress={pickImage}
+                style={styles.addMoreButton}
+                onPress={pickImages}
               >
-                <Text style={styles.changeImageText}>Trocar Imagem</Text>
+                <Text style={styles.addMoreText}>Adicionar Mais Imagens</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <TouchableOpacity style={styles.pickImageButton} onPress={pickImage}>
-              <Ionicons name="image" size={48} color="#ccc" />
+            <TouchableOpacity style={styles.pickImageButton} onPress={pickImages}>
+              <Ionicons name="images" size={48} color="#ccc" />
               <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
+              <Text style={styles.pickImageSubtext}>Múltiplas imagens permitidas</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
             style={[
               styles.saveButton,
-              !selectedImage && styles.saveButtonDisabled,
+              selectedImages.length === 0 && styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
-            disabled={!selectedImage}
+            disabled={selectedImages.length === 0}
           >
-            <Text style={styles.saveButtonText}>Adicionar Imagem</Text>
+            <Text style={styles.saveButtonText}>
+              Adicionar {selectedImages.length > 0 ? `${selectedImages.length} Imagens` : 'Imagem'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -135,7 +169,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   pickImageButton: {
     alignItems: 'center',
@@ -151,21 +185,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  imagePreview: {
+  pickImageSubtext: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+  },
+  imagesPreview: {
+    flex: 1,
+  },
+  imagesList: {
+    flex: 1,
+  },
+  imageItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginBottom: 8,
   },
-  image: {
-    width: 300,
-    height: 300,
-    borderRadius: 12,
-    marginBottom: 20,
+  thumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginRight: 12,
   },
-  changeImageButton: {
+  imageInfo: {
+    flex: 1,
+  },
+  filename: {
+    fontSize: 14,
+    color: '#333',
+  },
+  removeButton: {
+    padding: 4,
+  },
+  addMoreButton: {
     padding: 12,
     backgroundColor: '#007AFF',
     borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
   },
-  changeImageText: {
+  addMoreText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
@@ -175,7 +237,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: 20,
   },
   saveButtonDisabled: {
     backgroundColor: '#ccc',

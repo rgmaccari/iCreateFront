@@ -1,4 +1,3 @@
-// components/page-header.tsx - VERSÃO FUNCTION DECLARATION
 import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -16,14 +15,16 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader(props: PageHeaderProps) {
+    const showSave = props.showSaveButton && props.onSave;
+
     return (
         <View style={styles.header}>
-            {/*Botão Voltar*/}
+            {/* Botão Voltar */}
             <TouchableOpacity onPress={props.onBack} style={styles.headerButton}>
                 <FontAwesome name="arrow-left" size={20} color="#666" />
             </TouchableOpacity>
 
-            {/*Título*/}
+            {/* Título - SEMPRE CENTRALIZADO */}
             <View style={styles.titleContainer}>
                 {props.isEditingTitle && props.onTitleChange ? (
                     <TextInput
@@ -45,12 +46,14 @@ export default function PageHeader(props: PageHeaderProps) {
                 )}
             </View>
 
-            {/*Botão Salvar*/}
-            {props.showSaveButton && props.onSave && (
-                <TouchableOpacity onPress={props.onSave} style={styles.headerButton}>
-                    <FontAwesome name="save" size={20} color="#666" />
-                </TouchableOpacity>
-            )}
+            {/* Botão Salvar ou Espaço Vazio */}
+            <View style={styles.headerButton}>
+                {showSave && (
+                    <TouchableOpacity onPress={props.onSave}>
+                        <FontAwesome name="save" size={20} color="#666" />
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
     );
 }
@@ -59,20 +62,24 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         padding: 6,
+        marginBottom: 3,
+        borderBottomWidth: 1,
+        borderBottomColor: '#362946'
     },
     headerButton: {
-        padding: 8,
-        minWidth: 40,
+        width: 40, // Largura fiza
         alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
     },
     titleContainer: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     titleText: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
         color: '#362946',
         textAlign: 'center',

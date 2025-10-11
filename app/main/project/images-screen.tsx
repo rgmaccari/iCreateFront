@@ -1,5 +1,6 @@
 import ImageModal from "@/components/image-modal";
 import ImageViewerPanel from "@/components/image-viewer-panel";
+import PageHeader from "@/components/page-header";
 import { Image } from "@/services/image/image";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
@@ -94,6 +95,14 @@ export default function ImageScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <PageHeader
+                title={"Imagens"}
+                onBack={handleReturn}
+
+                showSaveButton={false}
+            />
+
+
             <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
                     <Text style={styles.buttonText}>Adicionar imagem</Text>
@@ -132,10 +141,6 @@ export default function ImageScreen() {
                 onClose={() => setModalVisible(false)}
                 onSave={create}
             />
-
-            <TouchableOpacity style={styles.button} onPress={handleReturn}>
-                <Text style={styles.buttonText}>Voltar</Text>
-            </TouchableOpacity>
         </SafeAreaView>
     );
 }
