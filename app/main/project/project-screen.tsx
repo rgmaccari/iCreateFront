@@ -1,7 +1,9 @@
 
+import ProjectScreenTest from "@/app/project-screen-test";
 import AddButton from "@/components/add-button";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
+import ComponentSelectorModal from "@/components/selector-modal";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -24,6 +26,7 @@ export default function ProjectScreen() {
   const [isEditingTitle, setIsEditingTitle] = useState(false); //Habilita edição do título
   const [isModalVisible, setIsModalVisible] = useState(false); //Habilita modal com opções
   const [currentView, setCurrentView] = useState<ProjectViewMode>('form'); //Setta a View ativa (passar parametro para receber a última view acessada)
+  const [showComponentSelector, setShowComponentSelector] = useState(false); //Escolher o componente
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -177,8 +180,20 @@ export default function ProjectScreen() {
   };
 
   //Abrir o modal com as opções
-  const handleOptions = () => {
-    setIsModalVisible(true);
+  const handleOptions = (componentType: 'link' | 'image' | 'sketch') => {
+    setShowComponentSelector(false);
+
+    switch (componentType) {
+      case 'link':
+        handleOpenLinks();
+        break;
+      case 'image':
+        handleOpenImages();
+        break;
+      case 'sketch':
+        handleOpenNotes();
+        break;
+    }
   };
 
   //Define a view Ativa
@@ -195,11 +210,7 @@ export default function ProjectScreen() {
 
       case 'board':
         return (
-          <View style={styles.viewContent}>
-            <Text style={styles.viewTitle}>Visualização em Board</Text>
-            <Text style={styles.viewText}>Projeto: {formData.title || "Sem título"}</Text>
-            <Text style={styles.viewText}>Aqui será implementada a visualização em board</Text>
-          </View>
+          <ProjectScreenTest></ProjectScreenTest>
         );
 
       case 'form':
@@ -272,7 +283,13 @@ export default function ProjectScreen() {
       </View>
 
       {/*Botão que abre o Modal*/}
-      <AddButton onPress={handleOptions}></AddButton>
+      <AddButton onPress={() => setShowComponentSelector(true)}></AddButton>
+
+      <ComponentSelectorModal
+        visible={showComponentSelector}
+        onClose={() => setShowComponentSelector(false)}
+        onSelectComponent={handleOptions}
+      />
 
       {/*Modal*/}
       <Modal
@@ -300,6 +317,8 @@ export default function ProjectScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+
     </SafeAreaView>
   );
 }
