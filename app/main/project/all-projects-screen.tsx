@@ -1,3 +1,4 @@
+import AddButton from "@/components/add-button";
 import ProjectCard from "@/components/project-card";
 import { AuthService } from "@/services/api/auth.service";
 import { ProjectPreview } from "@/services/project/project.preview";
@@ -77,7 +78,7 @@ export default function AllProjectsScreen() {
   };
 
   const handleNewProject = () => {
-    router.push("/main/project/project");
+    router.push("/main/project/project-screen");
   };
 
   if (!userData) {
@@ -127,9 +128,7 @@ export default function AllProjectsScreen() {
       >
         <ProjectCard projects={projects} refresh={loadUserAndProjects} />
       </ScrollView>
-      <TouchableOpacity style={styles.fab} onPress={handleNewProject}>
-        <MaterialIcons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      <AddButton onPress={handleNewProject} />
     </SafeAreaView>
   );
 }
