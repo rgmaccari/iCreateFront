@@ -1,4 +1,4 @@
-import AddButton from "@/components/add-button";
+
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
 import { Project } from "@/services/project/project";
@@ -271,7 +271,7 @@ export default function ProjectScreen() {
       </View>
 
       {/*Botão que abre o Modal*/}
-      <AddButton onPress={handleOptions} />
+
 
       {/*Modal*/}
       <Modal
