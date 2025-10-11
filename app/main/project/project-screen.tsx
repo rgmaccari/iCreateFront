@@ -1,17 +1,16 @@
 
 import ProjectScreenTest from "@/app/project-screen-test";
 import AddButton from "@/components/add-button";
+import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
 import ComponentSelectorModal from "@/components/selector-modal";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
-import { FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
-import { TextInput } from "react-native-paper";
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProjectScreen() {
@@ -236,40 +235,16 @@ export default function ProjectScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/*Cabeçalho*/}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleReturn} style={styles.headerButton}>
-          <FontAwesome name="arrow-left" size={20} color="#666" />
-        </TouchableOpacity>
-
-        <View style={{ flex: 1, alignItems: "center" }}>
-          {isEditingTitle ? (
-            <TextInput
-              mode="flat"
-              value={formData.title || ""}
-              onChangeText={handleTitleChange}
-              onBlur={() => setIsEditingTitle(false)}
-              onSubmitEditing={() => setIsEditingTitle(false)}
-              autoFocus
-              dense
-              style={{
-                backgroundColor: "transparent",
-                height: 40,
-                paddingHorizontal: 0,
-                textAlign: "center",
-                width: Math.max((formData.title?.length || 1) * 10, 100),
-              }}
-            />
-          ) : (
-            <TouchableOpacity onPress={() => setIsEditingTitle(true)}>
-              <Text numberOfLines={1} style={styles.titleText}>{formData.title || "Sem título"}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <TouchableOpacity onPress={handleSubmit} style={styles.headerButton}>
-          <FontAwesome name="save" size={20} color="#666" />
-        </TouchableOpacity>
-      </View>
+      <PageHeader
+        title={formData.title || ''}
+        onBack={handleReturn}
+        onSave={handleSubmit}
+        onTitleChange={handleTitleChange}
+        isEditingTitle={isEditingTitle}
+        onEditTitlePress={() => setIsEditingTitle(true)}
+        onEditTitleBlur={() => setIsEditingTitle(false)}
+        showSaveButton={true}
+      />
 
       {/*Tabs de visualização*/}
       <ProjectViewTabs
@@ -277,7 +252,7 @@ export default function ProjectScreen() {
         onViewChange={setCurrentView}
       />
 
-      {/*Conteúdo que muda conforme a tab selecionada*/}
+      {/*Conteúdo interno que muda conforme a tab selecionada*/}
       <View style={styles.contentContainer}>
         {renderCurrentView()}
       </View>
@@ -290,35 +265,6 @@ export default function ProjectScreen() {
         onClose={() => setShowComponentSelector(false)}
         onSelectComponent={handleOptions}
       />
-
-      {/*Modal*/}
-      <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
-              <TouchableOpacity style={styles.modalOption} onPress={handleOpenLinks}>
-                <Text style={styles.modalOptionText}>Links</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalOption} onPress={handleOpenImages}>
-                <Text style={styles.modalOptionText}>Imagens</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalOption} onPress={handleOpenAiFeatures}>
-                <Text style={styles.modalOptionText}>I.A.</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalOption} onPress={handleOpenNotes}>
-                <Text style={styles.modalOptionText}>Notas</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-
     </SafeAreaView>
   );
 }
@@ -327,26 +273,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 12,
-  },
-  headerButton: {
-    padding: 8,
-  },
-  titleText: {
-    fontSize: 14,
-    color: "#362946",
-  },
-  titleInput: {
-    borderBottomWidth: 1,
-    borderColor: "#CCC",
-    fontSize: 18,
-    minWidth: 150,
-    color: "#362946",
   },
   optionsButton: {
     backgroundColor: "#362946",
