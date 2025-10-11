@@ -1,4 +1,6 @@
+import AddButton from "@/components/add-button";
 import ProjectForm from "@/components/project-form";
+import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -12,14 +14,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
   const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
-  const navigation = useNavigation();
+  const navigation = useNavigation(); //Bloqueia a navegacao até que se atenda ao pedido do Alert
 
-  const [project, setProject] = useState<Project | undefined>(undefined);
-  const [formData, setFormData] = useState<Partial<Project>>({});
-  const [loading, setLoading] = useState(true);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [project, setProject] = useState<Project | undefined>(undefined); //Projeto ativo
+  const [formData, setFormData] = useState<Partial<Project>>({}); //Dados do fomr
+  const [loading, setLoading] = useState(true); //Carregamento
+  const [isDirty, setIsDirty] = useState(false); //Detecar alterações
+  const [isEditingTitle, setIsEditingTitle] = useState(false); //Habilita edição do título
+  const [isModalVisible, setIsModalVisible] = useState(false); //Habilita modal com opções
+  const [currentView, setCurrentView] = useState<ProjectViewMode>('form'); //Setta a View ativa (passar parametro para receber a última view acessada)
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -177,6 +180,39 @@ export default function ProjectScreen() {
     setIsModalVisible(true);
   };
 
+  //Define a view Ativa
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'document':
+        return (
+          <View style={styles.viewContent}>
+            <Text style={styles.viewTitle}>Visualização em Documento</Text>
+            <Text style={styles.viewText}>Projeto: {formData.title || "Sem título"}</Text>
+            <Text style={styles.viewText}>Aqui será implementada a visualização em documento</Text>
+          </View>
+        );
+
+      case 'board':
+        return (
+          <View style={styles.viewContent}>
+            <Text style={styles.viewTitle}>Visualização em Board</Text>
+            <Text style={styles.viewText}>Projeto: {formData.title || "Sem título"}</Text>
+            <Text style={styles.viewText}>Aqui será implementada a visualização em board</Text>
+          </View>
+        );
+
+      case 'form':
+        return (
+          <ProjectForm project={project} onChange={setFormData} />
+        );
+
+      default:
+        return (
+          <ProjectForm project={project} onChange={setFormData} />
+        );
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -192,6 +228,7 @@ export default function ProjectScreen() {
         <TouchableOpacity onPress={handleReturn} style={styles.headerButton}>
           <FontAwesome name="arrow-left" size={20} color="#666" />
         </TouchableOpacity>
+
         <View style={{ flex: 1, alignItems: "center" }}>
           {isEditingTitle ? (
             <TextInput
@@ -216,27 +253,33 @@ export default function ProjectScreen() {
             </TouchableOpacity>
           )}
         </View>
+
         <TouchableOpacity onPress={handleSubmit} style={styles.headerButton}>
           <FontAwesome name="save" size={20} color="#666" />
         </TouchableOpacity>
       </View>
 
-      {/*ProjectForm -> Componentizar*/}    
-      <ProjectForm project={project} onChange={setFormData} />
+      {/*Tabs de visualização*/}
+      <ProjectViewTabs
+        currentView={currentView}
+        onViewChange={setCurrentView}
+      />
 
-      {/*Botão que abre o Modal -> Componentizar*/}    
-      <TouchableOpacity style={styles.optionsButton} onPress={handleOptions}>
-        <FontAwesome name="file" size={24} color="#fff" />
-      </TouchableOpacity>
+      {/*Conteúdo que muda conforme a tab selecionada*/}
+      <View style={styles.contentContainer}>
+        {renderCurrentView()}
+      </View>
 
-      {/*Modal -> Componentizar*/}    
+      {/*Botão que abre o Modal*/}
+      <AddButton onPress={handleOptions} />
+
+      {/*Modal*/}
       <Modal
         visible={isModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
-        {/*Opções do Modal -> Talvez seja bom componentizar, mas não é tão necessário */}
         <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
@@ -320,5 +363,26 @@ const styles = StyleSheet.create({
   modalOptionText: {
     fontSize: 16,
     color: "#362946",
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  viewContent: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#362946',
+    marginBottom: 10,
+  },
+  viewText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 5,
   },
 });

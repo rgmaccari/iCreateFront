@@ -201,7 +201,6 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                         color="#362946"
                     />
                 </TouchableOpacity>
-                
                 {expandedSection === "links" && (
                     <View style={styles.carouselContainer}>
                         {loading ? (
