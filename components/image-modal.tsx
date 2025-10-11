@@ -1,163 +1,190 @@
-import { useImagePicker } from "@/hooks/use-image-picker";
-import { ImageCreateDto } from "@/services/image/image.create.dto";
-import React, { useState } from "react";
-import { Image as RNImage, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+// src/components/image-modal.tsx (ou onde estiver seu ImageModal)
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import React, { useState } from 'react';
+import {
+    Alert,
+    Image,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+
+// Interface corrigida - deve ser um objeto, não um array
+export interface ImageCreateDto {
+  uri: string;
+}
 
 interface ImageModalProps {
-    visible: boolean;
-    initialData?: { filename?: string; dataBase64?: string };
-    onClose: () => void;
-    onSave: (data: ImageCreateDto[]) => void; //Envia lista
+  visible: boolean;
+  onClose: () => void;
+  onSave: (data: ImageCreateDto) => void; // Mudado para objeto único, não array
 }
 
-/**Lib para conhecer:
- * react-native-fast-image: melhora o carregamento de imagens.
- */
+const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
+  const [selectedImage, setSelectedImage] = useState<ImageCreateDto | null>(null);
 
-export default function ImageModal({ visible, initialData, onClose, onSave }: ImageModalProps) {
-    const [filename, setFilename] = useState(initialData?.filename || "");
-    const { image, pickImage } = useImagePicker();
-    const [isCover, setIsCover] = useState(false);
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar imagens.');
+      return;
+    }
 
-    if (!visible) return null;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
 
-    return (
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setSelectedImage({ uri: result.assets[0].uri });
+    }
+  };
 
+  const handleSave = () => {
+    if (selectedImage) {
+      onSave(selectedImage); // Agora passa um objeto único
+      setSelectedImage(null);
+    }
+  };
 
-        <View style={styles.modal}>
-            <View style={styles.modalContent}>
-                {/* Switch de capa */}
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                    <Text style={{ marginRight: 10 }}>Definir como capa</Text>
-                    <Switch
-                        value={isCover}
-                        onValueChange={(value) => {
-                            console.log("isCover:", value);
-                            setIsCover(value);
-                        }}
-                    />
-                </View>
+  const handleClose = () => {
+    setSelectedImage(null);
+    onClose();
+  };
 
-                {/* Botão selecionar imagem */}
-                <TouchableOpacity style={styles.selectButton} onPress={pickImage}>
-                    <Text style={styles.buttonText}>Selecionar imagem</Text>
-                </TouchableOpacity>
-
-                {/* Preview */}
-                {image?.uri && (
-                    <RNImage source={{ uri: image.uri }} style={styles.preview} />
-                )}
-
-                {/* Input */}
-                <TextInput
-                    style={styles.input}
-                    value={filename || image?.name}
-                    onChangeText={setFilename}
-                    placeholder="Nome da imagem"
-                />
-
-                {/* Botões voltar / salvar */}
-                <View style={styles.buttonRow}>
-                    <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
-                        <Text style={styles.buttonText}>Voltar</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.button, styles.save]}
-                        onPress={() => {
-                            if (!image) return;
-
-                            onSave([{
-                                filename: filename || image.name || "image.jpg",
-                                isCover: isCover,
-                                data: {
-                                    uri: image.uri,
-                                    mimeType: image.mimeType || "image/jpeg",
-                                    name: image.name || "image.jpg",
-                                },
-                            }]);
-
-                            onClose();
-                        }}
-                    >
-                        <Text style={styles.buttonText}>Salvar</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleClose}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Adicionar Imagem</Text>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color="#666" />
+          </TouchableOpacity>
         </View>
 
-    );
+        <View style={styles.content}>
+          {selectedImage ? (
+            <View style={styles.imagePreview}>
+              <Image
+                source={{ uri: selectedImage.uri }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+              <TouchableOpacity
+                style={styles.changeImageButton}
+                onPress={pickImage}
+              >
+                <Text style={styles.changeImageText}>Trocar Imagem</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.pickImageButton} onPress={pickImage}>
+              <Ionicons name="image" size={48} color="#ccc" />
+              <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
+            </TouchableOpacity>
+          )}
 
-}
+          <TouchableOpacity
+            style={[
+              styles.saveButton,
+              !selectedImage && styles.saveButtonDisabled,
+            ]}
+            onPress={handleSave}
+            disabled={!selectedImage}
+          >
+            <Text style={styles.saveButtonText}>Adicionar Imagem</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
-    modal: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        padding: 20
-    },
-    modalContent: {
-        width: "90%",
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 20,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    preview: {
-        width: 200,
-        height: 200,
-        marginVertical: 10,
-        borderRadius: 8
-    },
-    input: {
-        width: "100%",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        marginBottom: 12,
-        backgroundColor: "#fff"
-    },
-    buttonRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%"
-    },
-    button: {
-        flex: 1,
-        padding: 12,
-        borderRadius: 8,
-        alignItems: "center",
-        margin: 5
-    },
-    cancel: {
-        backgroundColor: "#999"
-    },
-    save: {
-        backgroundColor: "#362946"
-    },
-    buttonText: {
-        color: "#fff",
-        fontWeight: "bold"
-    },
-    selectButton: {
-        backgroundColor: "#362946",
-        padding: 12,
-        borderRadius: 8,
-        alignItems: "center",
-        width: "100%",
-        marginBottom: 12,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  pickImageButton: {
+    alignItems: 'center',
+    padding: 40,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+  },
+  pickImageText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+  },
+  imagePreview: {
+    alignItems: 'center',
+  },
+  image: {
+    width: 300,
+    height: 300,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  changeImageButton: {
+    padding: 12,
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+  },
+  changeImageText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
+
+export default ImageModal;
