@@ -19,14 +19,14 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
     const [form, setForm] = useState<Partial<Project>>({
         title: project?.title || "",
         sketch: project?.sketch || "",
-    });
-    const [images, setImages] = useState<Image[]>([]);
-    const [links, setLinks] = useState<Link[]>([]);
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [expandedSection, setExpandedSection] = useState<string | null>(null);
-    const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
+    }); //Title e Description do Project
+    const [images, setImages] = useState<Image[]>([]); //Recebe as imagens
+    const [links, setLinks] = useState<Link[]>([]); //Recebe os links
+    const [notes, setNotes] = useState<Note[]>([]); //Recebe as notas
+    const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null); //Item acessado
+    const [expandedSection, setExpandedSection] = useState<string | null>(null); //Seção expandida
+    const [modalVisible, setModalVisible] = useState(false); //Visibilidade do modal
+    const [loading, setLoading] = useState(false); //Carregamento
 
     //Carregar todos os dados do Project (tudo bem pois são dados leves. Se a imagem estivesse no banco, seria inviável).
     useEffect(() => {
