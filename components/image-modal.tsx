@@ -1,6 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
+// src/components/image-modal.tsx
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import React, { useState } from "react";
 import {
   Alert,
   Image,
@@ -10,11 +11,12 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export interface ImageCreateDto {
   uri: string;
   filename?: string;
+  mimeType?: string;
   isCover?: boolean;
 }
 
@@ -26,46 +28,73 @@ interface ImageModalProps {
 
 const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
   const [selectedImages, setSelectedImages] = useState<ImageCreateDto[]>([]);
+  const [isCoverIndex, setIsCoverIndex] = useState<number | null>(null);
 
   const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar imagens.');
+    if (status !== "granted") {
+      Alert.alert("Permissão necessária", "Precisamos de acesso à sua galeria para selecionar imagens.");
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false, //Permite múltiplas
-      allowsMultipleSelection: true, //Seleção múltipla
+      allowsEditing: false,
+      allowsMultipleSelection: true,
       aspect: [4, 3],
       quality: 0.8,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newImages = result.assets.map(asset => ({
+      const newImages = result.assets.map((asset, index) => ({
         uri: asset.uri,
-        filename: asset.fileName || `image_${Date.now()}.jpg`,
+        filename: asset.fileName || `image_${Date.now()}_${index}.jpg`,
+        mimeType: asset.mimeType || "image/jpeg",
+        isCover: isCoverIndex === null && index === 0 ? true : false,
       }));
 
-      setSelectedImages(prev => [...prev, ...newImages]);
+      setSelectedImages((prev) => [...prev, ...newImages]);
+      if (isCoverIndex === null && newImages.length > 0) {
+        setIsCoverIndex(selectedImages.length);
+      }
+    } else {
+      console.log("[ImageModal] Seleção de imagens cancelada ou sem resultados");
     }
   };
 
   const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    if (isCoverIndex === index) {
+      setIsCoverIndex(null);
+    } else if (isCoverIndex !== null && index < isCoverIndex) {
+      setIsCoverIndex((prev) => (prev !== null ? prev - 1 : null));
+    }
+  };
+
+  const toggleCover = (index: number) => {
+    setIsCoverIndex(index);
+    setSelectedImages((prev) =>
+      prev.map((img, i) => ({
+        ...img,
+        isCover: i === index,
+      }))
+    );
   };
 
   const handleSave = () => {
     if (selectedImages.length > 0) {
       onSave(selectedImages);
       setSelectedImages([]);
+      setIsCoverIndex(null);
+    } else {
+      console.log("[ImageModal] Nenhuma imagem para salvar");
     }
   };
 
   const handleClose = () => {
     setSelectedImages([]);
+    setIsCoverIndex(null);
     onClose();
   };
 
@@ -101,6 +130,11 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
                       <Text style={styles.filename} numberOfLines={1}>
                         {image.filename || `Imagem ${index + 1}`}
                       </Text>
+                      <TouchableOpacity onPress={() => toggleCover(index)}>
+                        <Text style={styles.coverText}>
+                          {image.isCover ? "Capa" : "Definir como capa"}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                     <TouchableOpacity
                       style={styles.removeButton}
@@ -136,7 +170,7 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
             disabled={selectedImages.length === 0}
           >
             <Text style={styles.saveButtonText}>
-              Adicionar {selectedImages.length > 0 ? `${selectedImages.length} Imagens` : 'Imagem'}
+              Adicionar {selectedImages.length > 0 ? `${selectedImages.length} Imagens` : "Imagem"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -148,20 +182,20 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   closeButton: {
     padding: 4,
@@ -169,25 +203,25 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   pickImageButton: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 40,
     borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
+    borderColor: "#ddd",
+    borderStyle: "dashed",
     borderRadius: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
   },
   pickImageText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   pickImageSubtext: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
     marginTop: 4,
   },
   imagesPreview: {
@@ -197,10 +231,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 8,
     marginBottom: 8,
   },
@@ -215,37 +249,42 @@ const styles = StyleSheet.create({
   },
   filename: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
+  },
+  coverText: {
+    fontSize: 12,
+    color: "#007AFF",
+    marginTop: 4,
   },
   removeButton: {
     padding: 4,
   },
   addMoreButton: {
     padding: 12,
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 12,
   },
   addMoreText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   saveButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
   },
   saveButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

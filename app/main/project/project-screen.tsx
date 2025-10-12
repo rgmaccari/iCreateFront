@@ -1,10 +1,13 @@
-
+// app/main/project/project-screen.tsx
 import ProjectScreenTest from "@/app/project-screen-test";
 import AddButton from "@/components/add-button";
+import ImageModal from "@/components/image-modal";
 import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
 import ComponentSelectorModal from "@/components/selector-modal";
+import { ImageCreateDto } from "@/services/image/image.create.dto";
+import { ImageService } from "@/services/image/image.service";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -16,16 +19,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
   const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
-  const navigation = useNavigation(); //Bloqueia a navegacao até que se atenda ao pedido do Alert
+  const navigation = useNavigation();
 
-  const [project, setProject] = useState<Project | undefined>(undefined); //Projeto ativo
-  const [formData, setFormData] = useState<Partial<Project>>({}); //Dados do fomr
-  const [loading, setLoading] = useState(true); //Carregamento
-  const [isDirty, setIsDirty] = useState(false); //Detecar alterações
-  const [isEditingTitle, setIsEditingTitle] = useState(false); //Habilita edição do título
-  const [isModalVisible, setIsModalVisible] = useState(false); //Habilita modal com opções
-  const [currentView, setCurrentView] = useState<ProjectViewMode>('form'); //Setta a View ativa (passar parametro para receber a última view acessada)
-  const [showComponentSelector, setShowComponentSelector] = useState(false); //Escolher o componente
+  const [project, setProject] = useState<Project | undefined>(undefined);
+  const [formData, setFormData] = useState<Partial<Project>>({});
+  const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
+  const [showComponentSelector, setShowComponentSelector] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -39,6 +43,8 @@ export default function ProjectScreen() {
         } catch (err) {
           console.error("Erro ao carregar projeto:", err);
         }
+      } else {
+        console.log("Nenhum projectCode fornecido");
       }
       setLoading(false);
     };
@@ -70,7 +76,7 @@ export default function ProjectScreen() {
           "Deseja salvar as alterações antes de voltar?",
           [
             { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } },
-            { text: "Sim", onPress: () => { handleSubmit(); } },
+            { text: "Sim", onPress: () => { handleSubmitProject(); } },
             { text: "Cancelar", style: "cancel" },
           ]
         );
@@ -81,8 +87,8 @@ export default function ProjectScreen() {
     }, [navigation, isDirty])
   );
 
-  //Criar
-  const create = async (dto: ProjectInfoDto) => {
+  //Criar projeto
+  const createProject = async (dto: ProjectInfoDto) => {
     try {
       const createdProject = await ProjectService.create(dto);
       setProject(createdProject);
@@ -93,8 +99,8 @@ export default function ProjectScreen() {
     }
   };
 
-  //Att
-  const update = async (dto: ProjectInfoDto) => {
+  // Atualizar projeto
+  const updateProject = async (dto: ProjectInfoDto) => {
     try {
       if (!project) return;
       const updatedProject = await ProjectService.update(project.code!, dto);
@@ -106,21 +112,74 @@ export default function ProjectScreen() {
     }
   };
 
-  //Salvar: direciona para o create ou Update
-  const handleSubmit = async () => {
+  //Salvar projeto
+  const handleSubmitProject = async () => {
     const dto: ProjectInfoDto = {
       title: formData.title!,
       sketch: formData.sketch!,
     };
 
     if (project) {
-      await update(dto);
+      await updateProject(dto);
     } else {
-      await create(dto);
+      await createProject(dto);
     }
   };
 
-  //Realiza o return para a tela anterior
+  //Função para salvar imagens
+  const createImages = async (forms: ImageCreateDto[]) => {
+    if (!projectCode) {
+      Alert.alert("Erro", "Código do projeto não encontrado.");
+      return;
+    }
+
+    const formData = new FormData();
+
+    forms.forEach((form, index) => {
+      formData.append("images", {
+        uri: form.uri,
+        type: form.mimeType || "image/jpeg",
+        name: form.filename || `image_${Date.now()}_${index}.jpg`,
+      } as any);
+    });
+
+    //Apenas um único valor de isCover
+    const hasCover = forms.some(f => f.isCover === true);
+    formData.append("isCover", String(hasCover));
+
+    formData.append("projectCode", String(projectCode));
+
+    const response = await ImageService.create(projectCode, formData);
+
+    if (response) {
+      setShowImageModal(false)
+    }
+  };
+
+  //Alteração dinâmica no título
+  const handleTitleChange = (newTitle: string) => {
+    setFormData((prev) => ({ ...prev, title: newTitle }));
+  };
+
+  //Manipular seleção de componente
+  const handleOptions = (componentType: "link" | "image" | "sketch") => {
+    console.log("[Front] Componente selecionado:", componentType);
+    setShowComponentSelector(false);
+    switch (componentType) {
+      case "link":
+        handleOpenLinks();
+        break;
+      case "image":
+        console.log("[Front] Abrindo ImageModal");
+        setShowImageModal(true);
+        break;
+      case "sketch":
+        handleOpenNotes();
+        break;
+    }
+  };
+
+  //Retornar para a tela anterior
   const handleReturn = () => {
     if (isDirty) {
       Alert.alert(
@@ -128,7 +187,7 @@ export default function ProjectScreen() {
         "Deseja salvar as alterações antes de sair?",
         [
           { text: "Não", onPress: () => { setIsDirty(false); router.back(); }, style: "cancel" },
-          { text: "Sim", onPress: handleSubmit },
+          { text: "Sim", onPress: handleSubmitProject },
         ]
       );
     } else {
@@ -136,69 +195,37 @@ export default function ProjectScreen() {
     }
   };
 
-  //Alteração dinâmica no título (barra superior)
-  const handleTitleChange = (newTitle: string) => {
-    setFormData((prev) => ({ ...prev, title: newTitle }));
-  };
-
   //Abrir tela de links
   const handleOpenLinks = () => {
     setIsModalVisible(false);
-    console.log(project?.code?.toString() || '');
+    console.log(project?.code?.toString() || "");
     router.push({
       pathname: "/main/project/links-screen",
-      params: { projectCode: project?.code?.toString() || '' },
+      params: { projectCode: project?.code?.toString() || "" },
     });
   };
 
-  //Abrir tela de imagens
-  const handleOpenImages = () => {
+  //Abrir tela de notas
+  const handleOpenNotes = () => {
     setIsModalVisible(false);
-    console.log(project?.code?.toString() || '');
+    console.log(project?.code?.toString() || "");
     router.push({
-      pathname: "/main/project/images-screen",
-      params: { projectCode: project?.code?.toString() || '' },
+      pathname: "/main/project/notes-screen",
+      params: { projectCode: project?.code?.toString() || "" },
     });
   };
 
   //Abrir tela de I.A.
   const handleOpenAiFeatures = () => {
     setIsModalVisible(false);
-    console.log(project?.code?.toString() || '');
-    router.push('/main/project/ai-features');
+    console.log(project?.code?.toString() || "");
+    router.push("/main/project/ai-features");
   };
 
-  //Abrir anotações
-  const handleOpenNotes = () => {
-    setIsModalVisible(false);
-    console.log(project?.code?.toString() || '');
-    router.push({
-      pathname: "/main/project/notes-screen",
-      params: { projectCode: project?.code?.toString() || '' },
-    });
-  };
-
-  //Abrir o modal com as opções
-  const handleOptions = (componentType: 'link' | 'image' | 'sketch') => {
-    setShowComponentSelector(false);
-
-    switch (componentType) {
-      case 'link':
-        handleOpenLinks();
-        break;
-      case 'image':
-        handleOpenImages();
-        break;
-      case 'sketch':
-        handleOpenNotes();
-        break;
-    }
-  };
-
-  //Define a view Ativa
+  //Define a view ativa
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'document':
+      case "document":
         return (
           <View style={styles.viewContent}>
             <Text style={styles.viewTitle}>Visualização em Documento</Text>
@@ -206,21 +233,12 @@ export default function ProjectScreen() {
             <Text style={styles.viewText}>Aqui será implementada a visualização em documento</Text>
           </View>
         );
-
-      case 'board':
-        return (
-          <ProjectScreenTest></ProjectScreenTest>
-        );
-
-      case 'form':
-        return (
-          <ProjectForm project={project} onChange={setFormData} />
-        );
-
+      case "board":
+        return <ProjectScreenTest />;
+      case "form":
+        return <ProjectForm project={project} onChange={setFormData} />;
       default:
-        return (
-          <ProjectForm project={project} onChange={setFormData} />
-        );
+        return <ProjectForm project={project} onChange={setFormData} />;
     }
   };
 
@@ -234,36 +252,28 @@ export default function ProjectScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/*Cabeçalho*/}
       <PageHeader
-        title={formData.title || ''}
+        title={formData.title || ""}
         onBack={handleReturn}
-        onSave={handleSubmit}
+        onSave={handleSubmitProject}
         onTitleChange={handleTitleChange}
         isEditingTitle={isEditingTitle}
         onEditTitlePress={() => setIsEditingTitle(true)}
         onEditTitleBlur={() => setIsEditingTitle(false)}
         showSaveButton={true}
       />
-
-      {/*Tabs de visualização*/}
-      <ProjectViewTabs
-        currentView={currentView}
-        onViewChange={setCurrentView}
-      />
-
-      {/*Conteúdo interno que muda conforme a tab selecionada*/}
-      <View style={styles.contentContainer}>
-        {renderCurrentView()}
-      </View>
-
-      {/*Botão que abre o Modal*/}
-      <AddButton onPress={() => setShowComponentSelector(true)}></AddButton>
-
+      <ProjectViewTabs currentView={currentView} onViewChange={setCurrentView} />
+      <View style={styles.contentContainer}>{renderCurrentView()}</View>
+      <AddButton onPress={() => setShowComponentSelector(true)} />
       <ComponentSelectorModal
         visible={showComponentSelector}
         onClose={() => setShowComponentSelector(false)}
         onSelectComponent={handleOptions}
+      />
+      <ImageModal
+        visible={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onSave={createImages}
       />
     </SafeAreaView>
   );
@@ -274,61 +284,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
   },
-  optionsButton: {
-    backgroundColor: "#362946",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "flex-end",
-    margin: 16,
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: "transparent", // Sem fundo escurecido
-  },
-  modalContainer: {
-    position: "absolute",
-    bottom: 64, // Mais próximo do botão (48px do botão + 16px de margem)
-    right: 16, // Alinhado com o botão
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 8,
-    width: 150,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  modalOption: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: "#362946",
-  },
   contentContainer: {
     flex: 1,
   },
   viewContent: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   viewTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#362946',
+    fontWeight: "bold",
+    color: "#362946",
     marginBottom: 10,
   },
   viewText: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 5,
   },
 });

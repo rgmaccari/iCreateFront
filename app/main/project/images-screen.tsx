@@ -16,8 +16,6 @@ export default function ImageScreen() {
     const [images, setImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const [viewerVisible, setViewerVisible] = useState(false);
-    const [viewerIndex, setViewerIndex] = useState(0);
     const [viewMode, setViewMode] = useState<"list" | "grid" | "carousel">("list");
 
     useEffect(() => {
@@ -42,31 +40,19 @@ export default function ImageScreen() {
             const formData = new FormData();
 
             forms.forEach((form, index) => {
-                if (form.data) {
-                    console.log(`[Front] Adicionando imagem ${index}:`, form);
-
-                    formData.append("images", {
-                        uri: form.data.uri,
-                        type: form.data.mimeType,
-                        name: form.filename || form.data.name || "image.jpg",
-                    } as any);
-                }
-
+                formData.append("images", {
+                    uri: form.uri,
+                    type: form.mimeType || "image/jpeg",
+                    name: form.filename || `image_${Date.now()}_${index}.jpg`,
+                } as any);
                 if (form.filename) formData.append("filename", form.filename);
-
-                if (form.isCover !== undefined) {
-                    formData.append("isCover", String(form.isCover));
-                } else {
-                    console.log('acionou aqui en')
-                }
+                if (form.isCover !== undefined) formData.append("isCover", String(form.isCover));
             });
 
-            console.log('[Front] Enviando FormData...');
-
-            if (projectCode) formData.append("projectCode", String(projectCode));
+            const formDataEntries: any[] = [];
+            formData.forEach((value, key) => formDataEntries.push([key, value]));
 
             await ImageService.create(projectCode!, formData);
-
             await findAllByProjectCode();
         } catch (err) {
             console.error("Erro ao criar imagens:", err);

@@ -4,13 +4,21 @@ import { ImageCreateDto } from "./image.create.dto";
 
 export class ImageService {
     static async create(projectCode: number, formData: FormData): Promise<Image[]> {
-        const response = await api.post<Image[]>(`/images/${projectCode}`, formData, {
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "multipart/form-data",
-            }
-        });
-        return response.data;
+        try {
+            const formDataEntries: any[] = [];
+            formData.forEach((value, key) => formDataEntries.push([key, value]));
+
+            const response = await api.post(`/images/${projectCode}`, formData, {
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error("[ImageService] Erro ao criar imagens:", error);
+            throw error;
+        }
     }
 
     static async update(code: number, image: ImageCreateDto): Promise<Image> {
