@@ -128,33 +128,36 @@ export default function ProjectScreen() {
 
   //Função para salvar imagens
   const createImages = async (forms: ImageCreateDto[]) => {
-    if (!projectCode) {
-      Alert.alert("Erro", "Código do projeto não encontrado.");
+    if (!project || !projectCode) {
+      Alert.alert("Erro", "Projeto ainda não carregado. Aguarde um instante e tente novamente.");
       return;
     }
 
-    const formData = new FormData();
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      forms.forEach((form, index) => {
+        formData.append("images", {
+          uri: form.uri,
+          type: form.mimeType || "image/jpeg",
+          name: form.filename || `image_${Date.now()}_${index}.jpg`,
+        } as any);
+      });
 
-    forms.forEach((form, index) => {
-      formData.append("images", {
-        uri: form.uri,
-        type: form.mimeType || "image/jpeg",
-        name: form.filename || `image_${Date.now()}_${index}.jpg`,
-      } as any);
-    });
+      const hasCover = forms.some(f => f.isCover === true);
+      formData.append("isCover", String(hasCover));
+      formData.append("projectCode", String(projectCode));
 
-    //Apenas um único valor de isCover
-    const hasCover = forms.some(f => f.isCover === true);
-    formData.append("isCover", String(hasCover));
+      await ImageService.create(projectCode, formData);
 
-    formData.append("projectCode", String(projectCode));
-
-    const response = await ImageService.create(projectCode, formData);
-
-    if (response) {
-      setShowImageModal(false)
+      setShowImageModal(false);
+    } catch (err) {
+      Alert.alert("Erro", "Falha ao enviar imagem. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
+
 
   //Alteração dinâmica no título
   const handleTitleChange = (newTitle: string) => {
@@ -271,6 +274,7 @@ export default function ProjectScreen() {
         onSelectComponent={handleOptions}
       />
       <ImageModal
+        projectCode={projectCode}
         visible={showImageModal}
         onClose={() => setShowImageModal(false)}
         onSave={createImages}

@@ -24,9 +24,10 @@ interface ImageModalProps {
   visible: boolean;
   onClose: () => void;
   onSave: (data: ImageCreateDto[]) => void;
+  projectCode: number | undefined;
 }
 
-const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
+const ImageModal = (props: ImageModalProps) => {
   const [selectedImages, setSelectedImages] = useState<ImageCreateDto[]>([]);
   const [isCoverIndex, setIsCoverIndex] = useState<number | null>(null);
 
@@ -82,25 +83,27 @@ const ImageModal = ({ visible, onClose, onSave }: ImageModalProps) => {
     );
   };
 
-  const handleSave = () => {
-    if (selectedImages.length > 0) {
-      onSave(selectedImages);
-      setSelectedImages([]);
-      setIsCoverIndex(null);
-    } else {
-      console.log("[ImageModal] Nenhuma imagem para salvar");
+  const handleSave = async () => {
+    if (props.projectCode) {
+      if (selectedImages.length > 0) {
+        await props.onSave([...selectedImages]); //Garante passagem estável
+        setTimeout(() => {
+          setSelectedImages([]);
+          setIsCoverIndex(null);
+        }, 300);
+      }
     }
   };
 
   const handleClose = () => {
     setSelectedImages([]);
     setIsCoverIndex(null);
-    onClose();
+    props.onClose();
   };
 
   return (
     <Modal
-      visible={visible}
+      visible={props.visible}
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
