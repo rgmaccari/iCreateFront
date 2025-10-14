@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
+  const projectCode = 34;
 
   useFocusEffect(() => {
     loadUserAndProjects();
@@ -39,6 +40,13 @@ export default function UserScreen() {
     router.push("/user-register");
   };
 
+  const handleOpenImageScreen = () => {
+    router.push({
+      pathname: '/main/project/images-screen',
+      params: { projectCode: projectCode }
+    });
+  }
+
   if (!userData) {
     return (
       <SafeAreaView style={styles.container}>
@@ -53,6 +61,9 @@ export default function UserScreen() {
 
       <TouchableOpacity style={styles.editButton} onPress={handleEditUser}>
         <Text style={styles.buttonText}>Editar perfil</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.editButton} onPress={handleOpenImageScreen}>
+        <Text style={styles.buttonText}>Imagens</Text>
       </TouchableOpacity>
 
       <UserInterestsCard />

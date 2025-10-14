@@ -16,6 +16,8 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import * as FileSystem from "expo-file-system/legacy";
+
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
   const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
@@ -30,6 +32,11 @@ export default function ProjectScreen() {
   const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
   const [showComponentSelector, setShowComponentSelector] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [currentProjectCode, setCurrentProjectCode] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (projectCode) setCurrentProjectCode(projectCode);
+  }, [projectCode, project]);
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -127,36 +134,52 @@ export default function ProjectScreen() {
   };
 
   //Função para salvar imagens
+
   const createImages = async (forms: ImageCreateDto[]) => {
-    if (!project || !projectCode) {
-      Alert.alert("Erro", "Projeto ainda não carregado. Aguarde um instante e tente novamente.");
+    const code = project?.code ?? currentProjectCode;
+    if (!code) {
+      Alert.alert("Erro", "Projeto não carregado.");
       return;
     }
 
+    for (const form of forms) {
+      if (!form.uri) {
+        console.warn("Imagem sem URI:", form);
+        continue;
+      }
+
+      const info = await FileSystem.getInfoAsync(form.uri as string);
+      if (!info.exists) {
+        console.warn("Arquivo ainda não acessível:", form.uri);
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    const formData = new FormData();
+    forms.forEach((form, i) => {
+      if (!form.uri) return;
+      formData.append("images", {
+        uri: form.uri.startsWith("file://") ? form.uri : `file://${form.uri}`,
+        type: form.mimeType ?? "image/jpeg",
+        name: form.filename ?? `image_${Date.now()}_${i}.jpg`,
+      } as any);
+    });
+
+    formData.append("isCover", String(forms.some(f => f.isCover)));
+    formData.append("projectCode", String(code));
+
     try {
-      setLoading(true);
-      const formData = new FormData();
-      forms.forEach((form, index) => {
-        formData.append("images", {
-          uri: form.uri,
-          type: form.mimeType || "image/jpeg",
-          name: form.filename || `image_${Date.now()}_${index}.jpg`,
-        } as any);
-      });
-
-      const hasCover = forms.some(f => f.isCover === true);
-      formData.append("isCover", String(hasCover));
-      formData.append("projectCode", String(projectCode));
-
-      await ImageService.create(projectCode, formData);
-
+      await new Promise(r => setTimeout(r, 200));
+      await ImageService.create(code, formData);
       setShowImageModal(false);
     } catch (err) {
+      console.error("[createImages] erro ao salvar imagem:", err);
       Alert.alert("Erro", "Falha ao enviar imagem. Tente novamente.");
-    } finally {
-      setLoading(false);
     }
   };
+
+
+
 
 
   //Alteração dinâmica no título

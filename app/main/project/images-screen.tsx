@@ -123,6 +123,7 @@ export default function ImageScreen() {
 
 
             <ImageModal
+                projectCode={projectCode}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={create}
