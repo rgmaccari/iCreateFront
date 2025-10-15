@@ -37,7 +37,7 @@ export default function UserScreen() {
   };
 
   const handleEditUser = () => {
-    router.push("/user-register");
+    router.push("/user-register-screen");
   };
 
   const handleOpenImageScreen = () => {
