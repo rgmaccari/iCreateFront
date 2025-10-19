@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 12,
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#2b2d64",
   },
   projectImage: {
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#9191d8ff",
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#2b2d64",
   },
   noProjectText: {

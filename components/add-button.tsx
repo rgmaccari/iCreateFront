@@ -18,10 +18,12 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: "#362946",
+        backgroundColor: "#9191d8ff",
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
+        borderWidth: 0.5,
+        borderColor: "#2b2d64",
         shadowOffset: {
             width: 0,
             height: 2,
