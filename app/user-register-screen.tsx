@@ -15,10 +15,9 @@ export default function UserRegisterScreen() {
 
     const create = async (formData: FormData) => {
         try {
-            const user = await UserService.create(formData);
-            setUserData(user);
+            await UserService.create(formData); //Não atualiza userData aqui
             showToast("success", "Sucesso", "Usuário criado com sucesso!");
-            router.replace("/main/project/all-projects-screen");
+            router.replace("/main/user/user-screen"); //Navega sem atualizar userData localmente
         } catch (err) {
             console.error("Erro ao criar usuário:", err);
             showToast("error", "Erro", "Falha ao criar usuário.");

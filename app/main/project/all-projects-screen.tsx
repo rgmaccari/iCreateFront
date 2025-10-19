@@ -36,6 +36,8 @@ export default function AllProjectsScreen() {
   const loadUserAndProjects = async () => {
     setRefreshing(true);
 
+    console.log('user')
+
     await AuthService.loadUserFromStorage();
     setUserData(AuthService.getUser());
 
