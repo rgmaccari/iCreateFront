@@ -1,5 +1,5 @@
 import PageHeader from "@/components/page-header";
-import UserForm from "@/components/user-update-form";
+import UserForm from "@/components/user-form";
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
 import { UserService } from "@/services/user/user.service";
@@ -95,11 +95,16 @@ export default function UserRegisterScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#f2f0faff" }}>
             <PageHeader title="Cadastro" onBack={handleReturn} />
             <Text style={styles.welcomeText}>Seja bem vindo!</Text>
-            <UserForm onSubmit={handleSubmit} hasUser={!!userData} onDelete={userData ? () => deleteUser(userData.code) : undefined} />
+            <UserForm
+                onSubmit={handleSubmit}
+                hasUser={!!userData}
+                onDelete={userData ? () => deleteUser(userData.code) : undefined}
+            />
         </SafeAreaView>
+
     );
 }
 
