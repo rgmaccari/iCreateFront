@@ -78,7 +78,7 @@ export default function ProjectCard({ projects, refresh }: ProjectCardProps) {
               <Image source={{ uri: imageUri }} style={styles.projectImage} />
             ) : (
               <View style={[styles.projectImage, styles.placeholder]}>
-                <FontAwesome name="file-image-o" size={40} color="#362946" />
+                <FontAwesome name="file-image-o" size={40} color="#5b427aff" />
               </View>
             )}
             <Text style={styles.projectTitle}>{project.title}</Text>
@@ -99,10 +99,12 @@ const styles = StyleSheet.create({
   projectCard: {
     width: "48%",
     borderRadius: 10,
-    backgroundColor: "#EBE1F6",
+    backgroundColor: "#9191d8ff",
     padding: 10,
     marginBottom: 12,
     alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#2b2d64",
   },
   projectImage: {
     width: "100%",
@@ -126,12 +128,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     padding: 20,
     borderRadius: 10,
-    backgroundColor: "#EBE1F6",
+    backgroundColor: "#9191d8ff",
     alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#2b2d64",
   },
   noProjectText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#362946",
+    color: "#fdfdfdff",
   },
 });
