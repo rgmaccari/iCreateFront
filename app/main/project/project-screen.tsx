@@ -309,7 +309,7 @@ export default function ProjectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#f2f0faff",
   },
   contentContainer: {
     flex: 1,

@@ -21,7 +21,7 @@ export default function PageHeader(props: PageHeaderProps) {
         <View style={styles.header}>
             {/* Botão Voltar */}
             <TouchableOpacity onPress={props.onBack} style={styles.headerButton}>
-                <FontAwesome name="arrow-left" size={20} color="#666" />
+                <FontAwesome name="arrow-left" size={20} color="#9191d8ff" />
             </TouchableOpacity>
 
             {/* Título - SEMPRE CENTRALIZADO */}
@@ -50,7 +50,7 @@ export default function PageHeader(props: PageHeaderProps) {
             <View style={styles.headerButton}>
                 {showSave && (
                     <TouchableOpacity onPress={props.onSave}>
-                        <FontAwesome name="save" size={20} color="#666" />
+                        <FontAwesome name="save" size={20} color="#328b2fff" />
                     </TouchableOpacity>
                 )}
             </View>
@@ -65,7 +65,8 @@ const styles = StyleSheet.create({
         padding: 6,
         marginBottom: 3,
         borderBottomWidth: 1,
-        borderBottomColor: '#362946'
+        borderBottomColor: '#9191d8ff'
+
     },
     headerButton: {
         width: 40, // Largura fiza
