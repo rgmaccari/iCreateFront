@@ -16,11 +16,11 @@ export default function UserRegisterScreen() {
     const create = async (formData: FormData) => {
         try {
             await UserService.create(formData); //Não atualiza userData aqui
-            showToast("success", "Sucesso", "Usuário criado com sucesso!");
+            showToast("success", "Sucesso!", "Seja bem vindo!");
             router.replace("/main/user/user-screen"); //Navega sem atualizar userData localmente
         } catch (err) {
             console.error("Erro ao criar usuário:", err);
-            showToast("error", "Erro", "Falha ao criar usuário.");
+            showToast("error", "Erro!", "Falha ao criar usuário.");
         }
     };
 
@@ -29,11 +29,11 @@ export default function UserRegisterScreen() {
             if (!userData) return;
             const updatedUser = await UserService.update(userData.code!, formData);
             setUserData(updatedUser);
-            showToast("success", "Sucesso", "Usuário atualizado com sucesso!");
+            showToast("success", "Sucesso!", "Dados atualizados com sucesso.");
             router.back();
         } catch (err) {
             console.error("Erro ao atualizar usuário:", err);
-            showToast("error", "Erro", "Falha ao atualizar usuário.");
+            showToast("error", "Erro!", "Falha ao atualizar usuário.");
         }
     };
 
