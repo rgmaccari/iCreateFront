@@ -4,33 +4,33 @@ import PageHeader from "@/components/page-header";
 import { Image } from "@/services/image/image";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImageScreen() {
-    const params = useLocalSearchParams<{ projectCode?: string }>();
-    const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
+    const params = useLocalSearchParams<{ userCode?: string }>();
+    const userCode = params.userCode ? parseInt(params.userCode, 10) : undefined;
 
     const [images, setImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [viewMode, setViewMode] = useState<"list" | "grid" | "carousel">("list");
 
-    useEffect(() => {
-        findAllByProjectCode().finally(() => setLoading(false));
-    });
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!userCode) return;
+            console.log("userCode recebido pelos params", userCode);
+            setLoading(true);
+            findAllImages().catch(err => console.error("Erro ao carregar imagens:", err))
+        }, [userCode])
+    );
 
-    const findAllByProjectCode = async () => {
-        if (projectCode) {
-            const result = await ImageService.findAllByProjectCode(projectCode);
-
-            if (Array.isArray(result) && result.length > 0) {
-            } else {
-                console.log("[Front] Nenhum resultado ou formato inesperado:", result);
-            }
-
+    const findAllImages = async () => {
+        if (userCode) {
+            const result = await ImageService.findAllImages(userCode);
+            console.log('result ', result)
             setImages(result || []);
         }
     };
@@ -52,8 +52,8 @@ export default function ImageScreen() {
             const formDataEntries: any[] = [];
             formData.forEach((value, key) => formDataEntries.push([key, value]));
 
-            await ImageService.create(projectCode!, formData);
-            await findAllByProjectCode();
+            await ImageService.create(userCode!, formData);
+            await findAllImages();
         } catch (err) {
             console.error("Erro ao criar imagens:", err);
             throw err;
@@ -68,7 +68,7 @@ export default function ImageScreen() {
             {
                 text: "Excluir", style: "destructive", onPress: async () => {
                     await ImageService.deleteByCode(code);
-                    findAllByProjectCode();
+                    findAllImages();
                 }
             }
             ]
@@ -123,7 +123,7 @@ export default function ImageScreen() {
 
 
             <ImageModal
-                projectCode={projectCode}
+                projectCode={userCode}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={create}

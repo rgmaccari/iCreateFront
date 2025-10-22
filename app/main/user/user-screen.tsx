@@ -10,16 +10,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
-  const projectCode = 34;
+  const userCode = userData?.code;
 
   useFocusEffect(() => {
-    loadUserAndProjects();
+    loadUserFromStorage();
   });
 
-  const loadUserAndProjects = async () => {
+  const loadUserFromStorage = async () => {
     try {
-      await AuthService.loadUserFromStorage();
-      setUserData(AuthService.getUser());
+      const user = await AuthService.loadUserFromStorage();
+
+      if (user !== undefined) {
+        setUserData(AuthService.getUser());
+      } else {
+        console.log('voce nao deveria estar aqui')
+      }
+
     } catch (error) {
       console.error("Erro ao localizar user:", error);
       Alert.alert("Erro", "Não foi possível encontrar o user ativo.");
@@ -42,8 +48,8 @@ export default function UserScreen() {
 
   const handleOpenImageScreen = () => {
     router.push({
-      pathname: '/main/project/images-screen',
-      params: { projectCode: projectCode }
+      pathname: '/images-screen',
+      params: { userCode: userCode }
     });
   }
 

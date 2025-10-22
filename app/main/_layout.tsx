@@ -1,12 +1,19 @@
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
 import { FontAwesome } from '@expo/vector-icons';
 import { Tabs, useLocalSearchParams } from 'expo-router';
 
 export default function MainLayout() {
     const { username } = useLocalSearchParams();
     return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: Colors['light'].tint, headerShown: false, tabBarButton: HapticTab }}>
+        <Tabs
+            screenOptions={{
+                tabBarActiveTintColor: "#2b2d64",
+                tabBarActiveBackgroundColor: "#d3d3eeff",
+                tabBarInactiveTintColor: "#2b2d64",
+                headerShown: false,
+                tabBarButton: HapticTab,
+                animation: "shift",
+            }}>
             <Tabs.Screen
                 name="user"
                 options={{

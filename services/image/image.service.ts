@@ -36,6 +36,11 @@ export class ImageService {
         return response.data;
     }
 
+    static async findAllImages(userCode: number): Promise<Image[]> {
+        const response = await api.get(`/images/allByUser/${userCode}`);
+        return response.data;
+    }
+
     static async deleteByCode(code: number): Promise<void> {
         await api.delete(`/images/${code}`);
     }
