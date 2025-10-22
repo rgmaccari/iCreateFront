@@ -11,8 +11,21 @@ export default function LoginScreen() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const [nicknameError, setNicknameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const login = async () => {
+    const missingNickname = !nickname.trim();
+    const missingPassword = !password.trim();
+
+    setNicknameError(missingNickname);
+    setPasswordError(missingPassword);
+
+    if (missingNickname || missingPassword) {
+      showToast("info", "Preencha todos os campos obrigatórios");
+      return;
+    }
+
     try {
       const user = await AuthService.login(nickname, password);
       router.replace("/main/user/user-screen");
@@ -30,20 +43,26 @@ export default function LoginScreen() {
       <Image source={require("@/assets/images/icon-with-name.png")} style={styles.logo} resizeMode="contain" />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, nicknameError && styles.inputError]}
         placeholder="Digite seu apelido..."
         placeholderTextColor="#7A7A7A"
         value={nickname}
-        onChangeText={setNickname}
+        onChangeText={(text) => {
+          setNickname(text);
+          setNicknameError(false);
+        }}
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, passwordError && styles.inputError]}
         placeholder="Senha"
         placeholderTextColor="#7A7A7A"
         value={password}
         secureTextEntry
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setPasswordError(false);
+        }}
       />
 
       <TouchableOpacity style={styles.button} onPress={login}>
@@ -69,6 +88,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f2f0faff",
     padding: 24,
+  },
+  inputError: {
+    borderColor: "#ff4d4d",
   },
   logo: {
     width: 150,
