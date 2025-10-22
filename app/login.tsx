@@ -47,6 +47,8 @@ export default function LoginScreen() {
         placeholder="Digite seu apelido..."
         placeholderTextColor="#7A7A7A"
         value={nickname}
+        autoCapitalize="none"
+        maxLength={20}
         onChangeText={(text) => {
           setNickname(text);
           setNicknameError(false);
@@ -59,6 +61,8 @@ export default function LoginScreen() {
         placeholderTextColor="#7A7A7A"
         value={password}
         secureTextEntry
+        autoCapitalize="none"
+        maxLength={20}
         onChangeText={(text) => {
           setPassword(text);
           setPasswordError(false);
