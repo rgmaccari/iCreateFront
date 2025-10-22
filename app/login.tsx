@@ -1,8 +1,9 @@
+import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
 
@@ -14,10 +15,9 @@ export default function LoginScreen() {
   const login = async () => {
     try {
       const user = await AuthService.login(nickname, password);
-      if (user) router.replace("/main/user/user-screen");
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-      Alert.alert("Erro", "Não foi possível buscar o usuário. Verifique o código ou a conexão com a API.");
+      router.replace("/main/user/user-screen");
+    } catch (error: any) {
+      showToast("error", error.formattedMessage || "Erro inesperado.", "Verifique suas informações.");
     }
   };
 

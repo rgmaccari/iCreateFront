@@ -1,0 +1,30 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+
+const api = axios.create({
+  //baseURL: ${URL}
+  timeout: 5000,
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem("access_token");
+  if (token) {
+    // garante compatibilidade com AxiosHeaders
+    config.headers = config.headers || {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message = error.response?.data?.message || "Erro desconhecido. Verifique a conexão."; //Apenas formatar o erro
+    error.formattedMessage = message;
+    return Promise.reject(error);
+  }
+);
+
+export default api;
