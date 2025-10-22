@@ -84,6 +84,7 @@ export default function UserForm(props: UpdateUserFormProps) {
                     <TextInput
                         style={[styles.input, errors.name && styles.inputError]}
                         placeholder="Nome"
+                        maxLength={30}
                         value={form.name}
                         onChangeText={(text) => handleFieldChange("name", text)}
                     />
@@ -94,6 +95,8 @@ export default function UserForm(props: UpdateUserFormProps) {
                     <TextInput
                         style={[styles.input, errors.nickname && styles.inputError]}
                         placeholder="Apelido"
+                        maxLength={20}
+                        autoCapitalize="none"
                         value={form.nickname}
                         onChangeText={(text) => handleFieldChange("nickname", text)}
                     />
@@ -105,6 +108,8 @@ export default function UserForm(props: UpdateUserFormProps) {
                         style={[styles.input, errors.password && styles.inputError]}
                         placeholder="Senha"
                         secureTextEntry
+                        maxLength={20}
+                        autoCapitalize="none"
                         value={form.password}
                         onChangeText={(text) => handleFieldChange("password", text)}
                     />
@@ -117,6 +122,8 @@ export default function UserForm(props: UpdateUserFormProps) {
                             style={[styles.input, errors.confirmPassword && styles.inputError]}
                             placeholder="Confirmar senha"
                             secureTextEntry
+                            maxLength={20}
+                            autoCapitalize="none"
                             value={confirmPassword}
                             onChangeText={(text) => {
                                 setConfirmPassword(text);
