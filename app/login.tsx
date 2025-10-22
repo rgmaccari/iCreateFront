@@ -30,7 +30,7 @@ export default function LoginScreen() {
       const user = await AuthService.login(nickname, password);
       router.replace("/main/user/user-screen");
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro inesperado.", "Verifique suas informações.");
+      showToast("error", error.formattedMessage || "Erro inesperado!", "Verifique suas informações.");
     }
   };
 

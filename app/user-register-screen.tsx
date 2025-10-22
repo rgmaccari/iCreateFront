@@ -18,9 +18,8 @@ export default function UserRegisterScreen() {
             await UserService.create(formData); //Não atualiza userData aqui
             showToast("success", "Sucesso!", "Seja bem vindo!");
             router.replace("/main/user/user-screen"); //Navega sem atualizar userData localmente
-        } catch (err) {
-            console.error("Erro ao criar usuário:", err);
-            showToast("error", "Erro!", "Falha ao criar usuário.");
+        } catch (error: any) {
+            showToast("error", error.formattedMessage, "Falha ao criar usuário.");
         }
     };
 
