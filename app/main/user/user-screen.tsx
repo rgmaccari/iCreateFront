@@ -1,6 +1,7 @@
 import UserCard from "@/components/user-card";
 import UserInterestsCard from "@/components/user-interests-card";
 import UserStats from "@/components/user-stats-card";
+import { showToast } from "@/constants/showToast";
 
 import { AuthService } from "@/services/api/auth.service";
 import { router, useFocusEffect } from "expo-router";
@@ -13,22 +14,17 @@ export default function UserScreen() {
   const userCode = userData?.code;
 
   useFocusEffect(() => {
-    loadUserFromStorage();
+    if (!userData) loadUserFromStorage();
   });
 
   const loadUserFromStorage = async () => {
     try {
       const user = await AuthService.loadUserFromStorage();
 
-      if (user !== undefined) {
-        setUserData(AuthService.getUser());
-      } else {
-        console.log('voce nao deveria estar aqui')
-      }
+      if (user !== undefined) setUserData(AuthService.getUser());
 
-    } catch (error) {
-      console.error("Erro ao localizar user:", error);
-      Alert.alert("Erro", "Não foi possível encontrar o user ativo.");
+    } catch (error: any) {
+      showToast("error", error.formattedMessage, 'Não foi possível obter os dados do usuário');
     }
   };
 

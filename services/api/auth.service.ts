@@ -33,6 +33,7 @@ export class AuthService {
   static async loadUserFromStorage(): Promise<User | null> {
     const token = await AsyncStorage.getItem('access_token');
     const userString = await AsyncStorage.getItem('current_user');
+
     if (token && userString) {
       const user = JSON.parse(userString);
       AuthService.currentUser = user;

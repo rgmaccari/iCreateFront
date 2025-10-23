@@ -1,5 +1,6 @@
 import AddButton from "@/components/add-button";
 import ProjectCard from "@/components/project-card";
+import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
 import { ProjectPreview } from "@/services/project/project.preview";
 import { ProjectService } from "@/services/project/project.service";
@@ -35,33 +36,35 @@ export default function AllProjectsScreen() {
 
   const loadUserAndProjects = async () => {
     setRefreshing(true);
+    try {
+      await AuthService.loadUserFromStorage();
+      setUserData(AuthService.getUser());
 
-    console.log('user')
+      if (AuthService.getUser()?.code) {
 
-    await AuthService.loadUserFromStorage();
-    setUserData(AuthService.getUser());
+        let data = await ProjectService.findAllPreview();
 
-    if (AuthService.getUser()?.code) {
 
-      let data = await ProjectService.findAllPreview();
-
-      //Realiza a ordenação (criar método separado?)
-      data = data.sort((a, b) => {
-        const getValue = (p: ProjectPreview) => {
-          switch (sortOption) {
-            case "createdAt":
-              return p.createdAt || "";
-            case "updatedAt":
-              return p.updateAt || "";
-            default:
-              return p.title?.toLowerCase() || "";
-          }
-        };
-        const valA = getValue(a);
-        const valB = getValue(b);
-        return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      });
-      setProjects(data);
+        //Realiza a ordenação (criar método separado?)
+        data = data.sort((a, b) => {
+          const getValue = (p: ProjectPreview) => {
+            switch (sortOption) {
+              case "createdAt":
+                return p.createdAt || "";
+              case "updatedAt":
+                return p.updateAt || "";
+              default:
+                return p.title?.toLowerCase() || "";
+            }
+          };
+          const valA = getValue(a);
+          const valB = getValue(b);
+          return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+        setProjects(data);
+      }
+    } catch (error: any) {
+      showToast('error', error.formattedMessage, 'Ocorreu um erro ao obter os projetos.')
     }
     setRefreshing(false);
   };
