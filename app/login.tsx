@@ -3,9 +3,7 @@ import { AuthService } from "@/services/api/auth.service";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
-
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginScreen() {
   const [nickname, setNickname] = useState("");
@@ -36,61 +34,70 @@ export default function LoginScreen() {
 
   const handleCreate = () => {
     router.push('/user-register-screen');
-  }
+  };
 
   return (
-    <View style={styles.container}>
-      <Image source={require("@/assets/images/icon-with-name.png")} style={styles.logo} resizeMode="contain" />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} //Ajustar após testar em iPhone
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Image source={require("@/assets/images/icon-with-name.png")} style={styles.logo} resizeMode="contain" />
 
-      <TextInput
-        style={[styles.input, nicknameError && styles.inputError]}
-        placeholder="Digite seu apelido..."
-        placeholderTextColor="#7A7A7A"
-        value={nickname}
-        autoCapitalize="none"
-        maxLength={20}
-        onChangeText={(text) => {
-          setNickname(text);
-          setNicknameError(false);
-        }}
-      />
+        <TextInput
+          style={[styles.input, nicknameError && styles.inputError]}
+          placeholder="Digite seu apelido..."
+          placeholderTextColor="#7A7A7A"
+          value={nickname}
+          autoCapitalize="none"
+          maxLength={20}
+          onChangeText={(text) => {
+            setNickname(text);
+            setNicknameError(false);
+          }}
+        />
 
-      <TextInput
-        style={[styles.input, passwordError && styles.inputError]}
-        placeholder="Senha"
-        placeholderTextColor="#7A7A7A"
-        value={password}
-        secureTextEntry
-        autoCapitalize="none"
-        maxLength={20}
-        onChangeText={(text) => {
-          setPassword(text);
-          setPasswordError(false);
-        }}
-      />
+        <TextInput
+          style={[styles.input, passwordError && styles.inputError]}
+          placeholder="Senha"
+          placeholderTextColor="#7A7A7A"
+          value={password}
+          secureTextEntry
+          autoCapitalize="none"
+          maxLength={20}
+          onChangeText={(text) => {
+            setPassword(text);
+            setPasswordError(false);
+          }}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={login}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-
-      <View style={styles.options}>
-        <TouchableOpacity onPress={handleCreate}>
-          <Text style={styles.linkText}>Cadastro</Text>
+        <TouchableOpacity style={styles.button} onPress={login}>
+          <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleCreate}>
-          <Text style={styles.linkText}>Esqueci minha senha</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+
+        <View style={styles.options}>
+          <TouchableOpacity onPress={handleCreate}>
+            <Text style={styles.linkText}>Cadastro</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCreate}>
+            <Text style={styles.linkText}>Esqueci minha senha</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f2f0faff",
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f2f0faff",
     padding: 24,
   },
   inputError: {
@@ -128,16 +135,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   options: {
-    alignItems: "center"
+    alignItems: "center",
   },
   linkText: {
-
     color: "#505063ff",
     fontSize: 12,
     marginTop: 14,
     textDecorationLine: "underline",
   },
 });
-
-
-
