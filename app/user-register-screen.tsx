@@ -95,8 +95,8 @@ export default function UserRegisterScreen() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#f2f0faff" }}>
-            <PageHeader title="Cadastro" onBack={handleReturn} />
-            <Text style={styles.welcomeText}>Seja bem vindo!</Text>
+            <PageHeader title={!userData ? "Cadastro" : "Edição"} onBack={handleReturn} />
+            {!userData && <Text style={styles.welcomeText}>Seja bem vindo!</Text>}
             <UserForm
                 onSubmit={handleSubmit}
                 hasUser={!!userData}

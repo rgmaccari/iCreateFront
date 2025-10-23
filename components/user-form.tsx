@@ -1,8 +1,24 @@
 import { useImagePicker } from "@/hooks/use-image-picker";
+import { AuthService } from "@/services/api/auth.service";
 import { UserDto } from "@/services/user/user.update.dto";
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { useFocusEffect, useNavigation } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+} from "react-native";
 
 interface UpdateUserFormProps {
     hasUser?: boolean;
@@ -12,6 +28,14 @@ interface UpdateUserFormProps {
 
 export default function UserForm(props: UpdateUserFormProps) {
     const { image, pickImage } = useImagePicker();
+    const navigation = useNavigation();
+
+    const [changePasswordModal, setChangePasswordModal] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({
+        newPassword: "",
+        confirmNewPassword: "",
+    });
+    const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
 
     const [form, setForm] = useState<UserDto>({
         name: "",
@@ -19,9 +43,34 @@ export default function UserForm(props: UpdateUserFormProps) {
         password: "",
         avatar: null,
     });
+    const [initialForm, setInitialForm] = useState<UserDto>(form);
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isDirty, setIsDirty] = useState(false);
 
+    //Preencher os ddados existentes (if hasUser)
+    useEffect(() => {
+        if (props.hasUser) {
+            const user = AuthService.getUser();
+            if (user) {
+                const mapped = {
+                    name: user.name || "",
+                    nickname: user.nickname || "",
+                    password: "",
+                    avatar: user.avatarBase64 ? {
+                        uri: user.avatarBase64.startsWith("data:image") ? user.avatarBase64 : `data:image/jpeg;base64,${user.avatarBase64}`,
+                        name: "avatar.jpg",
+                        mimeType: "image/jpeg",
+                        } : null,
+
+                };
+                setForm(mapped);
+                setInitialForm(mapped);
+            }
+        }
+    }, [props.hasUser]);
+
+    //Atualizar avatar ao selecionar
     useEffect(() => {
         if (image) {
             setForm((prev) => ({
@@ -35,9 +84,41 @@ export default function UserForm(props: UpdateUserFormProps) {
         }
     }, [image]);
 
+    //Detecta alterações no form (como em ProjectScreen)
+    useEffect(() => {
+        const changed =
+            form.name !== initialForm.name ||
+            form.nickname !== initialForm.nickname ||
+            (form.avatar?.uri !== initialForm.avatar?.uri) ||
+            (!!form.password && form.password !== initialForm.password) ||
+            !!passwordForm.newPassword;
+        setIsDirty(changed);
+    }, [form, passwordForm, initialForm]);
+
+    //Bloqueia saída se houver alterações não salvas
+    useFocusEffect(
+        useCallback(() => {
+            const onBeforeRemove = (e: any) => {
+                if (!isDirty) return;
+                e.preventDefault();
+                Alert.alert(
+                    "Salvar alterações",
+                    "Deseja salvar as alterações antes de sair?",
+                    [
+                        { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } },
+                        { text: "Sim", onPress: handleSubmit },
+                        { text: "Cancelar", style: "cancel" },
+                    ]
+                );
+            };
+            const unsubscribe = navigation.addListener("beforeRemove", onBeforeRemove);
+            return unsubscribe;
+        }, [navigation, isDirty, form])
+    );
+
+    //Validar form principal
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
-
         if (!form.name?.trim()) newErrors.name = "Nome é obrigatório";
         if (!form.nickname?.trim()) newErrors.nickname = "Apelido é obrigatório";
 
@@ -48,13 +129,41 @@ export default function UserForm(props: UpdateUserFormProps) {
             if (form.password !== confirmPassword)
                 newErrors.confirmPassword = "As senhas não coincidem";
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    //Validar alteração de senha
+    const validatePasswordForm = (): boolean => {
+        const newErrors: { [key: string]: string } = {};
+        if (!passwordForm.newPassword.trim())
+            newErrors.newPassword = "Nova senha é obrigatória";
+        if (passwordForm.newPassword.length < 6)
+            newErrors.newPassword = "Senha deve ter pelo menos 6 caracteres";
+        if (passwordForm.newPassword !== passwordForm.confirmNewPassword)
+            newErrors.confirmNewPassword = "As senhas não coincidem";
+        setPasswordErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = () => {
-        if (validateForm()) props.onSubmit(form);
+        if (validateForm()) {
+            props.onSubmit({
+                ...form,
+                password: passwordForm.newPassword || form.password,
+            });
+            setIsDirty(false);
+        }
+    };
+
+    const handlePasswordChange = () => {
+        if (validatePasswordForm()) {
+            setForm((prev) => ({ ...prev, password: passwordForm.newPassword }));
+            setChangePasswordModal(false);
+            setPasswordForm({ newPassword: "", confirmNewPassword: "" });
+            setPasswordErrors({});
+            setIsDirty(true);
+        }
     };
 
     const handleFieldChange = (field: keyof UserDto, value: string) => {
@@ -62,143 +171,166 @@ export default function UserForm(props: UpdateUserFormProps) {
         if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
     };
 
-    return (
-        <KeyboardAvoidingView 
-            style={styles.container}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView 
-                    contentContainerStyle={styles.scrollContainer}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={styles.formArea}>
-                        <View style={styles.imageContainer}>
-                            <TouchableOpacity onPress={pickImage}>
-                                {form.avatar ? (
-                                    <Image source={{ uri: form.avatar.uri }} style={styles.profileImage} />
-                                ) : (
-                                    <View style={styles.placeholder}>
-                                        <FontAwesome name="user" size={100} color={"#3d3968ff"} />
-                                        <View style={styles.textOverlay}>
-                                            <Text style={styles.placeholderText}>Selecione sua foto</Text>
-                                        </View>
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+    const handlePasswordFieldChange = (field: string, value: string) => {
+        setPasswordForm((prev) => ({ ...prev, [field]: value }));
+        if (passwordErrors[field]) setPasswordErrors((prev) => ({ ...prev, [field]: "" }));
+    };
 
-                        <View>
+    return (
+        <>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContainer}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.formArea}>
+                            <View style={styles.imageContainer}>
+                                <TouchableOpacity onPress={pickImage}>
+                                    {form.avatar ? (
+                                        <Image source={{ uri: form.avatar.uri }} style={styles.profileImage} />
+                                    ) : (
+                                        <View style={styles.placeholder}>
+                                            <FontAwesome name="user" size={100} color={"#3d3968ff"} />
+                                            <View style={styles.textOverlay}>
+                                                <Text style={styles.placeholderText}>Selecione sua foto</Text>
+                                            </View>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+
                             <TextInput
                                 style={[styles.input, errors.name && styles.inputError]}
                                 placeholder="Nome"
-                                maxLength={30}
                                 value={form.name}
-                                onChangeText={(text) => handleFieldChange("name", text)}
+                                onChangeText={(t) => handleFieldChange("name", t)}
                             />
                             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-                        </View>
 
-                        <View>
                             <TextInput
                                 style={[styles.input, errors.nickname && styles.inputError]}
                                 placeholder="Apelido"
-                                maxLength={20}
-                                autoCapitalize="none"
                                 value={form.nickname}
-                                onChangeText={(text) => handleFieldChange("nickname", text)}
+                                autoCapitalize="none"
+                                onChangeText={(t) => handleFieldChange("nickname", t)}
                             />
                             {errors.nickname && <Text style={styles.errorText}>{errors.nickname}</Text>}
-                        </View>
 
-                        <View>
-                            <TextInput
-                                style={[styles.input, errors.password && styles.inputError]}
-                                placeholder="Senha"
-                                secureTextEntry
-                                maxLength={20}
-                                autoCapitalize="none"
-                                value={form.password}
-                                onChangeText={(text) => handleFieldChange("password", text)}
-                            />
-                            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                        </View>
+                            {!props.hasUser && (
+                                <>
+                                    <TextInput
+                                        style={[styles.input, errors.password && styles.inputError]}
+                                        placeholder="Senha"
+                                        secureTextEntry
+                                        value={form.password}
+                                        onChangeText={(t) => handleFieldChange("password", t)}
+                                    />
+                                    {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
-                        {!props.hasUser && (
-                            <View>
-                                <TextInput
-                                    style={[styles.input, errors.confirmPassword && styles.inputError]}
-                                    placeholder="Confirmar senha"
-                                    secureTextEntry
-                                    maxLength={20}
-                                    autoCapitalize="none"
-                                    value={confirmPassword}
-                                    onChangeText={(text) => {
-                                        setConfirmPassword(text);
-                                        if (errors.confirmPassword)
-                                            setErrors((prev) => ({ ...prev, confirmPassword: "" }));
-                                    }}
-                                />
-                                {errors.confirmPassword && (
-                                    <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-                                )}
-                            </View>
-                        )}
-
-                        <TouchableOpacity
-                            style={[
-                                styles.button,
-                                (!form.name?.trim() ||
-                                    !form.nickname?.trim() ||
-                                    (!props.hasUser && !form.password?.trim())) &&
-                                styles.buttonDisabled,
-                            ]}
-                            onPress={handleSubmit}
-                            disabled={
-                                !form.name?.trim() ||
-                                !form.nickname?.trim() ||
-                                (!props.hasUser && !form.password?.trim())
-                            }
-                        >
-                            {props.hasUser ? (
-                                <Text style={styles.buttonText}>Salvar</Text>
-                            ) : (
-                                <Text style={styles.buttonText}>Cadastrar</Text>
+                                    <TextInput
+                                        style={[styles.input, errors.confirmPassword && styles.inputError]}
+                                        placeholder="Confirmar senha"
+                                        secureTextEntry
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                    />
+                                    {errors.confirmPassword && (
+                                        <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                                    )}
+                                </>
                             )}
-                        </TouchableOpacity>
-                    </View>
 
-                    {props.hasUser && (
-                        <TouchableOpacity style={styles.deleteButton} onPress={props.onDelete}>
-                            <FontAwesome name="trash" size={18} color="#a33" style={{ marginRight: 8 }} />
-                            <Text style={styles.deleteText}>Excluir conta</Text>
-                        </TouchableOpacity>
-                    )}
-                </ScrollView>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                            {props.hasUser && (
+                                <TouchableOpacity
+                                    style={styles.changePasswordButton}
+                                    onPress={() => setChangePasswordModal(true)}
+                                >
+                                    <FontAwesome name="lock" size={16} color="#9191d8ff" style={{ marginRight: 8 }} />
+                                    <Text style={styles.changePasswordText}>Alterar Senha</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                                <Text style={styles.buttonText}>
+                                    {props.hasUser ? "Salvar Alterações" : "Cadastrar"}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {props.hasUser && (
+                            <TouchableOpacity style={styles.deleteButton} onPress={props.onDelete}>
+                                <FontAwesome name="trash" size={18} color="#a33" style={{ marginRight: 8 }} />
+                                <Text style={styles.deleteText}>Excluir conta</Text>
+                            </TouchableOpacity>
+                        )}
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+
+            {/* Modal Alterar Senha */}
+            <Modal visible={changePasswordModal} animationType="slide" transparent onRequestClose={() => setChangePasswordModal(false)}>
+                <TouchableWithoutFeedback onPress={() => setChangePasswordModal(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Alterar Senha</Text>
+
+                                <TextInput
+                                    style={[styles.input, passwordErrors.newPassword && styles.inputError]}
+                                    placeholder="Nova senha"
+                                    secureTextEntry
+                                    value={passwordForm.newPassword}
+                                    onChangeText={(t) => handlePasswordFieldChange("newPassword", t)}
+                                />
+                                {passwordErrors.newPassword && (
+                                    <Text style={styles.errorText}>{passwordErrors.newPassword}</Text>
+                                )}
+
+                                <TextInput
+                                    style={[styles.input, passwordErrors.confirmNewPassword && styles.inputError]}
+                                    placeholder="Confirmar nova senha"
+                                    secureTextEntry
+                                    value={passwordForm.confirmNewPassword}
+                                    onChangeText={(t) => handlePasswordFieldChange("confirmNewPassword", t)}
+                                />
+                                {passwordErrors.confirmNewPassword && (
+                                    <Text style={styles.errorText}>{passwordErrors.confirmNewPassword}</Text>
+                                )}
+
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.cancelButton]}
+                                        onPress={() => setChangePasswordModal(false)}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.confirmButton]}
+                                        onPress={handlePasswordChange}
+                                    >
+                                        <Text style={styles.confirmButtonText}>Alterar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+        </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f2f0faff",
-    },
-    scrollContainer: {
-        flexGrow: 1,
-        justifyContent: "space-between",
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        paddingBottom: 20,
-    },
-    formArea: {
-        flexGrow: 1,
-    },
+    container: { flex: 1, backgroundColor: "#f2f0faff" },
+    scrollContainer: { flexGrow: 1, padding: 20 },
+    formArea: { flexGrow: 1 },
     input: {
-        width: "100%",
         backgroundColor: "#FFF",
         borderWidth: 1,
         borderColor: "#E8DCCE",
@@ -208,80 +340,47 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#333",
     },
-    inputError: {
-        borderColor: "#ff3b30",
-        borderWidth: 1
-    },
-    errorText: {
-        color: "#ff3b30",
-        fontSize: 12,
-        marginBottom: 12,
-        marginLeft: 4
-    },
-    imageContainer: {
-        alignItems: "center",
-        marginVertical: 16
-    },
-    profileImage: {
-        width: 140,
-        height: 140,
-        borderRadius: 10
-    },
+    inputError: { borderColor: "#ff3b30" },
+    errorText: { color: "#ff3b30", fontSize: 12, marginBottom: 8 },
+    imageContainer: { alignItems: "center", marginVertical: 16 },
+    profileImage: { width: 140, height: 140, borderRadius: 10 },
     placeholder: {
-        width: 140,
-        height: 140,
-        borderRadius: 10,
-        backgroundColor: "#9191d8ff",
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
+        width: 140, height: 140, borderRadius: 10, backgroundColor: "#9191d8ff",
+        justifyContent: "center", alignItems: "center",
     },
     textOverlay: {
-        position: "absolute",
-        bottom: 10,
-        backgroundColor: "rgba(0,0,0,0.6)",
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
+        position: "absolute", bottom: 10,
+        backgroundColor: "rgba(0,0,0,0.6)", paddingHorizontal: 12, borderRadius: 12,
     },
-    placeholderText: {
-        color: "white",
-        fontSize: 12,
-        fontWeight: "500",
-        textAlign: "center",
-    },
+    placeholderText: { color: "white", fontSize: 12, textAlign: "center" },
     button: {
-        backgroundColor: "#9191d8ff",
-        paddingVertical: 14,
-        borderRadius: 10,
-        width: "100%",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        marginTop: 10,
+        backgroundColor: "#9191d8ff", paddingVertical: 14, borderRadius: 10,
+        alignItems: "center", marginTop: 10,
     },
-    buttonDisabled: { backgroundColor: "#ccc" },
-    buttonText: {
-        color: "#fdfdfdff",
-        fontSize: 16,
-        fontWeight: "600",
+    buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+    changePasswordButton: {
+        flexDirection: "row", alignItems: "center", justifyContent: "center",
+        borderWidth: 1, borderColor: "#E8DCCE", paddingVertical: 12, borderRadius: 10, marginBottom: 16,
     },
+    changePasswordText: { color: "#9191d8ff", fontSize: 15, fontWeight: "500" },
     deleteButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#e6d3d3ff",
-        borderColor: "#ccc",
-        borderWidth: 1,
-        paddingVertical: 12,
-        borderRadius: 10,
-        width: "100%",
-        marginTop: 20,
+        flexDirection: "row", alignItems: "center", justifyContent: "center",
+        backgroundColor: "#e6d3d3ff", borderColor: "#ccc", borderWidth: 1,
+        paddingVertical: 12, borderRadius: 10, marginTop: 20,
     },
-    deleteText: {
-        color: "#a33",
-        fontSize: 15,
-        fontWeight: "500",
+    deleteText: { color: "#a33", fontSize: 15, fontWeight: "500" },
+    modalOverlay: {
+        flex: 1, backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center", alignItems: "center", padding: 20,
     },
+    modalContent: {
+        backgroundColor: "white", borderRadius: 15, padding: 24, width: "100%", maxWidth: 400,
+    },
+    modalTitle: { fontSize: 20, fontWeight: "600", color: "#333", marginBottom: 20, textAlign: "center" },
+    modalButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 20, gap: 12 },
+    modalButton: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: "center" },
+    cancelButton: { backgroundColor: "#f0f0f0", borderWidth: 1, borderColor: "#ccc" },
+    cancelButtonText: { color: "#666", fontSize: 16, fontWeight: "500" },
+    confirmButton: { backgroundColor: "#9191d8ff" },
+    confirmButtonText: { color: "white", fontSize: 16, fontWeight: "500" },
 });
