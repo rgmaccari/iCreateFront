@@ -34,6 +34,7 @@ export default function AllProjectsScreen() {
     }, [sortOption, sortOrder])
   );
 
+  //Carregar user e projetos (preview)
   const loadUserAndProjects = async () => {
     setRefreshing(true);
     try {
@@ -69,30 +70,26 @@ export default function AllProjectsScreen() {
     setRefreshing(false);
   };
 
+  //Habilita o modal para ordenação
+  const handleSortIconPress = () => {
+    setMenuVisible(true);
+  };
+
+  //Altera a ordenação e fecha o modal
   const handleSortChange = (option: "title" | "createdAt" | "updatedAt") => {
     setSortOption(option);
     setMenuVisible(false);
   };
 
-  const handleSortIconPress = () => {
-    setMenuVisible(true);
-  };
-
+  //Asc | Desc
   const handleOrderIconPress = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc"); //Inverte a ordem
   };
 
+  //Abrir um projeto novo.
   const handleNewProject = () => {
     router.push("/main/project/project-screen");
   };
-
-  if (!userData) {
-    return (
-      <View style={styles.container}>
-        <Text>Usuário não encontrado</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>

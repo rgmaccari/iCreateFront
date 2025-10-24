@@ -6,17 +6,17 @@ import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
 import ComponentSelectorModal from "@/components/selector-modal";
+import { showToast } from "@/constants/showToast";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
+import * as FileSystem from "expo-file-system/legacy";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import * as FileSystem from "expo-file-system/legacy";
 
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
@@ -101,8 +101,8 @@ export default function ProjectScreen() {
       setProject(createdProject);
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
-    } catch (err) {
-      console.error("Erro ao criar projeto:", err);
+    } catch (error: any) {
+      showToast('error', error.formattedMessage, 'Ocorreu um erro ao salvar seu projeto.');
     }
   };
 
@@ -114,8 +114,8 @@ export default function ProjectScreen() {
       setProject(updatedProject);
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
-    } catch (err) {
-      console.error("Erro ao atualizar projeto:", err);
+    } catch (error: any) {
+      showToast('error', error.formattedMessage, 'Ocorreu um erro ao salvar seu projeto.');
     }
   };
 
