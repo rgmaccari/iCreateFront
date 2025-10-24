@@ -1,4 +1,5 @@
 // src/components/image-modal.tsx
+import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
@@ -12,13 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-export interface ImageCreateDto {
-  uri: string;
-  filename?: string;
-  mimeType?: string;
-  isCover?: boolean;
-}
 
 interface ImageModalProps {
   visible: boolean;

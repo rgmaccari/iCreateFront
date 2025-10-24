@@ -1,7 +1,6 @@
-// app/main/project/project-screen.tsx
-import ProjectScreenTest from "@/app/project-screen-test";
 import AddButton from "@/components/add-button";
 import ImageModal from "@/components/image-modal";
+import LinkModal from "@/components/linking-modal";
 import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs";
@@ -32,6 +31,7 @@ export default function ProjectScreen() {
   const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
   const [showComponentSelector, setShowComponentSelector] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
   const [currentProjectCode, setCurrentProjectCode] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -260,7 +260,7 @@ export default function ProjectScreen() {
           </View>
         );
       case "board":
-        return <ProjectScreenTest />;
+        return
       case "form":
         return <ProjectForm project={project} onChange={setFormData} />;
       default:
@@ -296,6 +296,13 @@ export default function ProjectScreen() {
         onClose={() => setShowComponentSelector(false)}
         onSelectComponent={handleOptions}
       />
+
+      <LinkModal
+        visible={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onSave={() => {}}
+      />
+
       <ImageModal
         projectCode={projectCode}
         visible={showImageModal}

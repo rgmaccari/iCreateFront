@@ -1,24 +1,22 @@
-// src/components/LinkModal.js
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const LinkModal = ({ visible, onClose, onSave }: any) => {
+interface LinkModalProps{
+  visible: boolean;
+  onClose: () => void;
+  onSave: (data: { title: string; url: string }) => void;
+}
+
+const LinkModal = (props: LinkModalProps) => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
 
   const handleSave = () => {
     if (title.trim() && url.trim()) {
-      onSave({ title: title.trim(), url: url.trim() });
+      props.onSave({ 
+        title: title.trim(), 
+        url: url.trim() });
       setTitle('');
       setUrl('');
     }
@@ -27,12 +25,12 @@ const LinkModal = ({ visible, onClose, onSave }: any) => {
   const handleClose = () => {
     setTitle('');
     setUrl('');
-    onClose();
+    props.onClose();
   };
 
   return (
     <Modal
-      visible={visible}
+      visible={props.visible}
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={handleClose}

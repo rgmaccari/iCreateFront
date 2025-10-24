@@ -1,5 +1,10 @@
 // src/screens/ProjectScreen.js
+import AddButton from '@/components/add-button';
 import DraggableItem from '@/components/drag-item';
+import ImageModal from '@/components/image-modal';
+import LinkModal from '@/components/linking-modal';
+import ComponentSelectorModal from '@/components/selector-modal';
+import SketchModal from '@/components/sketch-modal';
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -48,51 +53,78 @@ interface SketchData {
   text: string;
 }
 
-const ProjectScreenTest = () => {
+interface ProjectBoardProps{
+  projectCode: number;
+  onAddLink: (linkData: LinkData) => void;
+  onAddImage: (imageData: ImageData) => void;
+  onAddSketch: (sketchData: SketchData) => void;
+}
+
+const ProjectBoard = (props: ProjectBoardProps) => {
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [showComponentSelector, setShowComponentSelector] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showSketchModal, setShowSketchModal] = useState(false);
 
-  // const handleAddLink = (linkData: LinkData) => {
-  //   const newItem: LinkItem = {
-  //     id: Date.now().toString(),
-  //     type: 'link',
-  //     title: linkData.title,
-  //     url: linkData.url,
-  //     x: 50,
-  //     y: 50,
-  //     width: 200,
-  //     height: 60,
-  //   };
-  //   setItems([...items, newItem]);
-  //   setShowLinkModal(false);
-  // };
+  const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
+    setShowComponentSelector(false);
+    
+    switch (componentType) {
+      case 'link':
+        setShowLinkModal(true);
+        break;
+      case 'image':
+        setShowImageModal(true);
+        break;
+      case 'sketch':
+        setShowSketchModal(true);
+        break;
+    }
+  };
 
-  // const handleAddImage = (imageData: ImageData) => {
-  //   const newItem: ImageItem = {
-  //     id: Date.now().toString(),
-  //     type: 'image',
-  //     uri: imageData.uri,
-  //     x: 50,
-  //     y: 50,
-  //     width: 200,
-  //     height: 150,
-  //   };
-  //   setItems([...items, newItem]);
-  //   setShowImageModal(false);
-  // };
+  const handleAddLink = (linkData: LinkData) => {
+    const newItem: LinkItem = {
+      id: Date.now().toString(),
+      type: 'link',
+      title: linkData.title,
+      url: linkData.url,
+      x: 50,
+      y: 50,
+      width: 200,
+      height: 60,
+    };
+    setItems([...items, newItem]);
+    setShowLinkModal(false);
+  };
 
-  // const handleAddSketch = (sketchData: SketchData) => {
-  //   const newItem: SketchItem = {
-  //     id: Date.now().toString(),
-  //     type: 'sketch',
-  //     text: sketchData.text,
-  //     x: 50,
-  //     y: 50,
-  //     width: 250,
-  //     height: 120,
-  //   };
-  //   setItems([...items, newItem]);
-  //   setShowSketchModal(false);
-  // };
+  const handleAddImage = (imageData: ImageData) => {
+    const newItem: ImageItem = {
+      id: Date.now().toString(),
+      type: 'image',
+      uri: imageData.uri,
+      x: 50,
+      y: 50,
+      width: 200,
+      height: 150,
+    };
+    setItems([...items, newItem]);
+    setShowImageModal(false);
+  };
+
+  const handleAddSketch = (sketchData: SketchData) => {
+    const newItem: SketchItem = {
+      id: Date.now().toString(),
+      type: 'sketch',
+      text: sketchData.text,
+      x: 50,
+      y: 50,
+      width: 250,
+      height: 120,
+    };
+    setItems([...items, newItem]);
+    setShowSketchModal(false);
+  };
 
   const updateItemPosition = (id: string, x: number, y: number) => {
     setItems(currentItems =>
@@ -108,7 +140,8 @@ const ProjectScreenTest = () => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <ScrollView
+      
+      <ScrollView 
         style={styles.canvas}
         contentContainerStyle={styles.canvasContent}
       >
@@ -122,7 +155,32 @@ const ProjectScreenTest = () => {
         ))}
       </ScrollView>
 
+      <AddButton onPress={() => setShowComponentSelector(true)} />
 
+      {/* Modais */}
+      <ComponentSelectorModal
+        visible={showComponentSelector}
+        onClose={() => setShowComponentSelector(false)}
+        onSelectComponent={handleAddComponent}
+      />
+
+      <LinkModal
+        visible={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onSave={handleAddLink}
+      />
+
+      <ImageModal
+        visible={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onSave={() => handleAddImage}
+      />
+
+      <SketchModal
+        visible={showSketchModal}
+        onClose={() => setShowSketchModal(false)}
+        onSave={handleAddSketch}
+      />
     </GestureHandlerRootView>
   );
 };
@@ -130,7 +188,18 @@ const ProjectScreenTest = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#828991ff',
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
   canvas: {
     flex: 1,
@@ -140,4 +209,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProjectScreenTest;
+export default ProjectBoard;
