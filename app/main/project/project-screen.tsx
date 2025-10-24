@@ -4,7 +4,7 @@ import AddButton from "@/components/add-button";
 import ImageModal from "@/components/image-modal";
 import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
-import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-mode";
+import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs";
 import ComponentSelectorModal from "@/components/selector-modal";
 import { showToast } from "@/constants/showToast";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
@@ -102,7 +102,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast('error', error.formattedMessage, 'Ocorreu um erro ao salvar seu projeto.');
+      showToast('error', error.formattedMessage);
     }
   };
 
@@ -115,7 +115,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast('error', error.formattedMessage, 'Ocorreu um erro ao salvar seu projeto.');
+      showToast('error', error.formattedMessage);
     }
   };
 
@@ -313,6 +313,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+
   },
   viewContent: {
     flex: 1,

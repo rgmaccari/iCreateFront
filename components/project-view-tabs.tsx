@@ -4,12 +4,12 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export type ProjectViewMode = 'document' | 'board' | 'form';
 
-interface ProjectViewTabsProps {
+interface ProjectViewModeProps {
     currentView: ProjectViewMode;
     onViewChange: (view: ProjectViewMode) => void;
 }
 
-const ProjectViewTabs: React.FC<ProjectViewTabsProps> = (props: ProjectViewTabsProps) => {
+const ProjectViewMode: React.FC<ProjectViewModeProps> = (props: ProjectViewModeProps) => {
     //Cada item
     const tabs = [
         { id: 'document' as ProjectViewMode, label: 'Documento', icon: '📄' },
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ProjectViewTabs;
+export default ProjectViewMode;
