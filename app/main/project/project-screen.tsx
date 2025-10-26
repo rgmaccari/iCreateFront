@@ -198,7 +198,7 @@ export default function ProjectScreen() {
   const createLink = async (form: LinkCreateDto) => {
     if (projectCode && form) {
       try {
-        await LinkService.create(projectCode, form);
+        await LinkService.create(form);
         setShowLinkModal(false);
       } catch (error: any) {
         showToast('error', error.formattedMessage);
@@ -209,7 +209,7 @@ export default function ProjectScreen() {
   const createNote = async (form: NoteCreateDto) => {
     if (projectCode && form) {
       try {
-        await NoteService.create(projectCode, form);
+        await NoteService.create(form);
         setShowSketchModal(false);
       } catch (error: any) {
         showToast('error', error.formattedMessage);

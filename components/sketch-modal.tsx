@@ -51,6 +51,8 @@ const SketchModal = (props: SketchModalProps) => {
         note.description = description.trim();
       }
 
+      note.projectCode = props.projectCode;
+
       props.onSave(note);
       handleClose();
     }

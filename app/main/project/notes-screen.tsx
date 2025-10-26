@@ -54,8 +54,9 @@ export default function NotesScreen() {
                 const noteCreateDto = new NoteCreateDto();
                 noteCreateDto.title = title || undefined;
                 noteCreateDto.description = description || undefined;
+                noteCreateDto.projectCode = projectCode;
 
-                await NoteService.create(projectCode, noteCreateDto);
+                await NoteService.create(noteCreateDto);
             }
 
             setTitle("");

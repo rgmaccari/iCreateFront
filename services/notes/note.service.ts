@@ -3,8 +3,8 @@ import { Note } from "./note";
 import { NoteCreateDto } from "./note.create.dto";
 
 export class NoteService {
-    static async create(projectCode: number, note: NoteCreateDto): Promise<Note> {
-        const response = await api.post<Note>(`/notes/${projectCode}`, note);
+    static async create(note: NoteCreateDto): Promise<Note> {
+        const response = await api.post<Note>(`/notes`, note);
         return response.data;
     }
 

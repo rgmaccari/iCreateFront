@@ -43,12 +43,13 @@ export default function LinkScreen() {
     };
 
     const create = async (value: any) => {
-        if (projectCode && value) {
+        if (value) {
             try {
                 const link = new LinkCreateDto();
                 link.url = value;
                 link.title = "";
-                await LinkService.create(projectCode, link);
+                link.projectCode = projectCode;
+                await LinkService.create(link);
                 findAllByProjectCode(projectCode); // Recarregar lista
             } catch (err) {
                 console.error(err);

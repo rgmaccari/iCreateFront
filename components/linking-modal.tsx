@@ -19,6 +19,7 @@ const LinkModal = (props: LinkModalProps) => {
       const link = new LinkCreateDto();
       link.title = title.trim();
       link.url = url.trim();
+      link.projectCode = props.projectCode;
 
       props.onSave(link);
       handleClose();
