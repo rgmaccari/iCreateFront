@@ -19,7 +19,7 @@ interface DraggableItemProps {
     height: number;
     title?: string;
     url?: string;
-    uri?: string;
+    source?: string;
     description?: string;
   };
   onPositionChange: (code: number, x: number, y: number) => void;
@@ -79,7 +79,7 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
       case 'image':
         return (
           <Image
-            source={{ uri: item.uri }}
+            source={{ uri: item.source }}
             style={[styles.image, { width: item.width, height: item.height }]}
             resizeMode="cover"
           />

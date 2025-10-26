@@ -119,8 +119,10 @@ export default function ImageScreen() {
             {/*renderView()*/}
             { /* Substitua a chamada de renderView() */}
             <ImageViewerPanel
-                images={images} viewMode={viewMode} onDelete={deleteByCode} />
-
+                images={images}
+                viewMode={viewMode}
+                onDelete={deleteByCode}
+            />
 
             <ImageModal
                 projectCode={userCode}

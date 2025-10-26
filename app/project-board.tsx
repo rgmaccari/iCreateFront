@@ -71,6 +71,24 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     setLastLinks(props.links); //Atualiza o estado da lista
   }, [props.links]);
 
+  useEffect(() => {
+    if (lastImages.length === 0) {
+      setLastImages(props.images);
+      return;
+    }
+
+    const newImages = props.images.filter(image => !lastImages.some(oldImage => oldImage.code === image.code));
+
+    //handleAddNote para cada nova note
+    newImages.forEach(image => {
+      if (image.code) {
+        handleAddImage(image);
+      }
+    });
+
+    setLastImages(props.images); //Atualiza o estado da lista
+  }, [props.images]);
+
   //Transforma um novo objeto Note em um Item
   const handleAddNote = (noteData: Note) => {
     if (!noteData.code) {
@@ -91,6 +109,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     setItems(prev => [...prev, newItem]);
   };
 
+  //Transofrma um novo
   const handleAddLink = (linkData: Link) => {
     const newItem: LinkItem = {
       code: linkData.code!,
@@ -105,6 +124,19 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     setItems([...items, newItem]);
   };
 
+  const handleAddImage = (imageData: Image) => {
+    const newItem: ImageItem = {
+      code: imageData.code,
+      source: imageData.url,
+      type: 'image',
+      x: 50,
+      y: 50,
+      width: 200,
+      height: 150,
+    };
+    setItems([...items, newItem]);
+  };
+
   //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
   const updateItemPosition = (code: number, x: number, y: number) => {
     setItems(currentItems => currentItems.map(item => item.code === code ? { ...item, x, y } : item));
@@ -114,7 +146,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const deleteItem = (code: number) => {
     setItems(currentItems => currentItems.filter(item => item.code !== code));
   };
-
 
   // const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null);
   // const [showComponentSelector, setShowComponentSelector] = useState(false);
@@ -156,20 +187,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   //   url: string;
   // }
 
-
-  // const handleAddImage = (imageData: ImageData) => {
-  //   const newItem: ImageItem = {
-  //     id: Date.now().toString(),
-  //     type: 'image',
-  //     uri: imageData.uri,
-  //     x: 50,
-  //     y: 50,
-  //     width: 200,
-  //     height: 150,
-  //   };
-  //   setItems([...items, newItem]);
-  //   setShowImageModal(false);
-  // };
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -224,7 +241,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#506b86ff',
   },
   header: {
     padding: 20,
