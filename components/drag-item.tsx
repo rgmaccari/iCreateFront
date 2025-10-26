@@ -1,18 +1,17 @@
-// Alternativa com API mais recente do Reanimated
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue
 } from 'react-native-reanimated';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface DraggableItemProps {
   item: {
-    id: string;
+    code: number; //correto como obrigatório
     type: 'link' | 'image' | 'sketch';
     x: number;
     y: number;
@@ -21,10 +20,10 @@ interface DraggableItemProps {
     title?: string;
     url?: string;
     uri?: string;
-    text?: string;
+    description?: string;
   };
-  onPositionChange: (id: string, x: number, y: number) => void;
-  onDelete: (id: string) => void;
+  onPositionChange: (code: number, x: number, y: number) => void;
+  onDelete: (code: number) => void;
 }
 
 const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps) => {
@@ -34,17 +33,17 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      // Nada necessário no start
+      //Nada necessário no start
     })
     .onUpdate((event) => {
       translateX.value = item.x + event.translationX;
       translateY.value = item.y + event.translationY;
     })
     .onEnd(() => {
-      // Atualiza a posição base no item
+      //Atualiza a posição base no item
       item.x = translateX.value;
       item.y = translateY.value;
-      runOnJS(onPositionChange)(item.id, translateX.value, translateY.value);
+      runOnJS(onPositionChange)(item.code, translateX.value, translateY.value);
     });
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -62,7 +61,7 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
       'O que você deseja fazer?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', onPress: () => onDelete(item.id), style: 'destructive' },
+        { text: 'Excluir', onPress: () => onDelete(item.code), style: 'destructive' },
       ]
     );
   };
@@ -76,25 +75,32 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
             <Text style={styles.linkUrl} numberOfLines={1}>{item.url}</Text>
           </View>
         );
-      
+
       case 'image':
         return (
-          <Image 
-            source={{ uri: item.uri }} 
+          <Image
+            source={{ uri: item.uri }}
             style={[styles.image, { width: item.width, height: item.height }]}
             resizeMode="cover"
           />
         );
-      
+
       case 'sketch':
         return (
           <View style={[styles.sketchContainer, { width: item.width, height: item.height }]}>
-            <Text style={styles.sketchText} numberOfLines={4}>
-              {item.text}
+            {/* Título */}
+            {item.title && (
+              <Text style={styles.sketchTitle} numberOfLines={1}>
+                {item.title}
+              </Text>
+            )}
+            {/* Descrição */}
+            <Text style={styles.sketchText} numberOfLines={3}>
+              {item.description} {/* ← MUDAR DE item.text PARA item.description */}
             </Text>
           </View>
         );
-      
+
       default:
         return null;
     }
@@ -122,8 +128,6 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
     </GestureDetector>
   );
 };
-
-// Os styles permanecem os mesmos...
 
 const styles = StyleSheet.create({
   container: {
@@ -167,9 +171,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ffeb3b',
   },
+  sketchTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
   sketchText: {
     fontSize: 14,
-    color: '#333',
+    color: '#666',
     lineHeight: 18,
   },
 });

@@ -245,7 +245,7 @@ export default function ProjectScreen() {
         setShowSketchModal(false);
 
         const updatedNotes = await NoteService.findAllByProjectCode(projectCode);
-        setNotes(updatedNotes || []);
+        setNotes(updatedNotes || []); //Atualiza o estado de um "prop.images" no componente visual
         showToast('success', 'Anotação registrada!')
       } catch (error: any) {
         showToast('error', error.formattedMessage);
@@ -353,10 +353,15 @@ export default function ProjectScreen() {
       case "board":
         return (
           <ProjectBoard
+            project={project}
             onAddImage={() => console.log('aopa')}
             onAddLink={() => console.log('aopa')}
-            onAddSketch={() => console.log('aopa')}
-            projectCode={projectCode!}
+            onAddNote={() => console.log('aopa')}
+
+            images={images}
+            links={links}
+            notes={notes}
+            checklists={checklists}
           />
         );
       case "form":

@@ -1,153 +1,170 @@
-// src/screens/ProjectScreen.js
-import AddButton from '@/components/add-button';
 import DraggableItem from '@/components/drag-item';
-import ImageModal from '@/components/image-modal';
-import LinkModal from '@/components/linking-modal';
-import ComponentSelectorModal from '@/components/selector-modal';
-import SketchModal from '@/components/sketch-modal';
-import React, { useState } from 'react';
+import { Checklist } from '@/services/checklist/checklist';
+import { Image } from '@/services/image/image';
+import { ImageItem } from '@/services/item/image-item';
+import { LinkItem } from '@/services/item/link-item';
+import { NoteItem } from '@/services/item/note-item';
+import { Link } from '@/services/link/link';
+import { Note } from '@/services/notes/note';
+import { Project } from '@/services/project/project';
+import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
   StyleSheet
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Definindo os tipos TypeScript
-interface BaseItem {
-  id: string;
-  type: 'link' | 'image' | 'sketch';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface LinkItem extends BaseItem {
-  type: 'link';
-  title: string;
-  url: string;
-}
-
-interface ImageItem extends BaseItem {
-  type: 'image';
-  uri: string;
-}
-
-interface SketchItem extends BaseItem {
-  type: 'sketch';
-  text: string;
-}
-
-type ProjectItem = LinkItem | ImageItem | SketchItem;
-
-interface LinkData {
-  title: string;
-  url: string;
-}
+type ProjectItem = LinkItem | ImageItem | NoteItem;
 
 interface ImageData {
   uri: string;
 }
 
-interface SketchData {
-  text: string;
-}
 
 interface ProjectBoardProps {
-  projectCode: number;
-  onAddLink: (linkData: LinkData) => void;
-  onAddImage: (imageData: ImageData) => void;
-  onAddSketch: (sketchData: SketchData) => void;
+  project?: Project;
+  onChange?: (data: Partial<Project>) => void;
+  onAddLink?: (linkData: Link) => void;
+  onAddImage?: (imageData: ImageData) => void;
+  onAddNote?: (noteData: Note) => void;
+  images: Image[];
+  links: Link[];
+  notes: Note[];
+  checklists: Checklist[];
 }
 
 const ProjectBoard = (props: ProjectBoardProps) => {
   const [items, setItems] = useState<ProjectItem[]>([]);
-  const [showComponentSelector, setShowComponentSelector] = useState(false);
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [showSketchModal, setShowSketchModal] = useState(false);
+  const [lastNotes, setLastNotes] = useState<Note[]>([]);
 
-  const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
-    setShowComponentSelector(false);
-
-    switch (componentType) {
-      case 'link':
-        setShowLinkModal(true);
-        break;
-      case 'image':
-        setShowImageModal(true);
-        break;
-      case 'sketch':
-        setShowSketchModal(true);
-        break;
+  //UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
+  useEffect(() => {
+    if (lastNotes.length === 0) {
+      setLastNotes(props.notes);
+      return;
     }
-  };
 
-  const handleAddLink = (linkData: LinkData) => {
-    const newItem: LinkItem = {
-      id: Date.now().toString(),
-      type: 'link',
-      title: linkData.title,
-      url: linkData.url,
-      x: 50,
-      y: 50,
-      width: 200,
-      height: 60,
-    };
-    setItems([...items, newItem]);
-    setShowLinkModal(false);
-  };
+    const newNotes = props.notes.filter(note => !lastNotes.some(oldNote => oldNote.code === note.code));
 
-  const handleAddImage = (imageData: ImageData) => {
-    const newItem: ImageItem = {
-      id: Date.now().toString(),
-      type: 'image',
-      uri: imageData.uri,
-      x: 50,
-      y: 50,
-      width: 200,
-      height: 150,
-    };
-    setItems([...items, newItem]);
-    setShowImageModal(false);
-  };
+    //handleAddNote para cada nova note
+    newNotes.forEach(note => {
+      if (note.code) {
+        handleAddNote(note);
+      }
+    });
 
-  const handleAddSketch = (sketchData: SketchData) => {
-    const newItem: SketchItem = {
-      id: Date.now().toString(),
+    setLastNotes(props.notes); //Atualiza o estado da lista
+  }, [props.notes]);
+
+  //Transforma um novo objeto Note em um Item
+  const handleAddNote = (noteData: Note) => {
+    if (!noteData.code) {
+      console.warn('Tentativa de adicionar note sem code:', noteData);
+      return;
+    }
+
+    const newItem: NoteItem = {
+      code: noteData.code,
+      title: noteData.title,
+      description: noteData.description!,
       type: 'sketch',
-      text: sketchData.text,
       x: 50,
       y: 50,
       width: 250,
       height: 120,
     };
-    setItems([...items, newItem]);
-    setShowSketchModal(false);
+    setItems(prev => [...prev, newItem]);
   };
 
-  const updateItemPosition = (id: string, x: number, y: number) => {
-    setItems(currentItems =>
-      currentItems.map(item =>
-        item.id === id ? { ...item, x, y } : item
-      )
-    );
+  //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
+  const updateItemPosition = (code: number, x: number, y: number) => {
+    setItems(currentItems => currentItems.map(item => item.code === code ? { ...item, x, y } : item));
   };
 
-  const deleteItem = (id: string) => {
-    setItems(currentItems => currentItems.filter(item => item.id !== id));
+  //Remove itens: através do code do item apenas, realizo o delet
+  const deleteItem = (code: number) => {
+    setItems(currentItems => currentItems.filter(item => item.code !== code));
   };
+
+
+  // const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null);
+  // const [showComponentSelector, setShowComponentSelector] = useState(false);
+  // const [showLinkModal, setShowLinkModal] = useState(false);
+  // const [showImageModal, setShowImageModal] = useState(false);
+  // const [showSketchModal, setShowSketchModal] = useState(false);
+
+  // useEffect(() => {
+  //   console.log('links ', JSON.stringify(props.notes, null, 2));
+  // }, [props.notes]);
+
+  // const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
+  //   setShowComponentSelector(false);
+
+  //   switch (componentType) {
+  //     case 'link':
+  //       setShowLinkModal(true);
+  //       break;
+  //     case 'image':
+  //       setShowImageModal(true);
+  //       break;
+  //     case 'sketch':
+  //       setShowSketchModal(true);
+  //       break;
+  //   }
+  // };
+
+  //Transformo um link (objeto) em um item (no board)
+  // const handleAddLink = (linkData: Link) => {
+  //   const newItem: LinkItem = {
+  //     code: linkData.code!,
+  //     url: linkData.url!,
+  //     title: linkData.title!,
+  //     type: 'link',
+  //     x: 50,
+  //     y: 50,
+  //     width: 200,
+  //     height: 60,
+  //   };
+  //   setItems([...items, newItem]);
+  // };
+
+  // interface LinkItem extends BaseItem {
+  //   type: 'link';
+  //   title: string;
+  //   url: string;
+  // }
+
+  // interface LinkData {
+  //   title: string;
+  //   url: string;
+  // }
+
+
+  // const handleAddImage = (imageData: ImageData) => {
+  //   const newItem: ImageItem = {
+  //     id: Date.now().toString(),
+  //     type: 'image',
+  //     uri: imageData.uri,
+  //     x: 50,
+  //     y: 50,
+  //     width: 200,
+  //     height: 150,
+  //   };
+  //   setItems([...items, newItem]);
+  //   setShowImageModal(false);
+  // };
 
   return (
     <GestureHandlerRootView style={styles.container}>
 
+      {/*Apenas a view geral*/}
       <ScrollView
         style={styles.canvas}
         contentContainerStyle={styles.canvasContent}
       >
         {items.map((item) => (
           <DraggableItem
-            key={item.id}
+            key={item.code}
             item={item}
             onPositionChange={updateItemPosition}
             onDelete={deleteItem}
@@ -155,19 +172,19 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         ))}
       </ScrollView>
 
-      <AddButton onPress={() => setShowComponentSelector(true)} />
+      {/* <AddButton onPress={() => setShowComponentSelector(true)} /> */}
 
       {/* Modais */}
-      <ComponentSelectorModal
+      {/* <ComponentSelectorModal
         visible={showComponentSelector}
         onClose={() => setShowComponentSelector(false)}
         onSelectComponent={handleAddComponent}
-      />
+      /> */}
 
-      <LinkModal
+      {/* <LinkModal
         visible={showLinkModal}
         onClose={() => setShowLinkModal(false)}
-        onSave={handleAddLink}
+        onSave={() => handleAddLink}
         projectCode={props.projectCode}
       />
 
@@ -181,8 +198,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       <SketchModal
         visible={showSketchModal}
         onClose={() => setShowSketchModal(false)}
-        onSave={handleAddSketch}
-      />
+        onSave={() => handleAddSketch}
+      /> */}
     </GestureHandlerRootView>
   );
 };
