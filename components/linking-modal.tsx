@@ -15,7 +15,6 @@ const LinkModal = (props: LinkModalProps) => {
   const [url, setUrl] = useState('');
 
   const handleSave = async () => {
-    console.log(`handleSave acionado`)
     if (props.projectCode || url.trim()) {
       const link = new LinkCreateDto();
       link.title = title.trim();
@@ -25,21 +24,6 @@ const LinkModal = (props: LinkModalProps) => {
       handleClose();
     }
   };
-
-  /**
-   * 
-   * const handleSave = async () => {
-    if (props.projectCode) {
-      if (selectedImages.length > 0) {
-        await props.onSave([...selectedImages]); //Garante passagem estável
-        setTimeout(() => {
-          setSelectedImages([]);
-          setIsCoverIndex(null);
-        }, 300);
-      }
-    }
-  };
-  */
 
   const handleClose = () => {
     setTitle('');
@@ -149,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#81c091ff',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

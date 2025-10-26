@@ -1,4 +1,3 @@
-// src/components/ComponentSelectorModal.js
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -9,28 +8,34 @@ import {
   View,
 } from 'react-native';
 
-const ComponentSelectorModal = ({ visible, onClose, onSelectComponent }: any) => {
+interface ComponentSelectorModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSelectComponent: (component: any) => void;
+}
+
+const ComponentSelectorModal = (props: ComponentSelectorModalProps) => {
   const components = [
-    {
-      type: 'link',
-      title: 'Link',
-      description: 'Adicionar um link da web',
-      icon: 'link' as const, //Para o fontawesome reconhecer
-      color: '#007AFF',
-    },
     {
       type: 'image',
       title: 'Imagem',
       description: 'Adicionar uma imagem da galeria',
-      icon: 'image' as const, //Para o fontawesome reconhecer
-      color: '#34C759',
+      icon: 'image' as const,
+      color: '#70a1d6ff',
+    },
+    {
+      type: 'link',
+      title: 'Link',
+      description: 'Adicionar um link da web',
+      icon: 'link' as const,
+      color: '#81c091ff',
     },
     {
       type: 'sketch',
       title: 'Rascunho',
       description: 'Adicionar uma nota ou rascunho',
-      icon: 'document-text' as const, //Para o fontawesome reconhecer
-      color: '#FF9500',
+      icon: 'document-text' as const,
+      color: '#d6a867ff',
     },
   ];
 
@@ -39,16 +44,21 @@ const ComponentSelectorModal = ({ visible, onClose, onSelectComponent }: any) =>
 
   return (
     <Modal
-      visible={visible}
+      visible={props.visible}
       animationType="slide"
       transparent={true}
-      onRequestClose={onClose}
+      onRequestClose={props.onClose}
     >
-      <View style={styles.overlay}>
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={props.onClose}
+      >
         <View style={[styles.modalContainer, { height: modalHeight }]}>
+          {/*Conteúdo do modal*/}
           <View style={styles.header}>
-            <Text style={styles.title}>Adicionar Componente</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.title}>Adicionar um item</Text>
+            <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
@@ -58,7 +68,7 @@ const ComponentSelectorModal = ({ visible, onClose, onSelectComponent }: any) =>
               <TouchableOpacity
                 key={component.type}
                 style={styles.componentItem}
-                onPress={() => onSelectComponent(component.type)}
+                onPress={() => props.onSelectComponent(component.type)}
               >
                 <View style={[styles.iconContainer, { backgroundColor: component.color }]}>
                   <Ionicons name={component.icon} size={24} color="#fff" />
@@ -74,7 +84,7 @@ const ComponentSelectorModal = ({ visible, onClose, onSelectComponent }: any) =>
             ))}
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 };

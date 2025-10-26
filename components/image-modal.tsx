@@ -1,4 +1,3 @@
-// src/components/image-modal.tsx
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -46,7 +45,7 @@ const ImageModal = (props: ImageModalProps) => {
         uri: asset.uri,
         filename: asset.fileName || `image_${Date.now()}_${index}.jpg`,
         mimeType: asset.mimeType || "image/jpeg",
-        isCover: isCoverIndex === null && index === 0 ? true : false,
+        isCover: isCoverIndex === null && selectedImages.length === 0 && index === 0 ? true : false,
       }));
 
       setSelectedImages((prev) => [...prev, ...newImages]);
@@ -80,7 +79,7 @@ const ImageModal = (props: ImageModalProps) => {
   const handleSave = async () => {
     if (props.projectCode) {
       if (selectedImages.length > 0) {
-        await props.onSave([...selectedImages]); //Garante passagem estável
+        await props.onSave([...selectedImages]);
         setTimeout(() => {
           setSelectedImages([]);
           setIsCoverIndex(null);
@@ -113,9 +112,18 @@ const ImageModal = (props: ImageModalProps) => {
         </View>
 
         <View style={styles.content}>
-          {selectedImages.length > 0 ? (
-            <View style={styles.imagesPreview}>
-              <ScrollView style={styles.imagesList}>
+          <ScrollView style={styles.scrollView}>
+            {/* Componente "Selecionar da Galeria" sempre visível */}
+            <TouchableOpacity style={styles.pickImageButton} onPress={pickImages}>
+              <Ionicons name="images" size={48} color="#ccc" />
+              <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
+              <Text style={styles.pickImageSubtext}>Múltiplas imagens permitidas</Text>
+            </TouchableOpacity>
+
+            {/* Lista de imagens selecionadas */}
+            {selectedImages.length > 0 && (
+              <View style={styles.imagesPreview}>
+                <Text style={styles.imagesTitle}>Imagens Selecionadas:</Text>
                 {selectedImages.map((image, index) => (
                   <View key={index} style={styles.imageItem}>
                     <Image
@@ -137,27 +145,16 @@ const ImageModal = (props: ImageModalProps) => {
                       style={styles.removeButton}
                       onPress={() => removeImage(index)}
                     >
-                      <Ionicons name="close-circle" size={24} color="#ff3b30" />
+                      <Ionicons name="close" size={16} color="#ff3b30" />
                     </TouchableOpacity>
+
                   </View>
                 ))}
-              </ScrollView>
+              </View>
+            )}
+          </ScrollView>
 
-              <TouchableOpacity
-                style={styles.addMoreButton}
-                onPress={pickImages}
-              >
-                <Text style={styles.addMoreText}>Adicionar Mais Imagens</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.pickImageButton} onPress={pickImages}>
-              <Ionicons name="images" size={48} color="#ccc" />
-              <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
-              <Text style={styles.pickImageSubtext}>Múltiplas imagens permitidas</Text>
-            </TouchableOpacity>
-          )}
-
+          {/* Botão de salvar */}
           <TouchableOpacity
             style={[
               styles.saveButton,
@@ -200,7 +197,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: "space-between",
+  },
+  scrollView: {
+    flex: 1,
   },
   pickImageButton: {
     alignItems: "center",
@@ -210,6 +209,7 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderRadius: 12,
     backgroundColor: "#f8f9fa",
+    marginBottom: 20,
   },
   pickImageText: {
     marginTop: 12,
@@ -222,10 +222,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   imagesPreview: {
-    flex: 1,
+    marginBottom: 20,
   },
-  imagesList: {
-    flex: 1,
+  imagesTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
   },
   imageItem: {
     flexDirection: "row",
@@ -256,24 +259,11 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: 4,
   },
-  addMoreButton: {
-    padding: 12,
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  addMoreText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   saveButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: '#81c091ff',
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 20,
   },
   saveButtonDisabled: {
     backgroundColor: "#ccc",
