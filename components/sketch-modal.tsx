@@ -1,3 +1,5 @@
+import { ChecklistItem } from '@/services/checklist/checklist-item';
+import { ChecklistDto } from '@/services/checklist/checklist.dto';
 import { NoteCreateDto } from '@/services/notes/note.create.dto';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -16,19 +18,12 @@ interface SketchModalProps {
   projectCode: number | undefined;
   visible: boolean;
   onClose: () => void;
-  onSave: (data: NoteCreateDto) => void;
+  onSaveNote?: (data: NoteCreateDto) => void;
+  onSaveChecklist?: (data: ChecklistDto) => void;
 }
-
 
 //Verificar se preciso abstrari esse bgl 
 type NoteType = 'text' | 'checklist';
-
-interface ChecklistItem {
-  id: string;
-  text: string;
-  sort?: number;
-  checked: boolean;
-}
 
 const SketchModal = (props: SketchModalProps) => {
   const [description, setDescription] = useState('');
@@ -37,57 +32,83 @@ const SketchModal = (props: SketchModalProps) => {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState('');
 
-  const handleSave = () => {
-    //Verifica o preenchimento de um dos dois requisitos.
-    if (props.projectCode && (description.trim() || checklistItems.length > 0)) {
+  //Save da checklist
+  const handleSaveNote = () => {
+    if (props.projectCode && description.trim() && props.onSaveNote) {
       const note = new NoteCreateDto();
       note.title = title.trim();
-
-      if (noteType === 'checklist') {
-        //Formatar os itens da checklist
-        const checklistText = checklistItems.map(item => `- [${item.checked ? 'x' : ' '}] ${item.text.trim()}`).join('\n');
-        note.description = checklistText;
-      } else {
-        note.description = description.trim();
-      }
-
+      note.description = description.trim();
       note.projectCode = props.projectCode;
 
-      props.onSave(note);
+      props.onSaveNote(note);
       handleClose();
     }
   };
 
-  const addChecklistItem = () => {
-    if (newItemText.trim()) {
-      const newItem: ChecklistItem = {
-        id: Date.now().toString(),
-        text: newItemText.trim(),
-        checked: false,
+  //Save do checklist
+  const handleSaveChecklist = () => {
+    if (props.projectCode && checklistItems.length > 0 && props.onSaveChecklist) {
+      const checklistDto: ChecklistDto = {
+        projectCode: props.projectCode,
+        title: title.trim() || 'Checklist',
+        itens: checklistItems.map((item, index) => ({
+          text: item.text.trim(),
+          checked: item.checked,
+          sort: index
+        })),
       };
-      setChecklistItems(prev => [...prev, newItem]);
-      setNewItemText('');
+
+      props.onSaveChecklist(checklistDto);
+      handleClose();
     }
   };
 
-  const updateChecklistItem = (id: string, text: string) => {
+  //Funçãodecide qual save usar
+  const handleSave = () => {
+    if (noteType === 'checklist' && props.onSaveChecklist) {
+      handleSaveChecklist();
+    } else if (noteType === 'text' && props.onSaveNote) {
+      handleSaveNote();
+    }
+  };
+
+  //Add item no checklist
+  const addChecklistItem = () => {
+    if (newItemText.trim()) { //Tem novo item?
+
+      const newItem: ChecklistItem = { //Cria o objeto
+        text: newItemText.trim(),
+        checked: false,
+        sort: checklistItems.length
+      }; //Insere nos itens
+      setChecklistItems(prev => [...prev, newItem]);
+      setNewItemText(''); //Reseta o campo
+    }
+  };
+
+  //Altera dado no checklist
+  const updateChecklistItem = (index: number, text: string) => {
+    //Mapeia pelo indice, substitui o text
     setChecklistItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, text } : item))
+      prev.map((item, i) => (i === index ? { ...item, text } : item))
     );
   };
 
-  const removeChecklistItem = (id: string) => {
-    setChecklistItems(prev => prev.filter(item => item.id !== id));
+  //Remove item do checklist
+  const removeChecklistItem = (index: number) => {
+    setChecklistItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const toggleChecklistItem = (id: string) => {
+  //MArca como concluído
+  const toggleChecklistItem = (index: number) => {
     setChecklistItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, checked: !item.checked } : item
+      prev.map((item, i) =>
+        i === index ? { ...item, checked: !item.checked } : item
       )
     );
   };
 
+  //Ordenação do checklist
   const moveItem = (fromIndex: number, toIndex: number) => {
     const items = [...checklistItems];
     const [movedItem] = items.splice(fromIndex, 1);
@@ -95,25 +116,27 @@ const SketchModal = (props: SketchModalProps) => {
     setChecklistItems(items);
   };
 
+
+  //Alterna entre os tipos de sketch
   const handleNoteTypeChange = (type: NoteType) => {
     if (type === noteType) return;
 
     if (type === 'checklist' && noteType === 'text') {
-      // Converte texto para checklist items
+      //Converte texto para checklist items
       if (description.trim()) {
         const items = description
           .split('\n')
           .filter(line => line.trim())
-          .map(line => ({
-            id: Date.now().toString() + Math.random(),
+          .map((line, index) => ({
             text: line.trim(),
             checked: false,
+            sort: index
           }));
         setChecklistItems(items);
         setDescription('');
       }
     } else if (type === 'text' && noteType === 'checklist') {
-      // Converte checklist items para texto
+      //Converte checklist items para texto
       const text = checklistItems.map(item => item.text).join('\n');
       setDescription(text);
       setChecklistItems([]);
@@ -122,6 +145,7 @@ const SketchModal = (props: SketchModalProps) => {
     setNoteType(type);
   };
 
+  //Reseta campos e fecha
   const handleClose = () => {
     setTitle('');
     setDescription('');
@@ -131,10 +155,9 @@ const SketchModal = (props: SketchModalProps) => {
     props.onClose();
   };
 
+  //Verifica o texto de acordo com o type.
   const getPlaceholder = () => {
-    return noteType === 'checklist'
-      ? 'Digite um novo item...'
-      : 'Digite seu rascunho, nota ou ideia...';
+    return noteType === 'checklist' ? 'Digite um novo item...' : 'Digite seu rascunho, nota ou ideia...';
   };
 
   return (
@@ -230,6 +253,7 @@ const SketchModal = (props: SketchModalProps) => {
               />
             </View>
           ) : (
+
             //Área de Checklist
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Itens da Checklist</Text>
@@ -237,13 +261,13 @@ const SketchModal = (props: SketchModalProps) => {
               {/*Lista de Itens*/}
               <View style={styles.checklistContainer}>
                 {checklistItems.map((item, index) => (
-                  <View key={item.id} style={styles.checklistItem}>
+                  <View key={index} style={styles.checklistItem}>
                     <TouchableOpacity
                       style={[
                         styles.checkbox,
                         item.checked && styles.checkboxChecked
                       ]}
-                      onPress={() => toggleChecklistItem(item.id)}
+                      onPress={() => toggleChecklistItem(index)}
                     >
                       {item.checked && (
                         <Ionicons name="checkmark" size={12} color="#fff" />
@@ -256,7 +280,7 @@ const SketchModal = (props: SketchModalProps) => {
                         item.checked && styles.checklistInputChecked
                       ]}
                       value={item.text}
-                      onChangeText={(text) => updateChecklistItem(item.id, text)}
+                      onChangeText={(text) => updateChecklistItem(index, text)}
                       placeholder="Digite o item..."
                       placeholderTextColor="#999"
                     />
@@ -283,7 +307,7 @@ const SketchModal = (props: SketchModalProps) => {
 
                       <TouchableOpacity
                         style={styles.removeItemButton}
-                        onPress={() => removeChecklistItem(item.id)}
+                        onPress={() => removeChecklistItem(index)}
                       >
                         <Ionicons name="close" size={16} color="#ff3b30" />
                       </TouchableOpacity>

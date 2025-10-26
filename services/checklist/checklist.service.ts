@@ -1,3 +1,29 @@
-export class CheckListService {
+import api from "../api/api";
+import { Checklist } from "./checklist";
+import { ChecklistDto } from "./checklist.dto";
 
+export class ChecklistService {
+    static async create(note: ChecklistDto): Promise<Checklist> {
+        const response = await api.post<Checklist>(`/checklists`, note);
+        console.log('response mn', JSON.stringify(response.data, null, 2));
+        return response.data;
+    }
+
+    static async update(code: number, note: ChecklistDto): Promise<Checklist> {
+        const response = await api.put<Checklist>(`/checklists/${code}`, note);
+        return response.data;
+    }
+
+    static async findByCode(code: number): Promise<Checklist> {
+        const response = await api.get(`/checklists/${code}`);
+        return response.data;
+    }
+    static async findAllByProjectCode(projectCode: number): Promise<Checklist[]> {
+        const response = await api.get(`/checklists/all/${projectCode}`);
+        return response.data;
+    }
+
+    static async deleteByCode(code: number): Promise<void> {
+        await api.delete(`/checklists/${code}`);
+    }
 }

@@ -8,6 +8,8 @@ import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs
 import ComponentSelectorModal from "@/components/selector-modal";
 import SketchModal from "@/components/sketch-modal";
 import { showToast } from "@/constants/showToast";
+import { ChecklistDto } from "@/services/checklist/checklist.dto";
+import { ChecklistService } from "@/services/checklist/checklist.service";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
 import { LinkCreateDto } from "@/services/link/link.create.dto";
@@ -217,6 +219,17 @@ export default function ProjectScreen() {
     }
   }
 
+  const createChecklist = async (form: ChecklistDto) => {
+    if (projectCode && form) {
+      try {
+        await ChecklistService.create(form);
+        setShowSketchModal(false);
+      } catch (error: any) {
+        showToast('error', error.formattedMessage);
+      }
+    }
+  }
+
 
 
 
@@ -365,7 +378,8 @@ export default function ProjectScreen() {
         projectCode={projectCode}
         visible={showSketchModal}
         onClose={() => setShowSketchModal(false)}
-        onSave={createNote}
+        onSaveNote={createNote}
+        onSaveChecklist={createChecklist}
       />
     </SafeAreaView>
   );

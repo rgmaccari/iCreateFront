@@ -1,6 +1,7 @@
-export interface ChecklistItem {
-    code?: number
+export interface ChecklistItemDto {
     text: string;
+
     checked: boolean;
+
     sort: number;
 }
