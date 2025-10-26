@@ -41,11 +41,8 @@ export default function ProjectScreen() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSketchModal, setShowSketchModal] = useState(false);
-  const [currentProjectCode, setCurrentProjectCode] = useState<number | undefined>(undefined);
 
-  useEffect(() => {
-    if (projectCode) setCurrentProjectCode(projectCode);
-  }, [projectCode, project]);
+
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -59,8 +56,6 @@ export default function ProjectScreen() {
         } catch (err) {
           console.error("Erro ao carregar projeto:", err);
         }
-      } else {
-        console.log("Nenhum projectCode fornecido");
       }
       setLoading(false);
     };
@@ -144,8 +139,7 @@ export default function ProjectScreen() {
 
   //Função para salvar imagens
   const createImages = async (forms: ImageCreateDto[]) => {
-    const code = project?.code ?? currentProjectCode;
-    if (!code) {
+    if (!projectCode) {
       Alert.alert("Erro", "Projeto não carregado.");
       return;
     }
@@ -174,11 +168,11 @@ export default function ProjectScreen() {
     });
 
     formData.append("isCover", String(forms.some(f => f.isCover)));
-    formData.append("projectCode", String(code));
+    formData.append("projectCode", String(projectCode));
 
     try {
       await new Promise(r => setTimeout(r, 200));
-      await ImageService.create(code, formData);
+      await ImageService.create(projectCode, formData);
       setShowImageModal(false);
     } catch (err) {
       console.error("[createImages] erro ao salvar imagem:", err);
@@ -208,6 +202,7 @@ export default function ProjectScreen() {
     }
   };
 
+  //Criar anotação
   const createNote = async (form: NoteCreateDto) => {
     if (projectCode && form) {
       try {
@@ -219,6 +214,7 @@ export default function ProjectScreen() {
     }
   }
 
+  //Criar checklist
   const createChecklist = async (form: ChecklistDto) => {
     if (projectCode && form) {
       try {
