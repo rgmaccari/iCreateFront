@@ -53,7 +53,7 @@ interface SketchData {
   text: string;
 }
 
-interface ProjectBoardProps{
+interface ProjectBoardProps {
   projectCode: number;
   onAddLink: (linkData: LinkData) => void;
   onAddImage: (imageData: ImageData) => void;
@@ -69,7 +69,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
     setShowComponentSelector(false);
-    
+
     switch (componentType) {
       case 'link':
         setShowLinkModal(true);
@@ -140,8 +140,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      
-      <ScrollView 
+
+      <ScrollView
         style={styles.canvas}
         contentContainerStyle={styles.canvasContent}
       >
@@ -168,9 +168,11 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         visible={showLinkModal}
         onClose={() => setShowLinkModal(false)}
         onSave={handleAddLink}
+        projectCode={props.projectCode}
       />
 
       <ImageModal
+        projectCode={props.projectCode}
         visible={showImageModal}
         onClose={() => setShowImageModal(false)}
         onSave={() => handleAddImage}

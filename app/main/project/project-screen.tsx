@@ -1,3 +1,4 @@
+import ProjectBoard from "@/app/project-board";
 import AddButton from "@/components/add-button";
 import ImageModal from "@/components/image-modal";
 import LinkModal from "@/components/linking-modal";
@@ -8,6 +9,8 @@ import ComponentSelectorModal from "@/components/selector-modal";
 import { showToast } from "@/constants/showToast";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
+import { LinkCreateDto } from "@/services/link/link.create.dto";
+import { LinkService } from "@/services/link/link.service";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -134,7 +137,6 @@ export default function ProjectScreen() {
   };
 
   //Função para salvar imagens
-
   const createImages = async (forms: ImageCreateDto[]) => {
     const code = project?.code ?? currentProjectCode;
     if (!code) {
@@ -178,6 +180,29 @@ export default function ProjectScreen() {
     }
   };
 
+  // const createLink = async (form: LinkCreateDto) => {
+  //   if (projectCode && form) {
+  //     try {
+  //       await LinkService.create(projectCode, form);
+  //       await new Promise(r => setTimeout(r, 200));
+  //       setShowLinkModal(false);
+  //     } catch (error: any) {
+  //       showToast('error', error.formattedMessage);
+  //     }
+  //   }
+  // };
+  const createLink = async (form: LinkCreateDto) => {
+    if (projectCode && form) {
+      try {
+        await LinkService.create(projectCode, form);
+        setShowLinkModal(false);
+      } catch (error: any) {
+        showToast('error', error.formattedMessage);
+      }
+    }
+  };
+
+
 
 
 
@@ -193,10 +218,9 @@ export default function ProjectScreen() {
     setShowComponentSelector(false);
     switch (componentType) {
       case "link":
-        handleOpenLinks();
+        setShowLinkModal(true);
         break;
       case "image":
-        console.log("[Front] Abrindo ImageModal");
         setShowImageModal(true);
         break;
       case "sketch":
@@ -260,7 +284,14 @@ export default function ProjectScreen() {
           </View>
         );
       case "board":
-        return
+        return (
+          <ProjectBoard
+            onAddImage={() => console.log('aopa')}
+            onAddLink={() => console.log('aopa')}
+            onAddSketch={() => console.log('aopa')}
+            projectCode={projectCode!}
+          />
+        );
       case "form":
         return <ProjectForm project={project} onChange={setFormData} />;
       default:
@@ -288,9 +319,13 @@ export default function ProjectScreen() {
         onEditTitleBlur={() => setIsEditingTitle(false)}
         showSaveButton={true}
       />
+
       <ProjectViewTabs currentView={currentView} onViewChange={setCurrentView} />
+
       <View style={styles.contentContainer}>{renderCurrentView()}</View>
+
       <AddButton onPress={() => setShowComponentSelector(true)} />
+
       <ComponentSelectorModal
         visible={showComponentSelector}
         onClose={() => setShowComponentSelector(false)}
@@ -300,7 +335,8 @@ export default function ProjectScreen() {
       <LinkModal
         visible={showLinkModal}
         onClose={() => setShowLinkModal(false)}
-        onSave={() => {}}
+        onSave={createLink}
+        projectCode={projectCode}
       />
 
       <ImageModal

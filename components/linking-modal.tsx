@@ -2,25 +2,42 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-interface LinkModalProps{
+interface LinkModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (data: { title: string; url: string }) => void;
+  onSave: (LinkCreateDto: { title: string; url: string }) => void;
+  projectCode: number | undefined;
 }
 
 const LinkModal = (props: LinkModalProps) => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
 
-  const handleSave = () => {
-    if (title.trim() && url.trim()) {
-      props.onSave({ 
-        title: title.trim(), 
-        url: url.trim() });
+  const handleSave = async () => {
+    if (props.projectCode) {
+      await props.onSave({ title: title.trim(), url: url.trim() });
       setTitle('');
       setUrl('');
+
+      props.onClose();
     }
   };
+
+
+  /**
+   * 
+   * const handleSave = async () => {
+    if (props.projectCode) {
+      if (selectedImages.length > 0) {
+        await props.onSave([...selectedImages]); //Garante passagem estável
+        setTimeout(() => {
+          setSelectedImages([]);
+          setIsCoverIndex(null);
+        }, 300);
+      }
+    }
+  };
+  */
 
   const handleClose = () => {
     setTitle('');
