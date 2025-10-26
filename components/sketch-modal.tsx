@@ -19,25 +19,120 @@ interface SketchModalProps {
   onSave: (data: NoteCreateDto) => void;
 }
 
+
+//Verificar se preciso abstrari esse bgl 
+type NoteType = 'text' | 'checklist';
+
+interface ChecklistItem {
+  id: string;
+  text: string;
+  sort?: number;
+  checked: boolean;
+}
+
 const SketchModal = (props: SketchModalProps) => {
   const [description, setDescription] = useState('');
   const [title, setTitle] = useState('');
+  const [noteType, setNoteType] = useState<NoteType>('text');
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+  const [newItemText, setNewItemText] = useState('');
 
   const handleSave = () => {
-    if (props.projectCode && description.trim()) {
+    //Verifica o preenchimento de um dos dois requisitos.
+    if (props.projectCode && (description.trim() || checklistItems.length > 0)) {
       const note = new NoteCreateDto();
       note.title = title.trim();
-      note.description = description.trim();
+
+      if (noteType === 'checklist') {
+        //Formatar os itens da checklist
+        const checklistText = checklistItems.map(item => `- [${item.checked ? 'x' : ' '}] ${item.text.trim()}`).join('\n');
+        note.description = checklistText;
+      } else {
+        note.description = description.trim();
+      }
 
       props.onSave(note);
       handleClose();
     }
   };
 
+  const addChecklistItem = () => {
+    if (newItemText.trim()) {
+      const newItem: ChecklistItem = {
+        id: Date.now().toString(),
+        text: newItemText.trim(),
+        checked: false,
+      };
+      setChecklistItems(prev => [...prev, newItem]);
+      setNewItemText('');
+    }
+  };
+
+  const updateChecklistItem = (id: string, text: string) => {
+    setChecklistItems(prev =>
+      prev.map(item => (item.id === id ? { ...item, text } : item))
+    );
+  };
+
+  const removeChecklistItem = (id: string) => {
+    setChecklistItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const toggleChecklistItem = (id: string) => {
+    setChecklistItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
+  };
+
+  const moveItem = (fromIndex: number, toIndex: number) => {
+    const items = [...checklistItems];
+    const [movedItem] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, movedItem);
+    setChecklistItems(items);
+  };
+
+  const handleNoteTypeChange = (type: NoteType) => {
+    if (type === noteType) return;
+
+    if (type === 'checklist' && noteType === 'text') {
+      // Converte texto para checklist items
+      if (description.trim()) {
+        const items = description
+          .split('\n')
+          .filter(line => line.trim())
+          .map(line => ({
+            id: Date.now().toString() + Math.random(),
+            text: line.trim(),
+            checked: false,
+          }));
+        setChecklistItems(items);
+        setDescription('');
+      }
+    } else if (type === 'text' && noteType === 'checklist') {
+      // Converte checklist items para texto
+      const text = checklistItems.map(item => item.text).join('\n');
+      setDescription(text);
+      setChecklistItems([]);
+    }
+
+    setNoteType(type);
+  };
+
   const handleClose = () => {
     setTitle('');
     setDescription('');
+    setNoteType('text');
+    setChecklistItems([]);
+    setNewItemText('');
     props.onClose();
+  };
+
+  const getPlaceholder = () => {
+    return noteType === 'checklist'
+      ? 'Digite um novo item...'
+      : 'Digite seu rascunho, nota ou ideia...';
   };
 
   return (
@@ -52,45 +147,194 @@ const SketchModal = (props: SketchModalProps) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TextInput
-            style={styles.textInput}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Título"
-            placeholderTextColor="#999"
-            multiline
-            numberOfLines={8}
-            textAlignVertical="top"
-          />
+          <Text style={styles.title}>Nova anotação</Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.form}>
+          {/*Input do Título*/}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Texto do Rascunho</Text>
             <TextInput
-              style={styles.textInput}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Digite seu rascunho, nota ou ideia..."
+              style={[styles.textInput, styles.titleInput]}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Título do rascunho..."
               placeholderTextColor="#999"
-              multiline
-              numberOfLines={8}
-              textAlignVertical="top"
+              maxLength={100}
             />
           </View>
+
+          {/*Seletor de Tipo*/}
+          <View style={styles.typeSelectorContainer}>
+            <View style={styles.typeSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.typeOption,
+                  noteType === 'text' && styles.typeOptionActive
+                ]}
+                onPress={() => handleNoteTypeChange('text')}
+              >
+                <Ionicons
+                  name="document-text"
+                  size={20}
+                  color={noteType === 'text' ? '#fff' : '#666'}
+                />
+                <Text style={[
+                  styles.typeOptionText,
+                  noteType === 'text' && styles.typeOptionTextActive
+                ]}>
+                  Texto
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.typeOption,
+                  noteType === 'checklist' && styles.typeOptionActive
+                ]}
+                onPress={() => handleNoteTypeChange('checklist')}
+              >
+                <Ionicons
+                  name="list"
+                  size={20}
+                  color={noteType === 'checklist' ? '#fff' : '#666'}
+                />
+                <Text style={[
+                  styles.typeOptionText,
+                  noteType === 'checklist' && styles.typeOptionTextActive
+                ]}>
+                  Checklist
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/*Conteúdo baseado no tipo*/}
+          {noteType === 'text' ? (
+            //Área de Texto Principal
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Conteúdo</Text>
+              <TextInput
+                style={[styles.textInput, styles.descriptionInput]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={getPlaceholder()}
+                placeholderTextColor="#999"
+                multiline
+                numberOfLines={8}
+                textAlignVertical="top"
+              />
+            </View>
+          ) : (
+            //Área de Checklist
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Itens da Checklist</Text>
+
+              {/*Lista de Itens*/}
+              <View style={styles.checklistContainer}>
+                {checklistItems.map((item, index) => (
+                  <View key={item.id} style={styles.checklistItem}>
+                    <TouchableOpacity
+                      style={[
+                        styles.checkbox,
+                        item.checked && styles.checkboxChecked
+                      ]}
+                      onPress={() => toggleChecklistItem(item.id)}
+                    >
+                      {item.checked && (
+                        <Ionicons name="checkmark" size={12} color="#fff" />
+                      )}
+                    </TouchableOpacity>
+
+                    <TextInput
+                      style={[
+                        styles.checklistInput,
+                        item.checked && styles.checklistInputChecked
+                      ]}
+                      value={item.text}
+                      onChangeText={(text) => updateChecklistItem(item.id, text)}
+                      placeholder="Digite o item..."
+                      placeholderTextColor="#999"
+                    />
+
+                    {/*Botões de ordenação*/}
+                    <View style={styles.itemActions}>
+                      {index > 0 && (
+                        <TouchableOpacity
+                          style={styles.moveButton}
+                          onPress={() => moveItem(index, index - 1)}
+                        >
+                          <Ionicons name="chevron-up" size={16} color="#666" />
+                        </TouchableOpacity>
+                      )}
+
+                      {index < checklistItems.length - 1 && (
+                        <TouchableOpacity
+                          style={styles.moveButton}
+                          onPress={() => moveItem(index, index + 1)}
+                        >
+                          <Ionicons name="chevron-down" size={16} color="#666" />
+                        </TouchableOpacity>
+                      )}
+
+                      <TouchableOpacity
+                        style={styles.removeItemButton}
+                        onPress={() => removeChecklistItem(item.id)}
+                      >
+                        <Ionicons name="close" size={16} color="#ff3b30" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+
+                {/*Input para novo item*/}
+                <View style={styles.newItemContainer}>
+                  <TextInput
+                    style={styles.newItemInput}
+                    value={newItemText}
+                    onChangeText={setNewItemText}
+                    placeholder={getPlaceholder()}
+                    placeholderTextColor="#999"
+                    onSubmitEditing={addChecklistItem}
+                    returnKeyType="done"
+                  />
+                  <TouchableOpacity
+                    style={[
+                      styles.addButton,
+                      !newItemText.trim() && styles.addButtonDisabled
+                    ]}
+                    onPress={addChecklistItem}
+                    disabled={!newItemText.trim()}
+                  >
+                    <Ionicons
+                      name="add"
+                      size={20}
+                      color={newItemText.trim() ? '#fff' : '#ccc'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
 
           <TouchableOpacity
             style={[
               styles.saveButton,
-              !description.trim() && styles.saveButtonDisabled,
+              ((noteType === 'text' && !description.trim()) ||
+                (noteType === 'checklist' && checklistItems.length === 0)) &&
+              styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
-            disabled={!description.trim()}
+            disabled={
+              (noteType === 'text' && !description.trim()) ||
+              (noteType === 'checklist' && checklistItems.length === 0)
+            }
           >
-            <Text style={styles.saveButtonText}>Adicionar Rascunho</Text>
+            <Text style={styles.saveButtonText}>
+              {noteType === 'checklist' ? 'Adicionar Checklist' : 'Adicionar Rascunho'}
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -124,7 +368,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputGroup: {
-    flex: 1,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
@@ -132,22 +376,125 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
   },
-  textInput: {
+  typeSelectorContainer: {
+    marginBottom: 20,
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 4,
+  },
+  typeOption: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 6,
+    gap: 8,
+  },
+  typeOptionActive: {
+    backgroundColor: '#FF9500',
+  },
+  typeOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  typeOptionTextActive: {
+    color: '#fff',
+  },
+  textInput: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     backgroundColor: '#f8f9fa',
+  },
+  titleInput: {
+    height: 50,
+  },
+  descriptionInput: {
+    minHeight: 120,
     textAlignVertical: 'top',
+  },
+  checklistContainer: {
+    maxHeight: 300,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginBottom: 8,
+    gap: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#FF9500',
+    borderColor: '#FF9500',
+  },
+  checklistInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  checklistInputChecked: {
+    textDecorationLine: 'line-through',
+    color: '#666',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  moveButton: {
+    padding: 4,
+  },
+  removeItemButton: {
+    padding: 4,
+  },
+  newItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  newItemInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#FF9500',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonDisabled: {
+    backgroundColor: '#ddd',
   },
   saveButton: {
     backgroundColor: '#FF9500',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
   },
   saveButtonDisabled: {
     backgroundColor: '#ccc',
