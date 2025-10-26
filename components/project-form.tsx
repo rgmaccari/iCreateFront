@@ -1,9 +1,7 @@
+import { Checklist } from "@/services/checklist/checklist";
 import { Image } from "@/services/image/image";
-import { ImageService } from "@/services/image/image.service";
 import { Link } from "@/services/link/link";
-import { LinkService } from "@/services/link/link.service";
 import { Note } from "@/services/notes/note";
-import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
 import { FontAwesome } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
@@ -13,49 +11,25 @@ import { SafeAreaView } from "react-native-safe-area-context";
 interface ProjectFormProps {
     project?: Project;
     onChange: (data: Partial<Project>) => void;
+    images: Image[];
+    links: Link[];
+    notes: Note[];
+    checklists: Checklist[];
 }
 
-export default function ProjectForm({ project, onChange }: ProjectFormProps) {
+export default function ProjectForm(props: ProjectFormProps) {
     const [form, setForm] = useState<Partial<Project>>({
-        title: project?.title || "",
-        sketch: project?.sketch || "",
+        title: props.project?.title || "",
+        sketch: props.project?.sketch || "",
     }); //Title e Description do Project
-    const [images, setImages] = useState<Image[]>([]); //Recebe as imagens
-    const [links, setLinks] = useState<Link[]>([]); //Recebe os links
-    const [notes, setNotes] = useState<Note[]>([]); //Recebe as notas
     const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null); //Item acessado
     const [expandedSection, setExpandedSection] = useState<string | null>(null); //Seção expandida
     const [modalVisible, setModalVisible] = useState(false); //Visibilidade do modal
-    const [loading, setLoading] = useState(false); //Carregamento
-
-    //Carregar todos os dados do Project (tudo bem pois são dados leves. Se a imagem estivesse no banco, seria inviável).
-    useEffect(() => {
-        const loadData = async () => {
-            if (project?.code) {
-                setLoading(true);
-                try {
-                    const [loadedImages, loadedLinks, loadedNotes] = await Promise.all([
-                        ImageService.findAllByProjectCode(project.code),
-                        LinkService.findAllByProjectCode(project.code),
-                        NoteService.findAllByProjectCode(project.code),
-                    ]);
-                    setImages(loadedImages || []);
-                    setLinks(loadedLinks || []);
-                    setNotes(loadedNotes || []);
-                } catch (err) {
-                    console.error("Erro ao carregar dados:", err);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-        loadData();
-    }, [project?.code]);
 
     //Notificar a tela pai (projectScreen) quando o form mudar
     useEffect(() => {
-        onChange(form);
-    }, [form, onChange]);
+        props.onChange(form);
+    }, [form, props.onChange]);
 
     //Toggle para expandir/colapsar seções
     const toggleSection = (section: string) => {
@@ -175,13 +149,11 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                 </TouchableOpacity>
                 {expandedSection === "images" && (
                     <View style={styles.carouselContainer}>
-                        {loading ? (
-                            <Text style={styles.loadingText}>Carregando imagens...</Text>
-                        ) : images.length === 0 ? (
+                        {props.images.length === 0 ? (
                             <Text style={styles.emptyText}>Nenhuma imagem encontrada.</Text>
                         ) : (
-                            <FlatList
-                                data={images}
+                            <FlatList // ← ADICIONAR FlatList AQUI
+                                data={props.images}
                                 renderItem={renderImageItem}
                                 keyExtractor={(item) => item.code!.toString()}
                                 horizontal
@@ -192,7 +164,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                     </View>
                 )}
 
-                {/* Dropdown para Links */}
+                {/* Dropdown para links */}
                 <TouchableOpacity style={styles.dropdownHeader} onPress={() => toggleSection("links")}>
                     <Text style={styles.dropdownTitle}>Links</Text>
                     <FontAwesome
@@ -203,13 +175,11 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                 </TouchableOpacity>
                 {expandedSection === "links" && (
                     <View style={styles.carouselContainer}>
-                        {loading ? (
-                            <Text style={styles.loadingText}>Carregando links...</Text>
-                        ) : links.length === 0 ? (
+                        {props.links.length === 0 ? (
                             <Text style={styles.emptyText}>Nenhum link encontrado.</Text>
                         ) : (
-                            <FlatList
-                                data={links}
+                            <FlatList // ← ADICIONAR FlatList AQUI
+                                data={props.links}
                                 renderItem={renderLinkItem}
                                 keyExtractor={(item) => item.code!.toString()}
                                 horizontal
@@ -220,7 +190,7 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                     </View>
                 )}
 
-                {/* Dropdown para Notas */}
+                {/* Dropdown para notas */}
                 <TouchableOpacity style={styles.dropdownHeader} onPress={() => toggleSection("notes")}>
                     <Text style={styles.dropdownTitle}>Notas</Text>
                     <FontAwesome
@@ -231,13 +201,11 @@ export default function ProjectForm({ project, onChange }: ProjectFormProps) {
                 </TouchableOpacity>
                 {expandedSection === "notes" && (
                     <View style={styles.carouselContainer}>
-                        {loading ? (
-                            <Text style={styles.loadingText}>Carregando notas...</Text>
-                        ) : notes.length === 0 ? (
+                        {props.notes.length === 0 ? (
                             <Text style={styles.emptyText}>Nenhuma nota encontrada.</Text>
                         ) : (
-                            <FlatList
-                                data={notes}
+                            <FlatList // ← ADICIONAR FlatList AQUI
+                                data={props.notes}
                                 renderItem={renderNoteItem}
                                 keyExtractor={(item) => item.code!.toString()}
                                 horizontal

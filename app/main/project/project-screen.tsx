@@ -8,12 +8,16 @@ import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs
 import ComponentSelectorModal from "@/components/selector-modal";
 import SketchModal from "@/components/sketch-modal";
 import { showToast } from "@/constants/showToast";
+import { Checklist } from "@/services/checklist/checklist";
 import { ChecklistDto } from "@/services/checklist/checklist.dto";
 import { ChecklistService } from "@/services/checklist/checklist.service";
+import { Image } from "@/services/image/image";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
+import { Link } from "@/services/link/link";
 import { LinkCreateDto } from "@/services/link/link.create.dto";
 import { LinkService } from "@/services/link/link.service";
+import { Note } from "@/services/notes/note";
 import { NoteCreateDto } from "@/services/notes/note.create.dto";
 import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
@@ -43,16 +47,24 @@ export default function ProjectScreen() {
   const [showSketchModal, setShowSketchModal] = useState(false);
 
 
+  const [images, setImages] = useState<Image[]>([]);
+  const [links, setLinks] = useState<Link[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [checklists, setChecklists] = useState<Checklist[]>([]);
+
+
 
   //Carrega o projeto atual
   useEffect(() => {
     const findByCode = async () => {
       if (projectCode) {
-        console.log("Carregando projeto com código:", projectCode);
         try {
           const actualProject = await ProjectService.findByCode(projectCode);
           setProject(actualProject);
           setFormData(actualProject);
+
+          // Carrega os itens do projeto
+          await loadProjectItems(projectCode);
         } catch (err) {
           console.error("Erro ao carregar projeto:", err);
         }
@@ -97,6 +109,21 @@ export default function ProjectScreen() {
       return unsubscribe;
     }, [navigation, isDirty])
   );
+
+  const loadProjectItems = async (code: number) => {
+    try {
+      const [loadedImages, loadedLinks, loadedNotes] = await Promise.all([
+        ImageService.findAllByProjectCode(code),
+        LinkService.findAllByProjectCode(code),
+        NoteService.findAllByProjectCode(code),
+      ]);
+      setImages(loadedImages || []);
+      setLinks(loadedLinks || []);
+      setNotes(loadedNotes || []);
+    } catch (err) {
+      console.error("Erro ao carregar itens do projeto:", err);
+    }
+  };
 
   //Criar projeto
   const createProject = async (dto: ProjectInfoDto) => {
@@ -173,10 +200,13 @@ export default function ProjectScreen() {
     try {
       await new Promise(r => setTimeout(r, 200));
       await ImageService.create(projectCode, formData);
+
+      const updatedImages = await ImageService.findAllByProjectCode(projectCode);
+      setImages(updatedImages || []);
       setShowImageModal(false);
-    } catch (err) {
-      console.error("[createImages] erro ao salvar imagem:", err);
-      Alert.alert("Erro", "Falha ao enviar imagem. Tente novamente.");
+      showToast('success', 'Imagens adicionadas com sucesso!');
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
     }
   };
 
@@ -196,6 +226,11 @@ export default function ProjectScreen() {
       try {
         await LinkService.create(form);
         setShowLinkModal(false);
+
+        const updatedLinks = await LinkService.findAllByProjectCode(projectCode);
+        setLinks(updatedLinks || []);
+        showToast('success', 'Links adicionados com sucesso!');
+
       } catch (error: any) {
         showToast('error', error.formattedMessage);
       }
@@ -208,6 +243,10 @@ export default function ProjectScreen() {
       try {
         await NoteService.create(form);
         setShowSketchModal(false);
+
+        const updatedNotes = await NoteService.findAllByProjectCode(projectCode);
+        setNotes(updatedNotes || []);
+        showToast('success', 'Anotação registrada!')
       } catch (error: any) {
         showToast('error', error.formattedMessage);
       }
@@ -220,6 +259,10 @@ export default function ProjectScreen() {
       try {
         await ChecklistService.create(form);
         setShowSketchModal(false);
+
+        const updatedChecklist = await ChecklistService.findAllByProjectCode(projectCode);
+        setChecklists(updatedChecklist || []);
+        showToast('success', 'Checklist criada!');
       } catch (error: any) {
         showToast('error', error.formattedMessage);
       }
@@ -317,9 +360,22 @@ export default function ProjectScreen() {
           />
         );
       case "form":
-        return <ProjectForm project={project} onChange={setFormData} />;
+        return <ProjectForm
+          project={project}
+          onChange={setFormData}
+          images={images}
+          links={links}
+          notes={notes}
+          checklists={checklists}
+        />;
       default:
-        return <ProjectForm project={project} onChange={setFormData} />;
+        return <ProjectForm
+          project={project}
+          onChange={setFormData}
+          images={images}
+          links={links}
+          notes={notes}
+          checklists={checklists} />;
     }
   };
 
