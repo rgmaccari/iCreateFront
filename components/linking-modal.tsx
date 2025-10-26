@@ -1,3 +1,4 @@
+import { LinkCreateDto } from '@/services/link/link.create.dto';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -5,7 +6,7 @@ import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, Tou
 interface LinkModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (LinkCreateDto: { title: string; url: string }) => void;
+  onSave: (data: LinkCreateDto) => void;
   projectCode: number | undefined;
 }
 
@@ -14,15 +15,16 @@ const LinkModal = (props: LinkModalProps) => {
   const [url, setUrl] = useState('');
 
   const handleSave = async () => {
-    if (props.projectCode) {
-      await props.onSave({ title: title.trim(), url: url.trim() });
-      setTitle('');
-      setUrl('');
+    console.log(`handleSave acionado`)
+    if (props.projectCode || url.trim()) {
+      const link = new LinkCreateDto();
+      link.title = title.trim();
+      link.url = url.trim();
 
-      props.onClose();
+      props.onSave(link);
+      handleClose();
     }
   };
-
 
   /**
    * 
@@ -91,10 +93,10 @@ const LinkModal = (props: LinkModalProps) => {
           <TouchableOpacity
             style={[
               styles.saveButton,
-              (!title.trim() || !url.trim()) && styles.saveButtonDisabled,
+              (!url.trim()) && styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
-            disabled={!title.trim() || !url.trim()}
+            disabled={!url.trim()}
           >
             <Text style={styles.saveButtonText}>Adicionar Link</Text>
           </TouchableOpacity>

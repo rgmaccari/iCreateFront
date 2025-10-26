@@ -1,35 +1,48 @@
-// src/components/SketchModal.js
+import { NoteCreateDto } from '@/services/notes/note.create.dto';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-const SketchModal = ({ visible, onClose, onSave }: any) => {
-  const [text, setText] = useState('');
+interface SketchModalProps {
+  projectCode: number | undefined;
+  visible: boolean;
+  onClose: () => void;
+  onSave: (data: NoteCreateDto) => void;
+}
+
+const SketchModal = (props: SketchModalProps) => {
+  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState('');
 
   const handleSave = () => {
-    if (text.trim()) {
-      onSave({ text: text.trim() });
-      setText('');
+    if (props.projectCode && description.trim()) {
+      const note = new NoteCreateDto();
+      note.title = title.trim();
+      note.description = description.trim();
+
+      props.onSave(note);
+      handleClose();
     }
   };
 
   const handleClose = () => {
-    setText('');
-    onClose();
+    setTitle('');
+    setDescription('');
+    props.onClose();
   };
 
   return (
     <Modal
-      visible={visible}
+      visible={props.visible}
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
@@ -39,7 +52,16 @@ const SketchModal = ({ visible, onClose, onSave }: any) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Adicionar Rascunho</Text>
+          <TextInput
+            style={styles.textInput}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Título"
+            placeholderTextColor="#999"
+            multiline
+            numberOfLines={8}
+            textAlignVertical="top"
+          />
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
@@ -50,8 +72,8 @@ const SketchModal = ({ visible, onClose, onSave }: any) => {
             <Text style={styles.label}>Texto do Rascunho</Text>
             <TextInput
               style={styles.textInput}
-              value={text}
-              onChangeText={setText}
+              value={description}
+              onChangeText={setDescription}
               placeholder="Digite seu rascunho, nota ou ideia..."
               placeholderTextColor="#999"
               multiline
@@ -63,10 +85,10 @@ const SketchModal = ({ visible, onClose, onSave }: any) => {
           <TouchableOpacity
             style={[
               styles.saveButton,
-              !text.trim() && styles.saveButtonDisabled,
+              !description.trim() && styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
-            disabled={!text.trim()}
+            disabled={!description.trim()}
           >
             <Text style={styles.saveButtonText}>Adicionar Rascunho</Text>
           </TouchableOpacity>

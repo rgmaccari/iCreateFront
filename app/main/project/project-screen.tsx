@@ -6,11 +6,14 @@ import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
 import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs";
 import ComponentSelectorModal from "@/components/selector-modal";
+import SketchModal from "@/components/sketch-modal";
 import { showToast } from "@/constants/showToast";
 import { ImageCreateDto } from "@/services/image/image.create.dto";
 import { ImageService } from "@/services/image/image.service";
 import { LinkCreateDto } from "@/services/link/link.create.dto";
 import { LinkService } from "@/services/link/link.service";
+import { NoteCreateDto } from "@/services/notes/note.create.dto";
+import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
@@ -35,6 +38,7 @@ export default function ProjectScreen() {
   const [showComponentSelector, setShowComponentSelector] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showSketchModal, setShowSketchModal] = useState(false);
   const [currentProjectCode, setCurrentProjectCode] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -202,6 +206,17 @@ export default function ProjectScreen() {
     }
   };
 
+  const createNote = async (form: NoteCreateDto) => {
+    if (projectCode && form) {
+      try {
+        await NoteService.create(projectCode, form);
+        setShowSketchModal(false);
+      } catch (error: any) {
+        showToast('error', error.formattedMessage);
+      }
+    }
+  }
+
 
 
 
@@ -224,7 +239,7 @@ export default function ProjectScreen() {
         setShowImageModal(true);
         break;
       case "sketch":
-        handleOpenNotes();
+        setShowSketchModal(true);
         break;
     }
   };
@@ -344,6 +359,13 @@ export default function ProjectScreen() {
         visible={showImageModal}
         onClose={() => setShowImageModal(false)}
         onSave={createImages}
+      />
+
+      <SketchModal
+        projectCode={projectCode}
+        visible={showSketchModal}
+        onClose={() => setShowSketchModal(false)}
+        onSave={createNote}
       />
     </SafeAreaView>
   );
