@@ -16,11 +16,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 type ProjectItem = LinkItem | ImageItem | NoteItem;
 
-interface ImageData {
-  uri: string;
-}
-
-
 interface ProjectBoardProps {
   project?: Project;
   onChange?: (data: Partial<Project>) => void;
@@ -35,9 +30,11 @@ interface ProjectBoardProps {
 
 const ProjectBoard = (props: ProjectBoardProps) => {
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [lastLinks, setLastLinks] = useState<Link[]>([]);
+  const [lastImages, setLastImages] = useState<Image[]>([]);
   const [lastNotes, setLastNotes] = useState<Note[]>([]);
 
-  //UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
+  //Notes UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
   useEffect(() => {
     if (lastNotes.length === 0) {
       setLastNotes(props.notes);
@@ -55,6 +52,24 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
     setLastNotes(props.notes); //Atualiza o estado da lista
   }, [props.notes]);
+
+  useEffect(() => {
+    if (lastLinks.length === 0) {
+      setLastLinks(props.links);
+      return;
+    }
+
+    const newLinks = props.links.filter(link => !lastLinks.some(oldLink => oldLink.code === link.code));
+
+    //handleAddNote para cada nova note
+    newLinks.forEach(link => {
+      if (link.code) {
+        handleAddLink(link);
+      }
+    });
+
+    setLastLinks(props.links); //Atualiza o estado da lista
+  }, [props.links]);
 
   //Transforma um novo objeto Note em um Item
   const handleAddNote = (noteData: Note) => {
@@ -74,6 +89,20 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       height: 120,
     };
     setItems(prev => [...prev, newItem]);
+  };
+
+  const handleAddLink = (linkData: Link) => {
+    const newItem: LinkItem = {
+      code: linkData.code!,
+      url: linkData.url!,
+      title: linkData.title!,
+      type: 'link',
+      x: 50,
+      y: 50,
+      width: 200,
+      height: 60,
+    };
+    setItems([...items, newItem]);
   };
 
   //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
@@ -114,19 +143,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   // };
 
   //Transformo um link (objeto) em um item (no board)
-  // const handleAddLink = (linkData: Link) => {
-  //   const newItem: LinkItem = {
-  //     code: linkData.code!,
-  //     url: linkData.url!,
-  //     title: linkData.title!,
-  //     type: 'link',
-  //     x: 50,
-  //     y: 50,
-  //     width: 200,
-  //     height: 60,
-  //   };
-  //   setItems([...items, newItem]);
-  // };
+
 
   // interface LinkItem extends BaseItem {
   //   type: 'link';

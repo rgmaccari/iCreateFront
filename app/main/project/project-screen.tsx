@@ -269,11 +269,6 @@ export default function ProjectScreen() {
     }
   }
 
-
-
-
-
-
   //Alteração dinâmica no título
   const handleTitleChange = (newTitle: string) => {
     setFormData((prev) => ({ ...prev, title: newTitle }));
