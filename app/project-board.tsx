@@ -147,47 +147,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     setItems(currentItems => currentItems.filter(item => item.code !== code));
   };
 
-  // const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null);
-  // const [showComponentSelector, setShowComponentSelector] = useState(false);
-  // const [showLinkModal, setShowLinkModal] = useState(false);
-  // const [showImageModal, setShowImageModal] = useState(false);
-  // const [showSketchModal, setShowSketchModal] = useState(false);
-
-  // useEffect(() => {
-  //   console.log('links ', JSON.stringify(props.notes, null, 2));
-  // }, [props.notes]);
-
-  // const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
-  //   setShowComponentSelector(false);
-
-  //   switch (componentType) {
-  //     case 'link':
-  //       setShowLinkModal(true);
-  //       break;
-  //     case 'image':
-  //       setShowImageModal(true);
-  //       break;
-  //     case 'sketch':
-  //       setShowSketchModal(true);
-  //       break;
-  //   }
-  // };
-
-  //Transformo um link (objeto) em um item (no board)
-
-
-  // interface LinkItem extends BaseItem {
-  //   type: 'link';
-  //   title: string;
-  //   url: string;
-  // }
-
-  // interface LinkData {
-  //   title: string;
-  //   url: string;
-  // }
-
-
   return (
     <GestureHandlerRootView style={styles.container}>
 
