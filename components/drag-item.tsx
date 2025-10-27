@@ -43,7 +43,7 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
       //Atualiza a posição base no item
       item.x = translateX.value;
       item.y = translateY.value;
-      runOnJS(onPositionChange)(item.code, translateX.value, translateY.value);
+      runOnJS(onPositionChange)(item.code, translateX.value, translateY.value); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
     });
 
   const animatedStyle = useAnimatedStyle(() => {

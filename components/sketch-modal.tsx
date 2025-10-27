@@ -116,7 +116,7 @@ const SketchModal = (props: SketchModalProps) => {
     setChecklistItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  //MArca como concluído
+  //Marca como concluído
   const toggleChecklistItem = (index: number) => {
     setChecklistItems(prev =>
       prev.map((item, i) =>
@@ -132,7 +132,6 @@ const SketchModal = (props: SketchModalProps) => {
     items.splice(toIndex, 0, movedItem);
     setChecklistItems(items);
   };
-
 
   //Alterna entre os tipos de sketch
   const handleNoteTypeChange = (type: NoteType) => {
