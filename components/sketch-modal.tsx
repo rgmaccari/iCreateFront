@@ -2,11 +2,12 @@ import { ChecklistItem } from '@/services/checklist/checklist-item';
 import { ChecklistDto } from '@/services/checklist/checklist.dto';
 import { NoteCreateDto } from '@/services/notes/note.create.dto';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -31,6 +32,7 @@ const SketchModal = (props: SketchModalProps) => {
   const [noteType, setNoteType] = useState<NoteType>('text');
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState('');
+  const lastItemRef = useRef<TextInput | null>(null);
 
   //Save da checklist
   const handleSaveNote = () => {
@@ -72,19 +74,34 @@ const SketchModal = (props: SketchModalProps) => {
     }
   };
 
-  //Add item no checklist
-  const addChecklistItem = () => {
-    if (newItemText.trim()) { //Tem novo item?
+  // //Add item no checklist
+  // const addChecklistItem = () => {
+  //   if (newItemText.trim()) { //Tem novo item?
 
-      const newItem: ChecklistItem = { //Cria o objeto
-        text: newItemText.trim(),
-        checked: false,
-        sort: checklistItems.length
-      }; //Insere nos itens
-      setChecklistItems(prev => [...prev, newItem]);
-      setNewItemText(''); //Reseta o campo
-    }
-  };
+  //     const newItem: ChecklistItem = { //Cria o objeto
+  //       text: newItemText.trim(),
+  //       checked: false,
+  //       sort: checklistItems.length
+  //     }; //Insere nos itens
+  //     setChecklistItems(prev => [...prev, newItem]);
+  //     setNewItemText(''); //Reseta o campo
+  //   }
+  // };
+
+  const addChecklistItem = () => {
+  if (!newItemText.trim()) return;
+
+  setChecklistItems(prev => {
+    const updated = [...prev, { text: newItemText.trim(), checked: false, sort: prev.length }];
+    setNewItemText('');
+
+    setTimeout(() => {
+      lastItemRef.current?.focus();
+    }, 50);
+
+    return updated;
+  });
+};
 
   //Altera dado no checklist
   const updateChecklistItem = (index: number, text: string) => {
@@ -260,8 +277,10 @@ const SketchModal = (props: SketchModalProps) => {
 
               {/*Lista de Itens*/}
               <View style={styles.checklistContainer}>
-                {checklistItems.map((item, index) => (
-                  <View key={index} style={styles.checklistItem}>
+                <ScrollView>
+                  {checklistItems.map((item, index) => (
+                    <View key={index} style={styles.checklistItem}>
+                    
                     <TouchableOpacity
                       style={[
                         styles.checkbox,
@@ -275,6 +294,7 @@ const SketchModal = (props: SketchModalProps) => {
                     </TouchableOpacity>
 
                     <TextInput
+                      ref={index === checklistItems.length - 1 ? lastItemRef : null}
                       style={[
                         styles.checklistInput,
                         item.checked && styles.checklistInputChecked
@@ -314,6 +334,7 @@ const SketchModal = (props: SketchModalProps) => {
                     </View>
                   </View>
                 ))}
+                </ScrollView>
 
                 {/*Input para novo item*/}
                 <View style={styles.newItemContainer}>
@@ -447,7 +468,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   checklistContainer: {
-    maxHeight: 300,
+    maxHeight: 425,
   },
   checklistItem: {
     flexDirection: 'row',
