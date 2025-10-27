@@ -164,35 +164,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           />
         ))}
       </ScrollView>
-
-      {/* <AddButton onPress={() => setShowComponentSelector(true)} /> */}
-
-      {/* Modais */}
-      {/* <ComponentSelectorModal
-        visible={showComponentSelector}
-        onClose={() => setShowComponentSelector(false)}
-        onSelectComponent={handleAddComponent}
-      /> */}
-
-      {/* <LinkModal
-        visible={showLinkModal}
-        onClose={() => setShowLinkModal(false)}
-        onSave={() => handleAddLink}
-        projectCode={props.projectCode}
-      />
-
-      <ImageModal
-        projectCode={props.projectCode}
-        visible={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        onSave={() => handleAddImage}
-      />
-
-      <SketchModal
-        visible={showSketchModal}
-        onClose={() => setShowSketchModal(false)}
-        onSave={() => handleAddSketch}
-      /> */}
     </GestureHandlerRootView>
   );
 };
