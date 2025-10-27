@@ -41,7 +41,6 @@ export default function ProjectScreen() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
-
   const [showComponentSelector, setShowComponentSelector] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -52,6 +51,8 @@ export default function ProjectScreen() {
   const [links, setLinks] = useState<Link[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
+
+
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -348,8 +349,6 @@ export default function ProjectScreen() {
         return (
           <ProjectBoard
             project={project}
-            onDelete={() => console.log('ih')}
-
             onAddImage={() => console.log('aopa')}
             onAddLink={() => console.log('aopa')}
             onAddNote={() => console.log('aopa')}

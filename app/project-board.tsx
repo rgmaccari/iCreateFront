@@ -1,5 +1,4 @@
 import DraggableItem from '@/components/drag-item';
-import DropZone from '@/components/drop-zone';
 import { Checklist } from '@/services/checklist/checklist';
 import { Image } from '@/services/image/image';
 import { ImageItem } from '@/services/item/image-item';
@@ -11,8 +10,7 @@ import { Project } from '@/services/project/project';
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
-  StyleSheet,
-  View
+  StyleSheet
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -28,7 +26,6 @@ interface ProjectBoardProps {
   links: Link[];
   notes: Note[];
   checklists: Checklist[];
-  onDelete: () => void;
 }
 
 const ProjectBoard = (props: ProjectBoardProps) => {
@@ -36,9 +33,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const [lastLinks, setLastLinks] = useState<Link[]>([]);
   const [lastImages, setLastImages] = useState<Image[]>([]);
   const [lastNotes, setLastNotes] = useState<Note[]>([]);
-
-  const [draggingItem, setDraggingItem] = useState<ProjectItem | null>(null); //Verifica o item arrastado
-
 
   //Notes UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
   useEffect(() => {
@@ -150,54 +144,52 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Remove itens: através do code do item apenas, realizo o delet
   const deleteItem = (code: number) => {
-    props.onDelete()
-    setItems(currentItems => currentItems.filter(item => item.code !== code));
-
-  };
-
-  const handleArchiveItem = (code: number) => {
-    console.log(`Arquivando item ${code} do tipo ${items.find(i => i.code === code)?.type}`);
-    // Por enquanto só remove da view
     setItems(currentItems => currentItems.filter(item => item.code !== code));
   };
 
-  const handleDeleteItem = (code: number) => {
-    const item = items.find(i => i.code === code);
-    console.log(`Excluindo permanentemente item ${code} do tipo ${item?.type}`);
+  // const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(null);
+  // const [showComponentSelector, setShowComponentSelector] = useState(false);
+  // const [showLinkModal, setShowLinkModal] = useState(false);
+  // const [showImageModal, setShowImageModal] = useState(false);
+  // const [showSketchModal, setShowSketchModal] = useState(false);
 
-    // Aqui você chamaria o service correspondente:
-    // if (item?.type === 'sketch') await NoteService.delete(code);
-    // if (item?.type === 'link') await LinkService.delete(code);
-    // if (item?.type === 'image') await ImageService.delete(code);
+  // useEffect(() => {
+  //   console.log('links ', JSON.stringify(props.notes, null, 2));
+  // }, [props.notes]);
 
-    setItems(currentItems => currentItems.filter(i => i.code !== code));
-  };
+  // const handleAddComponent = (componentType: 'link' | 'image' | 'sketch') => {
+  //   setShowComponentSelector(false);
 
-  const handleDragStart = (item: ProjectItem) => {
-    setDraggingItem(item);
-  };
+  //   switch (componentType) {
+  //     case 'link':
+  //       setShowLinkModal(true);
+  //       break;
+  //     case 'image':
+  //       setShowImageModal(true);
+  //       break;
+  //     case 'sketch':
+  //       setShowSketchModal(true);
+  //       break;
+  //   }
+  // };
 
-  const handleDragEnd = () => {
-    setDraggingItem(null);
-  };
+  //Transformo um link (objeto) em um item (no board)
+
+
+  // interface LinkItem extends BaseItem {
+  //   type: 'link';
+  //   title: string;
+  //   url: string;
+  // }
+
+  // interface LinkData {
+  //   title: string;
+  //   url: string;
+  // }
+
 
   return (
-    //GestureHandlerRootView é o bgl que faz os gestos
     <GestureHandlerRootView style={styles.container}>
-
-      {/* DROP ZONES FIXAS NA TELA */}
-      <View style={styles.dropZonesContainer}>
-        <DropZone
-          type="archive"
-          onDrop={handleArchiveItem}
-          isActive={!!draggingItem}
-        />
-        <DropZone
-          type="trash"
-          onDrop={handleDeleteItem}
-          isActive={!!draggingItem}
-        />
-      </View>
 
       {/*Apenas a view geral*/}
       <ScrollView
@@ -205,18 +197,43 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         contentContainerStyle={styles.canvasContent}
       >
         {items.map((item) => (
-          //Cada item (img, link, note, checklist) é um Draggable
           <DraggableItem
-            key={item.code} //Codigo do item
-            item={item} //O item em si que pelo "baseItem" pode ter 4 tipos e o DraggableItemProps aceita esses 4 tipos
-            onPositionChange={updateItemPosition} //Onde ele está na tela (x, y)
-            onDelete={deleteItem} //Remoção
-            onDragStart={() => handleDragStart(item)} // ← ADICIONE ESTA LINHA
-            onDragEnd={handleDragEnd}
+            key={item.code}
+            item={item}
+            onPositionChange={updateItemPosition}
+            onDelete={deleteItem}
           />
         ))}
       </ScrollView>
 
+      {/* <AddButton onPress={() => setShowComponentSelector(true)} /> */}
+
+      {/* Modais */}
+      {/* <ComponentSelectorModal
+        visible={showComponentSelector}
+        onClose={() => setShowComponentSelector(false)}
+        onSelectComponent={handleAddComponent}
+      /> */}
+
+      {/* <LinkModal
+        visible={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onSave={() => handleAddLink}
+        projectCode={props.projectCode}
+      />
+
+      <ImageModal
+        projectCode={props.projectCode}
+        visible={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onSave={() => handleAddImage}
+      />
+
+      <SketchModal
+        visible={showSketchModal}
+        onClose={() => setShowSketchModal(false)}
+        onSave={() => handleAddSketch}
+      /> */}
     </GestureHandlerRootView>
   );
 };
@@ -242,13 +259,6 @@ const styles = StyleSheet.create({
   },
   canvasContent: {
     minHeight: '100%',
-  },
-  dropZonesContainer: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    zIndex: 1000,
-    gap: 10,
   },
 });
 
