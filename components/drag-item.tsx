@@ -13,9 +13,25 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 interface DraggableItemProps {
   item: BaseItem & {
     title?: string;
-    url?: string;
-    source?: string;
+    type?: 'link' | 'image' | 'note';    
+    createdAt?: string;
+    
+    //Para Note Item
+    componentCode?: number;
     description?: string;
+    sort?: number;
+    updatedAt?: string;
+
+    //Para Link Item
+    url?: string;
+    previewImageUrl?: string;
+
+    //Para Image Item
+    
+    filename?: string;
+    isCover?: boolean;
+    source?: string; //URL
+  
   };
   onPositionChange: (code: number, x: number, y: number) => void;
   onDelete: (code: number) => void;
