@@ -97,9 +97,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     }
 
     const newItem: NoteItem = {
-      code: noteData.code,
-      title: noteData.title,
-      description: noteData.description!,
+      componentCode: noteData.code,
+      
       type: 'sketch',
       x: 50,
       y: 50,
