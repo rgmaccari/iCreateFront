@@ -97,13 +97,17 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     }
 
     const newItem: NoteItem = {
-      componentCode: noteData.code,
       code: noteData.code,
-      type: 'sketch',
       x: 50,
       y: 50,
       width: 250,
       height: 120,
+      componentCode: noteData.code,
+      type: 'note',
+      description: noteData.description || '',
+      title: noteData.title || '',
+      sort: noteData.sort || 0,
+      updatedAt: noteData.updatedAt || new Date().toISOString(),
     };
     setItems(prev => [...prev, newItem]);
   };
@@ -112,13 +116,16 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleAddLink = (linkData: Link) => {
     const newItem: LinkItem = {
       code: linkData.code!,
-      url: linkData.url!,
-      title: linkData.title!,
-      type: 'link',
       x: 50,
       y: 50,
       width: 200,
       height: 60,
+      componentCode: linkData.code!,
+      type: 'link',
+      title: linkData.title!,
+      url: linkData.url!,
+      previewImageUrl: linkData.previewImageUrl,
+      createdAt: linkData.createdAt!,
     };
     setItems([...items, newItem]);
   };
@@ -126,12 +133,16 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleAddImage = (imageData: Image) => {
     const newItem: ImageItem = {
       code: imageData.code,
-      source: imageData.url,
-      type: 'image',
       x: 50,
       y: 50,
       width: 200,
       height: 150,
+      componentCode: imageData.code,
+      type: 'image',
+      source: imageData.url,
+      filename: imageData.filename,
+      isCover: imageData.isCover,
+      createdAt: imageData.createdAt,
     };
     setItems([...items, newItem]);
   };

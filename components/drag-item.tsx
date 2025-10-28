@@ -1,3 +1,4 @@
+import { BaseItem } from '@/services/item/base-item';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -10,13 +11,7 @@ import Animated, {
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface DraggableItemProps {
-  item: {
-    code: number; //correto como obrigatório
-    type: 'link' | 'image' | 'sketch';
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+  item: BaseItem & {
     title?: string;
     url?: string;
     source?: string;
@@ -25,6 +20,7 @@ interface DraggableItemProps {
   onPositionChange: (code: number, x: number, y: number) => void;
   onDelete: (code: number) => void;
 }
+
 
 const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps) => {
   const translateX = useSharedValue(item.x);
@@ -85,7 +81,7 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
           />
         );
 
-      case 'sketch':
+      case 'note':
         return (
           <View style={[styles.sketchContainer, { width: item.width, height: item.height }]}>
             {/* Título */}

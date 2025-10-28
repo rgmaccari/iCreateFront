@@ -4,6 +4,8 @@ export interface LinkItem extends BaseItem {
     type: 'link';
     title: string;
     url: string;
+    previewImageUrl?: string;
+    createdAt: string;
 
     // Vai obter:
     // code: number;
