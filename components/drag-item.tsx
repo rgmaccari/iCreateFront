@@ -38,9 +38,9 @@ interface DraggableItemProps {
 }
 
 
-const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps) => {
-  const translateX = useSharedValue(item.x);
-  const translateY = useSharedValue(item.y);
+const DraggableItem = (props: DraggableItemProps) => {
+  const translateX = useSharedValue(props.item.x);
+  const translateY = useSharedValue(props.item.y);
   const [isPressed, setIsPressed] = useState(false);
 
   const panGesture = Gesture.Pan()
@@ -48,14 +48,14 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
       //Nada necessário no start
     })
     .onUpdate((event) => {
-      translateX.value = item.x + event.translationX;
-      translateY.value = item.y + event.translationY;
+      translateX.value = props.item.x + event.translationX;
+      translateY.value = props.item.y + event.translationY;
     })
     .onEnd(() => {
       //Atualiza a posição base no item
-      item.x = translateX.value;
-      item.y = translateY.value;
-      runOnJS(onPositionChange)(item.code, translateX.value, translateY.value); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
+      props.item.x = translateX.value;
+      props.item.y = translateY.value;
+      runOnJS(props.onPositionChange)(props.item.code, translateX.value, translateY.value); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
     });
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -73,42 +73,42 @@ const DraggableItem = ({ item, onPositionChange, onDelete }: DraggableItemProps)
       'O que você deseja fazer?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', onPress: () => onDelete(item.code), style: 'destructive' },
+        { text: 'Excluir', onPress: () => props.onDelete(props.item.code), style: 'destructive' },
       ]
     );
   };
 
   const renderContent = () => {
-    switch (item.type) {
+    switch (props.item.type) {
       case 'link':
         return (
-          <View style={[styles.linkContainer, { width: item.width, height: item.height }]}>
-            <Text style={styles.linkTitle} numberOfLines={1}>{item.title}</Text>
-            <Text style={styles.linkUrl} numberOfLines={1}>{item.url}</Text>
+          <View style={[styles.linkContainer, { width: props.item.width, height: props.item.height }]}>
+            <Text style={styles.linkTitle} numberOfLines={1}>{props.item.title}</Text>
+            <Text style={styles.linkUrl} numberOfLines={1}>{props.item.url}</Text>
           </View>
         );
 
       case 'image':
         return (
           <Image
-            source={{ uri: item.source }}
-            style={[styles.image, { width: item.width, height: item.height }]}
+            source={{ uri: props.item.source }}
+            style={[styles.image, { width: props.item.width, height: props.item.height }]}
             resizeMode="cover"
           />
         );
 
       case 'note':
         return (
-          <View style={[styles.sketchContainer, { width: item.width, height: item.height }]}>
+          <View style={[styles.sketchContainer, { width: props.item.width, height: props.item.height }]}>
             {/* Título */}
-            {item.title && (
+            {props.item.title && (
               <Text style={styles.sketchTitle} numberOfLines={1}>
-                {item.title}
+                {props.item.title}
               </Text>
             )}
             {/* Descrição */}
             <Text style={styles.sketchText} numberOfLines={3}>
-              {item.description} {/* ← MUDAR DE item.text PARA item.description */}
+              {props.item.description} {/* ← MUDAR DE item.text PARA item.description */}
             </Text>
           </View>
         );

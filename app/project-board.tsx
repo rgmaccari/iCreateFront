@@ -1,6 +1,7 @@
 import DraggableItem from '@/components/drag-item';
 import { Checklist } from '@/services/checklist/checklist';
 import { Image } from '@/services/image/image';
+import { BaseItemDto } from '@/services/item/base-item.dto';
 import { ImageItem } from '@/services/item/image-item';
 import { LinkItem } from '@/services/item/link-item';
 import { NoteItem } from '@/services/item/note-item';
@@ -91,59 +92,98 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Transforma um novo objeto Note em um Item
   const handleAddNote = (noteData: Note) => {
-    if (!noteData.code) {
-      console.warn('Tentativa de adicionar note sem code:', noteData);
-      return;
-    }
+    const tempCode = Date.now() * -1;//Identificador temporário
 
     const newItem: NoteItem = {
-      code: noteData.code,
+      code: tempCode,
+      componentCode: noteData.code!,
       x: 50,
       y: 50,
       width: 250,
       height: 120,
-      componentCode: noteData.code,
+      //borderColor: 
+      
       type: 'note',
-      description: noteData.description || '',
       title: noteData.title || '',
+      description: noteData.description || '',
       sort: noteData.sort || 0,
       updatedAt: noteData.updatedAt || new Date().toISOString(),
     };
+
+    const baseItemDto: BaseItemDto = {
+      type: newItem.type,
+      componentCode: newItem.componentCode,
+      x: newItem.x,
+      y: newItem.y,
+      width: newItem.width,
+      height: newItem.height
+      
+    };
+    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+
     setItems(prev => [...prev, newItem]);
   };
 
   //Transofrma um novo
   const handleAddLink = (linkData: Link) => {
+    const tempCode = Date.now() * -1;//Identificador temporário
+
     const newItem: LinkItem = {
-      code: linkData.code!,
+      code: tempCode,
+      componentCode: linkData.code!,
       x: 50,
       y: 50,
       width: 200,
       height: 60,
-      componentCode: linkData.code!,
+      
       type: 'link',
       title: linkData.title!,
       url: linkData.url!,
       previewImageUrl: linkData.previewImageUrl,
       createdAt: linkData.createdAt!,
     };
+
+    const baseItemDto: BaseItemDto = {
+      type: newItem.type,
+      componentCode: newItem.componentCode,
+      x: newItem.x,
+      y: newItem.y,
+      width: newItem.width,
+      height: newItem.height
+      
+    };
+    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+
     setItems([...items, newItem]);
   };
 
   const handleAddImage = (imageData: Image) => {
     const newItem: ImageItem = {
       code: imageData.code,
+      componentCode: imageData.code,
       x: 50,
       y: 50,
       width: 200,
       height: 150,
-      componentCode: imageData.code,
+      
       type: 'image',
-      source: imageData.url,
       filename: imageData.filename,
       isCover: imageData.isCover,
+      source: imageData.url,
       createdAt: imageData.createdAt,
     };
+
+    const baseItemDto: BaseItemDto = {
+      type: newItem.type,
+      componentCode: newItem.componentCode,
+      x: newItem.x,
+      y: newItem.y,
+      width: newItem.width,
+      height: newItem.height
+      
+    };
+    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+
     setItems([...items, newItem]);
   };
 
