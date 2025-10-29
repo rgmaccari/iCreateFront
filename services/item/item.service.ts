@@ -1,7 +1,7 @@
 import api from "../api/api";
-import { BaseItem } from "./base-item";
 import { BaseItemDto } from "./base-item.dto";
 import { ItemResponseDto } from "./item.response.dto";
+import { BaseItem } from "./project-item";
 
 export class ItemService {
   static async create(item: BaseItemDto): Promise<ItemResponseDto> {
@@ -14,8 +14,8 @@ export class ItemService {
     return response.data;
   }
 
-  static async getComponents(code: number): Promise<BaseItem> {
-    const response = await api.put<BaseItem>(`/items/${code}`);
+  static async getComponents(projectCode: number): Promise<BaseItem> {
+    const response = await api.put<BaseItem>(`/items/all${projectCode}`);
     return response.data;
   }
 
