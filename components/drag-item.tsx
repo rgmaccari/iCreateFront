@@ -25,68 +25,21 @@ interface DraggableItemProps {
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
-  const startX = useSharedValue(0);
-  const startY = useSharedValue(0);
-  const translateX = useSharedValue(props.item.x);
-  const translateY = useSharedValue(props.item.y);
-  const [isPressed, setIsPressed] = useState(false);
+  const startX = useSharedValue(0); //Posição inicial
+  const startY = useSharedValue(0); //Posição inicial
+  const translateX = useSharedValue(props.item.x); //Posição durante o arrasto
+  const translateY = useSharedValue(props.item.y); //Posição durante o arrasto
+  const [isPressed, setIsPressed] = useState(false); //Controla qual item está sendo movido
 
+  //Acompanha alterações na posição do item...
   useEffect(() => {
     translateX.value = props.item.x;
     translateY.value = props.item.y;
     startX.value = props.item.x;
     startY.value = props.item.y;
   }, [props.item.x, props.item.y]);
-  // const panGesture = Gesture.Pan()
-  //   .onStart(() => {
-  //     //Nada necessário no start
-  //   })
-  //   .onUpdate((event) => {
-  //     translateX.value = props.item.x + event.translationX;
-  //     translateY.value = props.item.y + event.translationY;
-  //   })
 
-  //   .onEnd(() => {
-  //     //Atualiza a posição base no item
-  //     props.item.x = translateX.value;
-  //     props.item.y = translateY.value;
-  //     runOnJS(async () => {
-  //       await ItemService.updatePosition(
-  //         props.item.code,
-  //         translateX.value,
-  //         translateY.value
-  //       );
-  //       props.onPositionChange(
-  //         props.item.code,
-  //         translateX.value,
-  //         translateY.value
-  //       );
-  //     })();
-  //   }); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
-  // const panGesture = Gesture.Pan()
-  //   .onStart(() => {
-  //     // Opcional: salvar posição inicial se precisar de "snap back"
-  //   })
-  //   .onUpdate((event) => {
-  //     translateX.value = props.item.x + event.translationX;
-  //     translateY.value = props.item.y + event.translationY;
-  //   })
-  //   .onEnd(() => {
-  //     // NÃO MUTAR props.item!
-  //     const newX = translateX.value;
-  //     const newY = translateY.value;
-
-  //     runOnJS(async () => {
-  //       try {
-  //         await ItemService.updatePosition(props.item.code, newX, newY);
-  //         props.onPositionChange(props.item.code, newX, newY);
-  //       } catch (error) {
-  //         console.error("Falha ao atualizar posição:", error);
-  //         // Opcional: reverter animação se falhar
-  //       }
-  //     })();
-  //   });
-
+  //Passando o update ao service
   const updatePositionInJS = () => {
     ItemService.updatePosition(
       props.item.code,
@@ -105,6 +58,7 @@ const DraggableItem = (props: DraggableItemProps) => {
       });
   };
 
+  //O que ocorre ao realizar gestos (arrastar redimencionar)
   const panGesture = Gesture.Pan()
     .onStart(() => {
       startX.value = translateX.value;
@@ -115,9 +69,11 @@ const DraggableItem = (props: DraggableItemProps) => {
       translateY.value = startY.value + e.translationY;
     })
     .onEnd(() => {
+      //Ao final do arrastar, chamar a requisição (adicionar um pequeno tempo de espera?)
       runOnJS(updatePositionInJS)();
     });
 
+  //Entrada do item...
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -127,6 +83,7 @@ const DraggableItem = (props: DraggableItemProps) => {
     };
   });
 
+  //Pressionar o item por um tempo...
   const handleLongPress = () => {
     Alert.alert("Opções", "O que você deseja fazer?", [
       { text: "Cancelar", style: "cancel" },
@@ -138,9 +95,8 @@ const DraggableItem = (props: DraggableItemProps) => {
     ]);
   };
 
+  //Depende do tipo de item eu utilizo um "card" diferente -> componentizar!
   const renderContent = () => {
-    const itemType = props.item.type;
-
     if (props.item.type === "link") {
       return (
         <View
