@@ -1,42 +1,27 @@
-import { BaseItem } from '@/services/item/base-item';
-import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { ProjectItem } from "@/services/item/project-item";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated';
+  useSharedValue,
+} from "react-native-reanimated";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface DraggableItemProps {
-  item: BaseItem & {
-    title?: string;
-    type?: 'link' | 'image' | 'note';    
-    createdAt?: string;
-    
-    //Para Note Item
-    componentCode?: number;
-    description?: string;
-    sort?: number;
-    updatedAt?: string;
-
-    //Para Link Item
-    url?: string;
-    previewImageUrl?: string;
-
-    //Para Image Item
-    
-    filename?: string;
-    isCover?: boolean;
-    source?: string; //URL
-  
-  };
+  item: ProjectItem;
   onPositionChange: (code: number, x: number, y: number) => void;
   onDelete: (code: number) => void;
 }
-
 
 const DraggableItem = (props: DraggableItemProps) => {
   const translateX = useSharedValue(props.item.x);
@@ -55,7 +40,11 @@ const DraggableItem = (props: DraggableItemProps) => {
       //Atualiza a posição base no item
       props.item.x = translateX.value;
       props.item.y = translateY.value;
-      runOnJS(props.onPositionChange)(props.item.code, translateX.value, translateY.value); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
+      runOnJS(props.onPositionChange)(
+        props.item.code,
+        translateX.value,
+        translateY.value
+      ); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
     });
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -68,64 +57,80 @@ const DraggableItem = (props: DraggableItemProps) => {
   });
 
   const handleLongPress = () => {
-    Alert.alert(
-      'Opções',
-      'O que você deseja fazer?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', onPress: () => props.onDelete(props.item.code), style: 'destructive' },
-      ]
-    );
+    Alert.alert("Opções", "O que você deseja fazer?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        onPress: () => props.onDelete(props.item.code),
+        style: "destructive",
+      },
+    ]);
   };
 
   const renderContent = () => {
-    switch (props.item.type) {
-      case 'link':
-        return (
-          <View style={[styles.linkContainer, { width: props.item.width, height: props.item.height }]}>
-            <Text style={styles.linkTitle} numberOfLines={1}>{props.item.title}</Text>
-            <Text style={styles.linkUrl} numberOfLines={1}>{props.item.url}</Text>
-          </View>
-        );
+    const itemType = props.item.type;
 
-      case 'image':
-        return (
-          <Image
-            source={{ uri: props.item.source }}
-            style={[styles.image, { width: props.item.width, height: props.item.height }]}
-            resizeMode="cover"
-          />
-        );
-
-      case 'note':
-        return (
-          <View style={[styles.sketchContainer, { width: props.item.width, height: props.item.height }]}>
-            {/* Título */}
-            {props.item.title && (
-              <Text style={styles.sketchTitle} numberOfLines={1}>
-                {props.item.title}
-              </Text>
-            )}
-            {/* Descrição */}
-            <Text style={styles.sketchText} numberOfLines={3}>
-              {props.item.description} {/* ← MUDAR DE item.text PARA item.description */}
-            </Text>
-          </View>
-        );
-
-      default:
-        return null;
+    if (props.item.type === "link") {
+      return (
+        <View
+          style={[
+            styles.linkContainer,
+            { width: props.item.width, height: props.item.height },
+          ]}
+        >
+          <Text style={styles.linkTitle} numberOfLines={1}>
+            {props.item.title}
+          </Text>
+          <Text style={styles.linkUrl} numberOfLines={1}>
+            {props.item.url}
+          </Text>
+        </View>
+      );
     }
+
+    if (props.item.type === "image") {
+      return (
+        <Image
+          source={{ uri: props.item.source }}
+          style={[
+            styles.image,
+            { width: props.item.width, height: props.item.height },
+          ]}
+          resizeMode="cover"
+        />
+      );
+    }
+
+    if (props.item.type === "note") {
+      return (
+        <View
+          style={[
+            styles.sketchContainer,
+            { width: props.item.width, height: props.item.height },
+          ]}
+        >
+          {/* Título */}
+          {props.item.title && (
+            <Text style={styles.sketchTitle} numberOfLines={1}>
+              {props.item.title}
+            </Text>
+          )}
+          {/* Descrição */}
+          <Text style={styles.sketchText} numberOfLines={3}>
+            {props.item.description}{" "}
+            {/* ← MUDAR DE item.text PARA item.description */}
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
   };
 
   return (
     <GestureDetector gesture={panGesture}>
       <AnimatedView
-        style={[
-          styles.container,
-          animatedStyle,
-          isPressed && styles.pressed,
-        ]}
+        style={[styles.container, animatedStyle, isPressed && styles.pressed]}
         onTouchStart={() => setIsPressed(true)}
         onTouchEnd={() => setIsPressed(false)}
       >
@@ -143,8 +148,8 @@ const DraggableItem = (props: DraggableItemProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    shadowColor: '#000',
+    position: "absolute",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -157,41 +162,41 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   linkContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 12,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: "#007AFF",
   },
   linkTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 4,
   },
   linkUrl: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   image: {
     borderRadius: 8,
   },
   sketchContainer: {
-    backgroundColor: '#fff9c4',
+    backgroundColor: "#fff9c4",
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ffeb3b',
+    borderColor: "#ffeb3b",
   },
   sketchTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 4,
   },
   sketchText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     lineHeight: 18,
   },
 });

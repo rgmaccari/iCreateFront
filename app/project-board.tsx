@@ -3,18 +3,19 @@ import { showToast } from "@/constants/showToast";
 import { Checklist } from "@/services/checklist/checklist";
 import { Image } from "@/services/image/image";
 import { BaseItemDto } from "@/services/item/base-item.dto";
-import { ImageItem } from "@/services/item/image-item";
 import { ItemService } from "@/services/item/item.service";
-import { LinkItem } from "@/services/item/link-item";
-import { NoteItem } from "@/services/item/note-item";
+import {
+  ImageItem,
+  LinkItem,
+  NoteItem,
+  ProjectItem,
+} from "@/services/item/project-item";
 import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
-type ProjectItem = LinkItem | ImageItem | NoteItem;
 
 interface ProjectBoardProps {
   project?: Project;
@@ -99,112 +100,117 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleAddNote = async (noteData: Note) => {
     const tempCode = Date.now() * -1; //Identificador temporário
 
-    const newItem: NoteItem = {
-      code: tempCode,
-      componentCode: noteData.code!,
-      x: 50,
-      y: 50,
-      width: 250,
-      height: 120,
-      //borderColor:
-
-      type: "note",
-      title: noteData.title || "",
-      description: noteData.description || "",
-      sort: noteData.sort || 0,
-      updatedAt: noteData.updatedAt || new Date().toISOString(),
-    };
-
-    const baseItemDto: BaseItemDto = {
-      type: newItem.type,
-      componentCode: newItem.componentCode,
-      x: newItem.x,
-      y: newItem.y,
-      width: newItem.width,
-      height: newItem.height,
-    };
-    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
-
     try {
-      await ItemService.create(baseItemDto);
-    } catch (error: any) {
-      showToast("error", error.formattedMessage);
-    }
+      const baseItemDto: BaseItemDto = {
+        type: "note",
+        componentCode: noteData.code,
+        x: 50,
+        y: 50,
+        width: 250,
+        height: 120,
+      };
 
-    setItems((prev) => [...prev, newItem]);
+      let Note: NoteItem;
+
+      const response = await ItemService.create(baseItemDto);
+
+      console.log("response pae ", JSON.stringify(response, null));
+
+      const noteItem: NoteItem = {
+        code: response.code,
+        type: response.type as "note",
+        componentCode: response.componentCode,
+        x: response.x,
+        y: response.y,
+        width: response.width,
+        height: response.height,
+        title: response.title,
+        description: response.description,
+        sort: response.sort,
+        updatedAt: response.updatedAt,
+      };
+
+      setItems((prev) => [...prev, noteItem]);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage || "Erro desconhecido!");
+    }
   };
 
   //Transofrma um novo
   const handleAddLink = async (linkData: Link) => {
     const tempCode = Date.now() * -1; //Identificador temporário
 
-    const newItem: LinkItem = {
-      code: tempCode,
-      componentCode: linkData.code!,
-      x: 50,
-      y: 50,
-      width: 200,
-      height: 60,
-
-      type: "link",
-      title: linkData.title!,
-      url: linkData.url!,
-      previewImageUrl: linkData.previewImageUrl,
-      createdAt: linkData.createdAt!,
-    };
-
-    const baseItemDto: BaseItemDto = {
-      type: newItem.type,
-      componentCode: newItem.componentCode,
-      x: newItem.x,
-      y: newItem.y,
-      width: newItem.width,
-      height: newItem.height,
-    };
-    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
-
     try {
-      await ItemService.create(baseItemDto);
-    } catch (error: any) {
-      showToast("error", error.formattedMessage);
-    }
+      const baseItemDto: BaseItemDto = {
+        type: "link",
+        componentCode: linkData.code,
+        x: 50,
+        y: 50,
+        width: 250,
+        height: 120,
+      };
 
-    setItems([...items, newItem]);
+      let Note: NoteItem;
+
+      const response = await ItemService.create(baseItemDto);
+
+      console.log("response pae ", JSON.stringify(response, null));
+
+      const linkItem: LinkItem = {
+        code: response.code,
+        type: response.type as "link",
+        componentCode: response.componentCode,
+        x: response.x,
+        y: response.y,
+        width: response.width,
+        height: response.height,
+
+        title: response.title,
+        url: response.url,
+        previewImageUrl: response.previewImageUrl,
+        createdAt: response.createdAt,
+      };
+
+      setItems((prev) => [...prev, linkItem]);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage || "Erro desconhecido!");
+    }
   };
 
   const handleAddImage = async (imageData: Image) => {
-    const newItem: ImageItem = {
-      code: imageData.code,
-      componentCode: imageData.code,
-      x: 50,
-      y: 50,
-      width: 200,
-      height: 150,
-
-      type: "image",
-      filename: imageData.filename,
-      isCover: imageData.isCover,
-      source: imageData.url,
-      createdAt: imageData.createdAt,
-    };
-
-    const baseItemDto: BaseItemDto = {
-      type: newItem.type,
-      componentCode: newItem.componentCode,
-      x: newItem.x,
-      y: newItem.y,
-      width: newItem.width,
-      height: newItem.height,
-    };
-    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
-
     try {
-      await ItemService.create(baseItemDto);
-    } catch (error: any) {
-      showToast("error", error.formattedMessage);
-    }
+      const baseItemDto: BaseItemDto = {
+        type: "image",
+        componentCode: imageData.code,
+        x: 50,
+        y: 50,
+        width: 250,
+        height: 120,
+      };
 
-    setItems([...items, newItem]);
+      const response = await ItemService.create(baseItemDto);
+
+      console.log("response pae ", JSON.stringify(response, null));
+
+      const imageItem: ImageItem = {
+        code: response.code,
+        type: response.type as "image",
+        componentCode: response.componentCode,
+        x: response.x,
+        y: response.y,
+        width: response.width,
+        height: response.height,
+
+        filename: response.filename,
+        isCover: response.isCover,
+        source: response.source,
+        createdAt: response.createdAt,
+      };
+
+      setItems((prev) => [...prev, imageItem]);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage || "Erro desconhecido!");
+    }
   };
 
   //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
