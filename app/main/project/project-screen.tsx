@@ -4,7 +4,9 @@ import ImageModal from "@/components/image-modal";
 import LinkModal from "@/components/linking-modal";
 import PageHeader from "@/components/page-header";
 import ProjectForm from "@/components/project-form";
-import ProjectViewTabs, { ProjectViewMode } from "@/components/project-view-tabs";
+import ProjectViewTabs, {
+  ProjectViewMode,
+} from "@/components/project-view-tabs";
 import ComponentSelectorModal from "@/components/selector-modal";
 import SketchModal from "@/components/sketch-modal";
 import { showToast } from "@/constants/showToast";
@@ -24,14 +26,21 @@ import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
 import * as FileSystem from "expo-file-system/legacy";
-import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
-  const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
+  const projectCode = params.projectCode
+    ? parseInt(params.projectCode, 10)
+    : undefined;
   const navigation = useNavigation();
 
   const [project, setProject] = useState<Project | undefined>(undefined);
@@ -46,13 +55,10 @@ export default function ProjectScreen() {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSketchModal, setShowSketchModal] = useState(false);
 
-
   const [images, setImages] = useState<Image[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
-
-
 
   //Carrega o projeto atual
   useEffect(() => {
@@ -77,7 +83,8 @@ export default function ProjectScreen() {
   //Detecta mudanças no projeto
   useEffect(() => {
     if (project) {
-      const isChanged = project.title !== formData.title || project.sketch !== formData.sketch;
+      const isChanged =
+        project.title !== formData.title || project.sketch !== formData.sketch;
       setIsDirty(isChanged);
     } else {
       setIsDirty(!!formData.title || !!formData.sketch);
@@ -98,14 +105,28 @@ export default function ProjectScreen() {
           "Salvar projeto",
           "Deseja salvar as alterações antes de voltar?",
           [
-            { text: "Não", onPress: () => { setIsDirty(false); navigation.dispatch(e.data.action); } },
-            { text: "Sim", onPress: () => { handleSubmitProject(); } },
+            {
+              text: "Não",
+              onPress: () => {
+                setIsDirty(false);
+                navigation.dispatch(e.data.action);
+              },
+            },
+            {
+              text: "Sim",
+              onPress: () => {
+                handleSubmitProject();
+              },
+            },
             { text: "Cancelar", style: "cancel" },
           ]
         );
       };
 
-      const unsubscribe = navigation.addListener("beforeRemove", onBeforeRemove);
+      const unsubscribe = navigation.addListener(
+        "beforeRemove",
+        onBeforeRemove
+      );
       return unsubscribe;
     }, [navigation, isDirty])
   );
@@ -133,7 +154,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast('error', error.formattedMessage);
+      showToast("error", error.formattedMessage);
     }
   };
 
@@ -146,7 +167,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast('error', error.formattedMessage);
+      showToast("error", error.formattedMessage);
     }
   };
 
@@ -180,7 +201,7 @@ export default function ProjectScreen() {
       const info = await FileSystem.getInfoAsync(form.uri as string);
       if (!info.exists) {
         console.warn("Arquivo ainda não acessível:", form.uri);
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 500));
       }
     }
 
@@ -194,45 +215,37 @@ export default function ProjectScreen() {
       } as any);
     });
 
-    formData.append("isCover", String(forms.some(f => f.isCover)));
+    formData.append("isCover", String(forms.some((f) => f.isCover)));
     formData.append("projectCode", String(projectCode));
 
     try {
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 200));
       await ImageService.create(projectCode, formData);
 
-      const updatedImages = await ImageService.findAllByProjectCode(projectCode);
+      const updatedImages = await ImageService.findAllByProjectCode(
+        projectCode
+      );
       setImages(updatedImages || []);
       setShowImageModal(false);
-      showToast('success', 'Imagens adicionadas com sucesso!');
+      showToast("success", "Imagens adicionadas com sucesso!");
     } catch (error: any) {
       showToast("error", error.formattedMessage);
     }
   };
 
-  // const createLink = async (form: LinkCreateDto) => {
-  //   if (projectCode && form) {
-  //     try {
-  //       await LinkService.create(projectCode, form);
-  //       await new Promise(r => setTimeout(r, 200));
-  //       setShowLinkModal(false);
-  //     } catch (error: any) {
-  //       showToast('error', error.formattedMessage);
-  //     }
-  //   }
-  // };
   const createLink = async (form: LinkCreateDto) => {
     if (projectCode && form) {
       try {
         await LinkService.create(form);
         setShowLinkModal(false);
 
-        const updatedLinks = await LinkService.findAllByProjectCode(projectCode);
+        const updatedLinks = await LinkService.findAllByProjectCode(
+          projectCode
+        );
         setLinks(updatedLinks || []);
-        showToast('success', 'Links adicionados com sucesso!');
-
+        showToast("success", "Links adicionados com sucesso!");
       } catch (error: any) {
-        showToast('error', error.formattedMessage);
+        showToast("error", error.formattedMessage);
       }
     }
   };
@@ -244,14 +257,16 @@ export default function ProjectScreen() {
         await NoteService.create(form);
         setShowSketchModal(false);
 
-        const updatedNotes = await NoteService.findAllByProjectCode(projectCode);
+        const updatedNotes = await NoteService.findAllByProjectCode(
+          projectCode
+        );
         setNotes(updatedNotes || []); //Atualiza o estado de um "prop.images" no componente visual
-        showToast('success', 'Anotação registrada!')
+        showToast("success", "Anotação registrada!");
       } catch (error: any) {
-        showToast('error', error.formattedMessage);
+        showToast("error", error.formattedMessage);
       }
     }
-  }
+  };
 
   //Criar checklist
   const createChecklist = async (form: ChecklistDto) => {
@@ -260,14 +275,16 @@ export default function ProjectScreen() {
         await ChecklistService.create(form);
         setShowSketchModal(false);
 
-        const updatedChecklist = await ChecklistService.findAllByProjectCode(projectCode);
+        const updatedChecklist = await ChecklistService.findAllByProjectCode(
+          projectCode
+        );
         setChecklists(updatedChecklist || []);
-        showToast('success', 'Checklist criada!');
+        showToast("success", "Checklist criada!");
       } catch (error: any) {
-        showToast('error', error.formattedMessage);
+        showToast("error", error.formattedMessage);
       }
     }
-  }
+  };
 
   //Alteração dinâmica no título
   const handleTitleChange = (newTitle: string) => {
@@ -298,7 +315,14 @@ export default function ProjectScreen() {
         "Salvar alterações",
         "Deseja salvar as alterações antes de sair?",
         [
-          { text: "Não", onPress: () => { setIsDirty(false); router.back(); }, style: "cancel" },
+          {
+            text: "Não",
+            onPress: () => {
+              setIsDirty(false);
+              router.back();
+            },
+            style: "cancel",
+          },
           { text: "Sim", onPress: handleSubmitProject },
         ]
       );
@@ -341,18 +365,21 @@ export default function ProjectScreen() {
         return (
           <View style={styles.viewContent}>
             <Text style={styles.viewTitle}>Visualização em Documento</Text>
-            <Text style={styles.viewText}>Projeto: {formData.title || "Sem título"}</Text>
-            <Text style={styles.viewText}>Aqui será implementada a visualização em documento</Text>
+            <Text style={styles.viewText}>
+              Projeto: {formData.title || "Sem título"}
+            </Text>
+            <Text style={styles.viewText}>
+              Aqui será implementada a visualização em documento
+            </Text>
           </View>
         );
       case "board":
         return (
           <ProjectBoard
             project={project}
-            onAddImage={() => console.log('aopa')}
-            onAddLink={() => console.log('aopa')}
-            onAddNote={() => console.log('aopa')}
-
+            onAddImage={() => console.log("aopa")}
+            onAddLink={() => console.log("aopa")}
+            onAddNote={() => console.log("aopa")}
             images={images}
             links={links}
             notes={notes}
@@ -360,22 +387,27 @@ export default function ProjectScreen() {
           />
         );
       case "form":
-        return <ProjectForm
-          project={project}
-          onChange={setFormData}
-          images={images}
-          links={links}
-          notes={notes}
-          checklists={checklists}
-        />;
+        return (
+          <ProjectForm
+            project={project}
+            onChange={setFormData}
+            images={images}
+            links={links}
+            notes={notes}
+            checklists={checklists}
+          />
+        );
       default:
-        return <ProjectForm
-          project={project}
-          onChange={setFormData}
-          images={images}
-          links={links}
-          notes={notes}
-          checklists={checklists} />;
+        return (
+          <ProjectForm
+            project={project}
+            onChange={setFormData}
+            images={images}
+            links={links}
+            notes={notes}
+            checklists={checklists}
+          />
+        );
     }
   };
 
@@ -400,7 +432,10 @@ export default function ProjectScreen() {
         showSaveButton={true}
       />
 
-      <ProjectViewTabs currentView={currentView} onViewChange={setCurrentView} />
+      <ProjectViewTabs
+        currentView={currentView}
+        onViewChange={setCurrentView}
+      />
 
       <View style={styles.contentContainer}>{renderCurrentView()}</View>
 
@@ -444,7 +479,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-
   },
   viewContent: {
     flex: 1,
