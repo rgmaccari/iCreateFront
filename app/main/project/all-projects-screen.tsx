@@ -23,7 +23,9 @@ export default function AllProjectsScreen() {
   const [userData, setUserData] = useState(AuthService.getUser());
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [sortOption, setSortOption] = useState<"title" | "createdAt" | "updatedAt">("title");
+  const [sortOption, setSortOption] = useState<
+    "title" | "createdAt" | "updatedAt"
+  >("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -42,9 +44,7 @@ export default function AllProjectsScreen() {
       setUserData(AuthService.getUser());
 
       if (AuthService.getUser()?.code) {
-
         let data = await ProjectService.findAllPreview();
-
 
         //Realiza a ordenação (criar método separado?)
         data = data.sort((a, b) => {
@@ -60,12 +60,18 @@ export default function AllProjectsScreen() {
           };
           const valA = getValue(a);
           const valB = getValue(b);
-          return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+          return sortOrder === "asc"
+            ? valA.localeCompare(valB)
+            : valB.localeCompare(valA);
         });
         setProjects(data);
       }
     } catch (error: any) {
-      showToast('error', error.formattedMessage, 'Ocorreu um erro ao obter os projetos.')
+      showToast(
+        "error",
+        error.formattedMessage,
+        "Ocorreu um erro ao obter os projetos."
+      );
     }
     setRefreshing(false);
   };
@@ -87,8 +93,19 @@ export default function AllProjectsScreen() {
   };
 
   //Abrir um projeto novo.
-  const handleNewProject = () => {
-    router.push("/main/project/project-screen");
+  const handleNewProject = async () => {
+    try {
+      const newProject = await ProjectService.create({
+        title: "Novo Projeto",
+      });
+
+      router.push({
+        pathname: "/main/project/project-screen",
+        params: { projectCode: newProject.code },
+      });
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
+    }
   };
 
   return (
@@ -107,9 +124,18 @@ export default function AllProjectsScreen() {
             }
           >
             {/**Item dentro do menu*/}
-            <Menu.Item onPress={() => handleSortChange("title")} title="Título" />
-            <Menu.Item onPress={() => handleSortChange("createdAt")} title="Data de criação" />
-            <Menu.Item onPress={() => handleSortChange("updatedAt")} title="Última atualização" />
+            <Menu.Item
+              onPress={() => handleSortChange("title")}
+              title="Título"
+            />
+            <Menu.Item
+              onPress={() => handleSortChange("createdAt")}
+              title="Data de criação"
+            />
+            <Menu.Item
+              onPress={() => handleSortChange("updatedAt")}
+              title="Última atualização"
+            />
           </Menu>
           <TouchableOpacity onPress={handleOrderIconPress}>
             <MaterialIcons

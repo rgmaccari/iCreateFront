@@ -1,4 +1,4 @@
 export interface ProjectInfoDto {
-    title: string;
-    sketch: string;
+  title: string;
+  sketch?: string;
 }
