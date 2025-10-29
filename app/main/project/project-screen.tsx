@@ -25,6 +25,7 @@ import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
 import { ProjectInfoDto } from "@/services/project/project.create.dto";
 import { ProjectService } from "@/services/project/project.service";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import {
   router,
@@ -49,7 +50,10 @@ export default function ProjectScreen() {
   const [isDirty, setIsDirty] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
+
+  const [currentView, setCurrentView] = useState<ProjectViewMode | null>(null);
+  //  const [currentView, setCurrentView] = useState<ProjectViewMode>("form");
+
   const [showComponentSelector, setShowComponentSelector] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -130,6 +134,45 @@ export default function ProjectScreen() {
       return unsubscribe;
     }, [navigation, isDirty])
   );
+
+  //Carrega a última ViewForm ativa
+  useEffect(() => {
+    const loadLastView = async () => {
+      if (!projectCode) {
+        setCurrentView("form"); //Fallback se não tem projeto...
+        return;
+      }
+
+      const LAST_VIEW_KEY = `project_last_view_${projectCode}`;
+      try {
+        const savedView = await AsyncStorage.getItem(LAST_VIEW_KEY);
+        if (savedView && ["form", "board", "document"].includes(savedView)) {
+          setCurrentView(savedView as ProjectViewMode);
+        } else {
+          setCurrentView("form"); //Fallback se inválido
+        }
+      } catch (error) {
+        setCurrentView("form"); //Para qualquer efeito...
+      }
+    };
+
+    loadLastView();
+  }, [projectCode]);
+
+  useEffect(() => {
+    if (!currentView || !projectCode) return;
+
+    const saveLastView = async () => {
+      const LAST_VIEW_KEY = `project_last_view_${projectCode}`;
+      try {
+        await AsyncStorage.setItem(LAST_VIEW_KEY, currentView);
+      } catch (error) {
+        console.error("Erro ao salvar última view:", error);
+      }
+    };
+
+    saveLastView();
+  }, [currentView, projectCode]);
 
   const loadProjectItems = async (code: number) => {
     try {
@@ -233,6 +276,7 @@ export default function ProjectScreen() {
     }
   };
 
+  //Criar links
   const createLink = async (form: LinkCreateDto) => {
     if (projectCode && form) {
       try {
@@ -433,7 +477,7 @@ export default function ProjectScreen() {
       />
 
       <ProjectViewTabs
-        currentView={currentView}
+        currentView={currentView!}
         onViewChange={setCurrentView}
       />
 
