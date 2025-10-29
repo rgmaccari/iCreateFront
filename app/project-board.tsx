@@ -1,19 +1,18 @@
-import DraggableItem from '@/components/drag-item';
-import { Checklist } from '@/services/checklist/checklist';
-import { Image } from '@/services/image/image';
-import { BaseItemDto } from '@/services/item/base-item.dto';
-import { ImageItem } from '@/services/item/image-item';
-import { LinkItem } from '@/services/item/link-item';
-import { NoteItem } from '@/services/item/note-item';
-import { Link } from '@/services/link/link';
-import { Note } from '@/services/notes/note';
-import { Project } from '@/services/project/project';
-import React, { useEffect, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet
-} from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import DraggableItem from "@/components/drag-item";
+import { showToast } from "@/constants/showToast";
+import { Checklist } from "@/services/checklist/checklist";
+import { Image } from "@/services/image/image";
+import { BaseItemDto } from "@/services/item/base-item.dto";
+import { ImageItem } from "@/services/item/image-item";
+import { ItemService } from "@/services/item/item.service";
+import { LinkItem } from "@/services/item/link-item";
+import { NoteItem } from "@/services/item/note-item";
+import { Link } from "@/services/link/link";
+import { Note } from "@/services/notes/note";
+import { Project } from "@/services/project/project";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 type ProjectItem = LinkItem | ImageItem | NoteItem;
 
@@ -42,10 +41,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
 
-    const newNotes = props.notes.filter(note => !lastNotes.some(oldNote => oldNote.code === note.code));
+    const newNotes = props.notes.filter(
+      (note) => !lastNotes.some((oldNote) => oldNote.code === note.code)
+    );
 
     //handleAddNote para cada nova note
-    newNotes.forEach(note => {
+    newNotes.forEach((note) => {
       if (note.code) {
         handleAddNote(note);
       }
@@ -60,10 +61,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
 
-    const newLinks = props.links.filter(link => !lastLinks.some(oldLink => oldLink.code === link.code));
+    const newLinks = props.links.filter(
+      (link) => !lastLinks.some((oldLink) => oldLink.code === link.code)
+    );
 
     //handleAddNote para cada nova note
-    newLinks.forEach(link => {
+    newLinks.forEach((link) => {
       if (link.code) {
         handleAddLink(link);
       }
@@ -78,10 +81,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
 
-    const newImages = props.images.filter(image => !lastImages.some(oldImage => oldImage.code === image.code));
+    const newImages = props.images.filter(
+      (image) => !lastImages.some((oldImage) => oldImage.code === image.code)
+    );
 
     //handleAddNote para cada nova note
-    newImages.forEach(image => {
+    newImages.forEach((image) => {
       if (image.code) {
         handleAddImage(image);
       }
@@ -91,8 +96,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   }, [props.images]);
 
   //Transforma um novo objeto Note em um Item
-  const handleAddNote = (noteData: Note) => {
-    const tempCode = Date.now() * -1;//Identificador temporário
+  const handleAddNote = async (noteData: Note) => {
+    const tempCode = Date.now() * -1; //Identificador temporário
 
     const newItem: NoteItem = {
       code: tempCode,
@@ -101,11 +106,11 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       y: 50,
       width: 250,
       height: 120,
-      //borderColor: 
-      
-      type: 'note',
-      title: noteData.title || '',
-      description: noteData.description || '',
+      //borderColor:
+
+      type: "note",
+      title: noteData.title || "",
+      description: noteData.description || "",
       sort: noteData.sort || 0,
       updatedAt: noteData.updatedAt || new Date().toISOString(),
     };
@@ -116,17 +121,22 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       x: newItem.x,
       y: newItem.y,
       width: newItem.width,
-      height: newItem.height
-      
+      height: newItem.height,
     };
-    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
 
-    setItems(prev => [...prev, newItem]);
+    try {
+      await ItemService.create(baseItemDto);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
+    }
+
+    setItems((prev) => [...prev, newItem]);
   };
 
   //Transofrma um novo
-  const handleAddLink = (linkData: Link) => {
-    const tempCode = Date.now() * -1;//Identificador temporário
+  const handleAddLink = async (linkData: Link) => {
+    const tempCode = Date.now() * -1; //Identificador temporário
 
     const newItem: LinkItem = {
       code: tempCode,
@@ -135,8 +145,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       y: 50,
       width: 200,
       height: 60,
-      
-      type: 'link',
+
+      type: "link",
       title: linkData.title!,
       url: linkData.url!,
       previewImageUrl: linkData.previewImageUrl,
@@ -149,15 +159,20 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       x: newItem.x,
       y: newItem.y,
       width: newItem.width,
-      height: newItem.height
-      
+      height: newItem.height,
     };
-    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
+
+    try {
+      await ItemService.create(baseItemDto);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
+    }
 
     setItems([...items, newItem]);
   };
 
-  const handleAddImage = (imageData: Image) => {
+  const handleAddImage = async (imageData: Image) => {
     const newItem: ImageItem = {
       code: imageData.code,
       componentCode: imageData.code,
@@ -165,8 +180,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       y: 50,
       width: 200,
       height: 150,
-      
-      type: 'image',
+
+      type: "image",
       filename: imageData.filename,
       isCover: imageData.isCover,
       source: imageData.url,
@@ -179,27 +194,37 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       x: newItem.x,
       y: newItem.y,
       width: newItem.width,
-      height: newItem.height
-      
+      height: newItem.height,
     };
-    console.log('Json do novo item: ', JSON.stringify(baseItemDto, null));
+    console.log("Json do novo item: ", JSON.stringify(baseItemDto, null));
+
+    try {
+      await ItemService.create(baseItemDto);
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
+    }
 
     setItems([...items, newItem]);
   };
 
   //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
   const updateItemPosition = (code: number, x: number, y: number) => {
-    setItems(currentItems => currentItems.map(item => item.code === code ? { ...item, x, y } : item));
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.code === code ? { ...item, x, y } : item
+      )
+    );
   };
 
   //Remove itens: através do code do item apenas, realizo o delet
   const deleteItem = (code: number) => {
-    setItems(currentItems => currentItems.filter(item => item.code !== code));
+    setItems((currentItems) =>
+      currentItems.filter((item) => item.code !== code)
+    );
   };
 
   return (
     <GestureHandlerRootView style={styles.container}>
-
       {/*Apenas a view geral*/}
       <ScrollView
         style={styles.canvas}
@@ -221,24 +246,24 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#506b86ff',
+    backgroundColor: "#506b86ff",
   },
   header: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   canvas: {
     flex: 1,
   },
   canvasContent: {
-    minHeight: '100%',
+    minHeight: "100%",
   },
 });
 
