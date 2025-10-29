@@ -98,8 +98,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Transforma um novo objeto Note em um Item
   const handleAddNote = async (noteData: Note) => {
-    const tempCode = Date.now() * -1; //Identificador temporário
-
     try {
       const baseItemDto: BaseItemDto = {
         type: "note",
@@ -114,7 +112,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       const response = await ItemService.create(baseItemDto);
 
-      console.log("response pae ", JSON.stringify(response, null));
+      console.log(
+        "[ProjectBoard] handleAddNote ",
+        JSON.stringify(response, null)
+      );
 
       const noteItem: NoteItem = {
         code: response.code,
@@ -138,8 +139,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Transofrma um novo
   const handleAddLink = async (linkData: Link) => {
-    const tempCode = Date.now() * -1; //Identificador temporário
-
     try {
       const baseItemDto: BaseItemDto = {
         type: "link",
@@ -154,7 +153,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       const response = await ItemService.create(baseItemDto);
 
-      console.log("response pae ", JSON.stringify(response, null));
+      console.log(
+        "[ProjectBoard] handleAddLink ",
+        JSON.stringify(response, null)
+      );
 
       const linkItem: LinkItem = {
         code: response.code,
@@ -190,7 +192,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       const response = await ItemService.create(baseItemDto);
 
-      console.log("response pae ", JSON.stringify(response, null));
+      console.log(
+        "[ProjectBoard] handleAddImage ",
+        JSON.stringify(response, null)
+      );
 
       const imageItem: ImageItem = {
         code: response.code,
