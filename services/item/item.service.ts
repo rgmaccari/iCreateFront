@@ -20,6 +20,7 @@ export class ItemService {
   }
 
   static async updatePosition(code: number, x: number, y: number) {
+    console.log("chamando o service...", code);
     const response = await api.patch(`/items/${code}/position`, { x, y });
     return response.data;
   }

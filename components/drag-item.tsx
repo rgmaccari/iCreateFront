@@ -1,6 +1,6 @@
 import { ItemService } from "@/services/item/item.service";
 import { ProjectItem } from "@/services/item/project-item";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -25,36 +25,98 @@ interface DraggableItemProps {
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
   const translateX = useSharedValue(props.item.x);
   const translateY = useSharedValue(props.item.y);
   const [isPressed, setIsPressed] = useState(false);
 
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      //Nada necessário no start
-    })
-    .onUpdate((event) => {
-      translateX.value = props.item.x + event.translationX;
-      translateY.value = props.item.y + event.translationY;
-    })
+  useEffect(() => {
+    translateX.value = props.item.x;
+    translateY.value = props.item.y;
+    startX.value = props.item.x;
+    startY.value = props.item.y;
+  }, [props.item.x, props.item.y]);
+  // const panGesture = Gesture.Pan()
+  //   .onStart(() => {
+  //     //Nada necessário no start
+  //   })
+  //   .onUpdate((event) => {
+  //     translateX.value = props.item.x + event.translationX;
+  //     translateY.value = props.item.y + event.translationY;
+  //   })
 
-    .onEnd(() => {
-      //Atualiza a posição base no item
-      props.item.x = translateX.value;
-      props.item.y = translateY.value;
-      runOnJS(async () => {
-        await ItemService.updatePosition(
-          props.item.code,
-          translateX.value,
-          translateY.value
-        );
+  //   .onEnd(() => {
+  //     //Atualiza a posição base no item
+  //     props.item.x = translateX.value;
+  //     props.item.y = translateY.value;
+  //     runOnJS(async () => {
+  //       await ItemService.updatePosition(
+  //         props.item.code,
+  //         translateX.value,
+  //         translateY.value
+  //       );
+  //       props.onPositionChange(
+  //         props.item.code,
+  //         translateX.value,
+  //         translateY.value
+  //       );
+  //     })();
+  //   }); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
+  // const panGesture = Gesture.Pan()
+  //   .onStart(() => {
+  //     // Opcional: salvar posição inicial se precisar de "snap back"
+  //   })
+  //   .onUpdate((event) => {
+  //     translateX.value = props.item.x + event.translationX;
+  //     translateY.value = props.item.y + event.translationY;
+  //   })
+  //   .onEnd(() => {
+  //     // NÃO MUTAR props.item!
+  //     const newX = translateX.value;
+  //     const newY = translateY.value;
+
+  //     runOnJS(async () => {
+  //       try {
+  //         await ItemService.updatePosition(props.item.code, newX, newY);
+  //         props.onPositionChange(props.item.code, newX, newY);
+  //       } catch (error) {
+  //         console.error("Falha ao atualizar posição:", error);
+  //         // Opcional: reverter animação se falhar
+  //       }
+  //     })();
+  //   });
+
+  const updatePositionInJS = () => {
+    ItemService.updatePosition(
+      props.item.code,
+      translateX.value,
+      translateY.value
+    )
+      .then(() => {
         props.onPositionChange(
           props.item.code,
           translateX.value,
           translateY.value
         );
-      })();
-    }); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
+      })
+      .catch((error) => {
+        console.error("Falha ao salvar:", error);
+      });
+  };
+
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      startX.value = translateX.value;
+      startY.value = translateY.value;
+    })
+    .onUpdate((e) => {
+      translateX.value = startX.value + e.translationX;
+      translateY.value = startY.value + e.translationY;
+    })
+    .onEnd(() => {
+      runOnJS(updatePositionInJS)();
+    });
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
