@@ -1,3 +1,4 @@
+import { ItemService } from "@/services/item/item.service";
 import { ProjectItem } from "@/services/item/project-item";
 import React, { useState } from "react";
 import {
@@ -36,16 +37,24 @@ const DraggableItem = (props: DraggableItemProps) => {
       translateX.value = props.item.x + event.translationX;
       translateY.value = props.item.y + event.translationY;
     })
+
     .onEnd(() => {
       //Atualiza a posição base no item
       props.item.x = translateX.value;
       props.item.y = translateY.value;
-      runOnJS(props.onPositionChange)(
-        props.item.code,
-        translateX.value,
-        translateY.value
-      ); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
-    });
+      runOnJS(async () => {
+        await ItemService.updatePosition(
+          props.item.code,
+          translateX.value,
+          translateY.value
+        );
+        props.onPositionChange(
+          props.item.code,
+          translateX.value,
+          translateY.value
+        );
+      })();
+    }); //Aqui vou ter que colocar a chamada para atualizar a posição no estado do pai
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
