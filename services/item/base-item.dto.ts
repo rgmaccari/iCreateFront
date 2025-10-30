@@ -5,4 +5,5 @@ export interface BaseItemDto {
   y: number;
   width: number;
   height: number;
+  projectCode: number;
 }

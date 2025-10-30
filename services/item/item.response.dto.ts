@@ -11,6 +11,7 @@ export interface ItemResponseDto {
   borderColor: string;
   title: string;
   createdAt: string;
+  projectCode: number;
 
   //Para Note Item
   description: string;

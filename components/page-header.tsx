@@ -50,7 +50,7 @@ export default function PageHeader(props: PageHeaderProps) {
             <View style={styles.headerButton}>
                 {showSave && (
                     <TouchableOpacity onPress={props.onSave}>
-                        <FontAwesome name="save" size={20} color="#328b2fff" />
+                        <FontAwesome name="check" size={20} color="#9191d8ff" />
                     </TouchableOpacity>
                 )}
             </View>

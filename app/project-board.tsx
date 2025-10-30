@@ -35,6 +35,21 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const [lastImages, setLastImages] = useState<Image[]>([]);
   const [lastNotes, setLastNotes] = useState<Note[]>([]);
 
+  //useEffect que verifica a abertura da tela para inserir os itens:
+  useEffect(() => {
+    const findByCode = async () => {
+      if (!props.project?.code) return;
+      try {
+        const components = await ItemService.getComponents(props.project.code);
+        console.log("Itens carregados:", JSON.stringify(components, null, 2));
+        setItems(components);
+      } catch (error: any) {
+        showToast("error", error.formattedMessage);
+      }
+    };
+    findByCode();
+  }, [props.project?.code]);
+
   //Notes UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
   useEffect(() => {
     if (lastNotes.length === 0) {
@@ -98,6 +113,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Transforma um novo objeto Note em um Item
   const handleAddNote = async (noteData: Note) => {
+    console.log('projectCode: ', props.project?.code)
     try {
       const baseItemDto: BaseItemDto = {
         type: "note",
@@ -106,9 +122,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 250,
         height: 120,
+        projectCode: props.project?.code!
       };
-
-      let Note: NoteItem;
 
       const response = await ItemService.create(baseItemDto);
 
@@ -129,6 +144,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         description: response.description,
         sort: response.sort,
         updatedAt: response.updatedAt,
+        projectCode: response.projectCode
       };
 
       setItems((prev) => [...prev, noteItem]);
@@ -147,9 +163,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 250,
         height: 120,
+        projectCode: props.project?.code!
       };
-
-      let Note: NoteItem;
 
       const response = await ItemService.create(baseItemDto);
 
@@ -171,6 +186,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         url: response.url,
         previewImageUrl: response.previewImageUrl,
         createdAt: response.createdAt,
+        projectCode: response.projectCode
       };
 
       setItems((prev) => [...prev, linkItem]);
@@ -188,6 +204,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 250,
         height: 120,
+        projectCode: props.project?.code!
       };
 
       const response = await ItemService.create(baseItemDto);
@@ -210,6 +227,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         isCover: response.isCover,
         source: response.source,
         createdAt: response.createdAt,
+        projectCode: response.projectCode
       };
 
       setItems((prev) => [...prev, imageItem]);

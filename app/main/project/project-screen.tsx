@@ -73,7 +73,7 @@ export default function ProjectScreen() {
           setProject(actualProject);
           setFormData(actualProject);
 
-          // Carrega os itens do projeto
+          //Carrega os itens do projeto
           await loadProjectItems(projectCode);
         } catch (err) {
           console.error("Erro ao carregar projeto:", err);

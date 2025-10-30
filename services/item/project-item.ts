@@ -6,6 +6,7 @@ export type BaseItem = {
   width: number;
   height: number;
   borderColor?: string;
+  projectCode?: number;
 };
 
 export type LinkItem = BaseItem & {
