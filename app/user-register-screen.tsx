@@ -1,12 +1,12 @@
-import PageHeader from "@/components/page-header";
 import UserForm from "@/components/user-update-form";
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
 import { UserService } from "@/services/user/user.service";
 import { UserDto } from "@/services/user/user.update.dto";
+import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserRegisterScreen() {
@@ -97,23 +97,44 @@ export default function UserRegisterScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <PageHeader title="Cadastro" onBack={handleReturn} />
-            <Text style={styles.welcomeText}>Seja bem vindo!</Text>
-            <UserForm onSubmit={handleSubmit} hasUser={!!userData} onDelete={userData ? () => deleteUser(userData.code) : undefined} />
+            <TouchableOpacity onPress={handleReturn} style={styles.backButton}>
+                <Feather name="arrow-left" size={28} color="#555" />
+            </TouchableOpacity>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <Text style={styles.welcomeText}>Seja bem vindo ao ICreate!</Text>  
+                <UserForm
+                  onSubmit={handleSubmit}
+                  hasUser={!!userData}
+                onDelete={userData ? () => deleteUser(userData.code) : undefined}/>
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         backgroundColor: "#f2f0faff",
-    },
+  },
+  backButton: {
+        position: "absolute",
+        top: 60,
+        left: 24,
+        zIndex: 10,
+  },
+  scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "flex-start",
+        alignItems: "center",
+        paddingHorizontal: 24,
+        paddingTop: 120,
+        paddingBottom: 50,
+  },
     welcomeText: {
-        fontSize: 16,
-        fontWeight: "light",
-        color: "#333",
-        marginTop: 35,
-        marginBottom: 15,
+        fontSize: 26,
+        fontWeight: "500",
+        color: "#4A4688",
+        marginBottom: 30,
         textAlign: "center",
     },
 });
