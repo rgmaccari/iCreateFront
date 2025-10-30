@@ -25,37 +25,42 @@ interface DraggableItemProps {
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
-  const startX = useSharedValue(0); //Posição inicial
-  const startY = useSharedValue(0); //Posição inicial
+  const startX = useSharedValue(props.item.x); //Posição inicial
+  const startY = useSharedValue(props.item.y); //Posição inicial
   const translateX = useSharedValue(props.item.x); //Posição durante o arrasto
   const translateY = useSharedValue(props.item.y); //Posição durante o arrasto
+
+  const width = useSharedValue(props.item.width || 180);
+  const height = useSharedValue(props.item.height || 100);
+
   const [isPressed, setIsPressed] = useState(false); //Controla qual item está sendo movido
 
   //Acompanha alterações na posição do item...
   useEffect(() => {
     translateX.value = props.item.x;
     translateY.value = props.item.y;
-    startX.value = props.item.x;
-    startY.value = props.item.y;
-  }, [props.item.x, props.item.y]);
+    width.value = props.item.width || 180;
+    height.value = props.item.height || 100;
+  }, [props.item]);
 
-  //Passando o update ao service
+  //Att posição
   const updatePositionInJS = () => {
+    ItemService.updatePosition(props.item.code, translateX.value, translateY.value)
+      .then(() =>
+        props.onPositionChange(props.item.code, translateX.value, translateY.value)
+      )
+      .catch((err) => console.error("Falha ao salvar posição:", err));
+  };
+
+  //Att informação do tamanho
+  const updateSizeInJS = () => {
     ItemService.updatePosition(
       props.item.code,
       translateX.value,
-      translateY.value
-    )
-      .then(() => {
-        props.onPositionChange(
-          props.item.code,
-          translateX.value,
-          translateY.value
-        );
-      })
-      .catch((error) => {
-        console.error("Falha ao salvar:", error);
-      });
+      translateY.value,
+      width.value,
+      height.value
+    ).catch((error: any) => console.error("Falha ao salvar tamanho:", error.formattedMessage));
   };
 
   //O que ocorre ao realizar gestos (arrastar redimencionar)
@@ -69,19 +74,27 @@ const DraggableItem = (props: DraggableItemProps) => {
       translateY.value = startY.value + e.translationY;
     })
     .onEnd(() => {
-      //Ao final do arrastar, chamar a requisição (adicionar um pequeno tempo de espera?)
       runOnJS(updatePositionInJS)();
     });
 
-  //Entrada do item...
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-      ],
-    };
-  });
+  //Redimensionar item
+  const resizeGesture = Gesture.Pan()
+    .onUpdate((e) => {
+      width.value = Math.max(80, width.value + e.translationX);
+      height.value = Math.max(60, height.value + e.translationY);
+    })
+    .onEnd(() => {
+      runOnJS(updateSizeInJS)();
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+    ],
+    width: width.value,
+    height: height.value,
+  }));
 
   //Pressionar o item por um tempo...
   const handleLongPress = () => {
@@ -95,22 +108,25 @@ const DraggableItem = (props: DraggableItemProps) => {
     ]);
   };
 
-  //Depende do tipo de item eu utilizo um "card" diferente -> componentizar!
   const renderContent = () => {
     if (props.item.type === "link") {
       return (
-        <View
-          style={[
-            styles.linkContainer,
-            { width: props.item.width, height: props.item.height },
-          ]}
-        >
-          <Text style={styles.linkTitle} numberOfLines={1}>
-            {props.item.title}
-          </Text>
-          <Text style={styles.linkUrl} numberOfLines={1}>
-            {props.item.url}
-          </Text>
+        <View style={[styles.linkContainer]}>
+          {props.item.previewImageUrl && (
+            <Image
+              source={{ uri: props.item.previewImageUrl }}
+              style={styles.linkImage}
+              resizeMode="cover"
+            />
+          )}
+          <View style={styles.overlay}>
+            <Text style={styles.linkTitle} numberOfLines={1}>
+              {props.item.title}
+            </Text>
+            <Text style={styles.linkUrl} numberOfLines={1}>
+              {props.item.url}
+            </Text>
+          </View>
         </View>
       );
     }
@@ -119,10 +135,7 @@ const DraggableItem = (props: DraggableItemProps) => {
       return (
         <Image
           source={{ uri: props.item.source }}
-          style={[
-            styles.image,
-            { width: props.item.width, height: props.item.height },
-          ]}
+          style={styles.image}
           resizeMode="cover"
         />
       );
@@ -130,12 +143,7 @@ const DraggableItem = (props: DraggableItemProps) => {
 
     if (props.item.type === "note") {
       return (
-        <View
-          style={[
-            styles.sketchContainer,
-            { width: props.item.width, height: props.item.height },
-          ]}
-        >
+        <View style={styles.sketchContainer}>
           {/* Título */}
           {props.item.title && (
             <Text style={styles.sketchTitle} numberOfLines={1}>
@@ -144,8 +152,7 @@ const DraggableItem = (props: DraggableItemProps) => {
           )}
           {/* Descrição */}
           <Text style={styles.sketchText} numberOfLines={3}>
-            {props.item.description}{" "}
-            {/* ← MUDAR DE item.text PARA item.description */}
+            {props.item.description}
           </Text>
         </View>
       );
@@ -165,9 +172,15 @@ const DraggableItem = (props: DraggableItemProps) => {
           onLongPress={handleLongPress}
           delayLongPress={500}
           activeOpacity={0.7}
+          style={{ flex: 1 }}
         >
           {renderContent()}
         </TouchableOpacity>
+
+        {/*Handle de redimensionar*/}
+        <GestureDetector gesture={resizeGesture}>
+          <View style={styles.resizeHandle} />
+        </GestureDetector>
       </AnimatedView>
     </GestureDetector>
   );
@@ -176,55 +189,61 @@ const DraggableItem = (props: DraggableItemProps) => {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    overflow: "hidden",
   },
-  pressed: {
-    opacity: 0.7,
+  pressed: { opacity: 0.8 },
+  resizeHandle: {
+    position: "absolute",
+    right: 4,
+    bottom: 4,
+    width: 16,
+    height: 16,
+    backgroundColor: "#007AFF",
+    borderRadius: 8,
   },
   linkContainer: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: "#007AFF",
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  linkImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  overlay: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 8,
   },
   linkTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
+    color: "#fff",
   },
   linkUrl: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 12,
+    color: "#eee",
   },
   image: {
-    borderRadius: 8,
+    width: "100%",
+    height: "100%",
   },
   sketchContainer: {
+    flex: 1,
     backgroundColor: "#fff9c4",
-    padding: 12,
-    borderRadius: 8,
+    padding: 10,
     borderWidth: 1,
     borderColor: "#ffeb3b",
+    borderRadius: 8,
   },
   sketchTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 4,
   },
   sketchText: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 18,
+    fontSize: 12,
+    color: "#555",
   },
 });
 

@@ -19,11 +19,16 @@ export class ItemService {
     return response.data;
   }
 
-  static async updatePosition(code: number, x: number, y: number) {
-    console.log("chamando o service...", code);
-    const response = await api.patch(`/items/${code}/position`, { x, y });
+  static async updatePosition(code: number, x?: number, y?: number, width?: number, height?: number) {
+    const response = await api.patch(`/items/${code}/position`, {
+      x,
+      y,
+      width,
+      height,
+    });
     return response.data;
   }
+
 
   static async delete(code: number): Promise<void> {
     await api.delete(`/links/${code}`);

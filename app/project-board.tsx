@@ -120,8 +120,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         componentCode: noteData.code,
         x: 50,
         y: 50,
-        width: 250,
-        height: 120,
+        width: 180,
+        height: 100,
         projectCode: props.project?.code!
       };
 
@@ -161,8 +161,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         componentCode: linkData.code,
         x: 50,
         y: 50,
-        width: 250,
-        height: 120,
+        width: 180,
+        height: 100,
         projectCode: props.project?.code!
       };
 
@@ -202,8 +202,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         componentCode: imageData.code,
         x: 50,
         y: 50,
-        width: 250,
-        height: 120,
+        width: 180,
+        height: 100,
         projectCode: props.project?.code!
       };
 
