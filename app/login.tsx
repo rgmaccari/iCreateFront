@@ -1,14 +1,15 @@
 import { AuthService } from "@/services/api/auth.service";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
-
 export default function LoginScreen() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
 
   const login = async () => {
@@ -24,6 +25,10 @@ export default function LoginScreen() {
   const handleCreate = () => {
     router.push('/user-register-screen');
   }
+  //Função para alternar a visibilidade da senha
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   return (
     <View style={styles.container}>
@@ -37,27 +42,40 @@ export default function LoginScreen() {
         onChangeText={setNickname}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        placeholderTextColor="#7A7A7A"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.passwordInput} 
+          placeholder="Senha"
+          placeholderTextColor="#999"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!isPasswordVisible} 
+        />
+        <TouchableOpacity
+          onPress={togglePasswordVisibility}
+          style={styles.eyeIcon}
+        >
+          <Feather
+            name={isPasswordVisible ? "eye-off" : "eye"} // Alterna o ícone
+            size={20}
+            color="#999"
+          />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.forgotPasswordLink}>
+        <Text style={[styles.linkText, styles.underlinedLinkText]}>Esqueceu a senha?</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={login}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
 
-      <View style={styles.options}>
-        <TouchableOpacity onPress={handleCreate}>
-          <Text style={styles.linkText}>Cadastro</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleCreate}>
-          <Text style={styles.linkText}>Esqueci minha senha</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.options} onPress={handleCreate}>
+        <Text style={styles.linkText}>Primeiro acesso?{''}{}
+        <Text style={styles.underlinedLinkText}>Cadastre-se</Text>
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -86,6 +104,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E8DCCE",
+    borderRadius: 10,
+    marginBottom: 19, 
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  eyeIcon: {
+    padding: 12, 
+  },
+  forgotPasswordLink: {
+    width: "97%",
+    alignItems: "flex-start",
+    marginBottom: 32, 
+    marginTop: -27,
+  },
   button: {
     backgroundColor: "#9191d8ff",
     paddingVertical: 14,
@@ -102,13 +145,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   options: {
-    alignItems: "center"
+    alignItems: "center",
   },
+  
   linkText: {
-
     color: "#505063ff",
     fontSize: 12,
     marginTop: 14,
+  },
+  underlinedLinkText: {
     textDecorationLine: "underline",
   },
 });
