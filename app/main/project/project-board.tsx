@@ -13,11 +13,11 @@ import {
 import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
+import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from "react-native";
@@ -318,15 +318,16 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       <View style={styles.zoomControls}>
         <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>+</Text>
+          <Feather name="plus" size={18} color="#333" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>-</Text>
+          <Feather name="minus" size={18} color="#333" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>⟳</Text>
+          <Feather name="refresh-cw" size={18} color="#333" />
         </TouchableOpacity>
       </View>
+
     </GestureHandlerRootView>
   );
 };
@@ -342,7 +343,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 25,
     right: 25,
-    flexDirection: "row",
+    flexDirection: "column",
+    alignItems: "center",
     gap: 8,
   },
   zoomButton: {
