@@ -30,6 +30,9 @@ interface ProjectBoardProps {
   onAddLink?: (linkData: Link) => void;
   onAddImage?: (imageData: ImageData) => void;
   onAddNote?: (noteData: Note) => void;
+
+  onDelete?: (code: number, task: string, type?: string) => void;
+
   images: Image[];
   links: Link[];
   notes: Note[];
@@ -258,11 +261,19 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   };
 
   //Remove itens: através do code do item apenas, realizo o delet
-  const deleteItem = (code: number) => {
-    setItems((currentItems) =>
-      currentItems.filter((item) => item.code !== code)
-    );
+  const deleteItem = async (code: number, task: string, type?: string) => {
+    if (task === "archive") {
+      props.onDelete?.(code, task, type);
+      return;
+    }
+
+    if (task === "item") {
+      await ItemService.delete(code);
+      setItems((current) => current.filter((i) => i.code !== code));
+      props.onDelete?.(code, task, type);
+    }
   };
+
 
   //Padrão pontilhado otimizado (sem milhoes de elementos)
   const renderDotsBackground = () => (
@@ -272,7 +283,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
         </Pattern>
       </Defs>
-      <Rect width="100%" height="100%" fill="url(#dots)" />
+      <Rect width="100%" height="100%" fill="url(#dots)" x={2} y={8} />
     </Svg>
   );
 
@@ -314,6 +325,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingBottom: 0,
+    marginBottom: 0,
     backgroundColor: "#e8e8e8ff",
   },
   zoomControls: {

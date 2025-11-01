@@ -375,6 +375,35 @@ export default function ProjectScreen() {
     }
   };
 
+  const handleDelete = async (code: number, task: string, type?: string) => {
+    if (task === "item") {
+      showToast("success", 'Item removido!');
+    }
+
+    if (task === "archive") {
+      if (type === "image") {
+        await ImageService.deleteByCode(code);
+        showToast("success", 'Imagem removida!');
+      }
+
+      if (type === "link") {
+        await LinkService.deleteByCode(code);
+        showToast("success", 'Link removido!');
+      }
+
+      if (type === "checklist") {
+        await ChecklistService.deleteByCode(code);
+        showToast("success", 'Checklist removido!');
+      }
+
+      if (type === "note") {
+        await NoteService.deleteByCode(code);
+        showToast("success", 'Anotação removida!');
+      }
+      return;
+    }
+  };
+
   //Abrir tela de links
   const handleOpenLinks = () => {
     setIsModalVisible(false);
@@ -424,6 +453,7 @@ export default function ProjectScreen() {
             onAddImage={() => console.log("aopa")}
             onAddLink={() => console.log("aopa")}
             onAddNote={() => console.log("aopa")}
+            onDelete={(code, task, type) => handleDelete(code, task, type)}
             images={images}
             links={links}
             notes={notes}
@@ -464,7 +494,7 @@ export default function ProjectScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <PageHeader
         title={formData.title || ""}
         onBack={handleReturn}

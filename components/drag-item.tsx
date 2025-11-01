@@ -21,7 +21,7 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 interface DraggableItemProps {
   item: ProjectItem;
   onPositionChange: (code: number, x: number, y: number) => void;
-  onDelete: (code: number) => void;
+  onDelete: (code: number, task: string, type?: string) => void;
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
@@ -98,11 +98,17 @@ const DraggableItem = (props: DraggableItemProps) => {
 
   //Pressionar o item por um tempo...
   const handleLongPress = () => {
-    Alert.alert("Opções", "O que você deseja fazer?", [
+    Alert.alert("Opções", "O que você deseja excluir?", [
       { text: "Cancelar", style: "cancel" },
       {
-        text: "Excluir",
-        onPress: () => props.onDelete(props.item.code),
+        text: "Excluir arquivo",
+        onPress: () => props.onDelete(props.item.componentCode, 'archive', props.item.type),
+        style: "destructive",
+      },
+
+      {
+        text: "Apenas o item",
+        onPress: () => props.onDelete(props.item.code, 'item'),
         style: "destructive",
       },
     ]);
@@ -121,10 +127,10 @@ const DraggableItem = (props: DraggableItemProps) => {
           )}
           <View style={styles.overlay}>
             <Text style={styles.linkTitle} numberOfLines={1}>
-              {props.item.title}
+              {String(props.item.title || "")}
             </Text>
             <Text style={styles.linkUrl} numberOfLines={1}>
-              {props.item.url}
+              {String(props.item.url || "")}
             </Text>
           </View>
         </View>
@@ -147,12 +153,12 @@ const DraggableItem = (props: DraggableItemProps) => {
           {/* Título */}
           {props.item.title && (
             <Text style={styles.sketchTitle} numberOfLines={1}>
-              {props.item.title}
+              {String(props.item.title || "")}
             </Text>
           )}
           {/* Descrição */}
           <Text style={styles.sketchText} numberOfLines={3}>
-            {props.item.description}
+            {String(props.item.description || "")}
           </Text>
         </View>
       );
