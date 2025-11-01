@@ -14,8 +14,15 @@ import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg"; //Pontilhados
 
 interface ProjectBoardProps {
   project?: Project;
@@ -30,10 +37,16 @@ interface ProjectBoardProps {
 }
 
 const ProjectBoard = (props: ProjectBoardProps) => {
-  const [items, setItems] = useState<ProjectItem[]>([]);
-  const [lastLinks, setLastLinks] = useState<Link[]>([]);
-  const [lastImages, setLastImages] = useState<Image[]>([]);
-  const [lastNotes, setLastNotes] = useState<Note[]>([]);
+  const [items, setItems] = useState<ProjectItem[]>([]); //Itens ja existentes
+  const [lastLinks, setLastLinks] = useState<Link[]>([]); //Novos links
+  const [lastImages, setLastImages] = useState<Image[]>([]); //Novas images
+  const [lastNotes, setLastNotes] = useState<Note[]>([]); //Noas notas
+
+  //Controle de zoom
+  const [scale, setScale] = useState(1);
+  const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3));
+  const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
+  const handleResetZoom = () => setScale(1);
 
   //useEffect que verifica a abertura da tela para inserir os itens:
   useEffect(() => {
@@ -113,7 +126,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   //Transforma um novo objeto Note em um Item
   const handleAddNote = async (noteData: Note) => {
-    console.log('projectCode: ', props.project?.code)
     try {
       const baseItemDto: BaseItemDto = {
         type: "note",
@@ -252,22 +264,49 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     );
   };
 
+  //Padrão pontilhado otimizado (sem milhoes de elementos)
+  const renderDotsBackground = () => (
+    <Svg width="100%" height="100%">
+      <Defs>
+        <Pattern id="dots" patternUnits="userSpaceOnUse" width="24" height="24">
+          <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
+        </Pattern>
+      </Defs>
+      <Rect width="100%" height="100%" fill="url(#dots)" />
+    </Svg>
+  );
+
   return (
     <GestureHandlerRootView style={styles.container}>
-      {/*Apenas a view geral*/}
-      <ScrollView
-        style={styles.canvas}
-        contentContainerStyle={styles.canvasContent}
-      >
-        {items.map((item) => (
-          <DraggableItem
-            key={item.code}
-            item={item}
-            onPositionChange={updateItemPosition}
-            onDelete={deleteItem}
-          />
-        ))}
-      </ScrollView>
+      <View style={styles.canvas}>
+        {renderDotsBackground()} {/*Carrega os portinhos*/}
+        <ScrollView
+          style={StyleSheet.absoluteFill}
+          contentContainerStyle={[styles.canvasContent, { transform: [{ scale }] }]}
+        >
+          {items.map((item) => (
+            <DraggableItem
+              key={item.code}
+              item={item}
+              onPositionChange={updateItemPosition}
+              onDelete={deleteItem}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Controles de zoom */}
+      <View style={styles.zoomControls}>
+        <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
+          <Text style={styles.zoomText}>＋</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
+          <Text style={styles.zoomText}>－</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
+          <Text style={styles.zoomText}>⟳</Text>
+        </TouchableOpacity>
+      </View>
     </GestureHandlerRootView>
   );
 };
@@ -275,23 +314,37 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#506b86ff",
+    backgroundColor: "#e8e8e8ff",
   },
-  header: {
-    padding: 20,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+  zoomControls: {
+    position: "absolute",
+    top: 25,
+    right: 25,
+    flexDirection: "row",
+    gap: 8,
   },
-  title: {
-    fontSize: 24,
+  zoomButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffffcc",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  zoomText: {
+    fontSize: 18,
     fontWeight: "bold",
     color: "#333",
   },
   canvas: {
     flex: 1,
+    width: "100%",
+    height: "100%",
   },
   canvasContent: {
+    flexGrow: 1,
     minHeight: "100%",
   },
 });
