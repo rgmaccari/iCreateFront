@@ -269,9 +269,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
     if (task === "item") {
       await ItemService.delete(code);
-      setItems((current) => current.filter((i) => i.code !== code));
-      props.onDelete?.(code, task, type);
+      return;
     }
+
+    setItems((currentItems) =>
+      currentItems.filter((item) => item.code !== code)
+    );
   };
 
 
