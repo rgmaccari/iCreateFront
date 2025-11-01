@@ -1,4 +1,5 @@
 // components/project-view-tabs.tsx
+import { ClipboardList, FileText, LayoutDashboard } from 'lucide-react-native'; // ícones modernos
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,33 +13,35 @@ interface ProjectViewModeProps {
 const ProjectViewMode: React.FC<ProjectViewModeProps> = (props: ProjectViewModeProps) => {
     //Cada item
     const tabs = [
-        { id: 'document' as ProjectViewMode, label: 'Documento', icon: '📄' },
-        { id: 'board' as ProjectViewMode, label: 'Board', icon: '🎯' },
-        { id: 'form' as ProjectViewMode, label: 'Formulário', icon: '📝' },
+        { id: 'document' as ProjectViewMode, label: 'Documento', icon: FileText },
+        { id: 'board' as ProjectViewMode, label: 'Board', icon: LayoutDashboard },
+        { id: 'form' as ProjectViewMode, label: 'Formulário', icon: ClipboardList },
     ];
 
     return (
         <View style={styles.container}>
             <View style={styles.tabBar}>
                 {/*Para cada tab, aplica em loop*/}
-                {tabs.map((tab) => (
-                    <TouchableOpacity
-                        key={tab.id}
-                        style={[
-                            styles.tab,
-                            props.currentView === tab.id && styles.activeTab, {/*Pega das props*/ }
-                        ]}
-                        onPress={() => props.onViewChange(tab.id)} //Ao clicar na Tab, aciona a alteração no Estado recebendo um id ('board', 'form'...)
-                    >
-                        <Text style={styles.tabIcon}>{tab.icon}</Text>
-                        <Text style={[
-                            styles.tabText,
-                            props.currentView === tab.id && styles.activeTabText, {/*Pega das props*/ }
-                        ]}>
-                            {tab.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = props.currentView === tab.id;
+                    return (
+                        <TouchableOpacity
+                            key={tab.id}
+                            style={[styles.tab, isActive && styles.activeTab]}
+                            onPress={() => props.onViewChange(tab.id)} //Ao clicar na Tab, aciona a alteração no Estado recebendo um id ('board', 'form'...)
+                        >
+                            <Icon
+                                size={18}
+                                color={isActive ? '#362946' : '#888'}
+                                style={{ marginBottom: 4 }}
+                            />
+                            <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                                {tab.label}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
         </View>
     );
@@ -61,10 +64,6 @@ const styles = StyleSheet.create({
     activeTab: {
         borderBottomWidth: 2,
         borderBottomColor: '#362946',
-    },
-    tabIcon: {
-        fontSize: 16,
-        marginBottom: 4,
     },
     tabText: {
         fontSize: 12,
