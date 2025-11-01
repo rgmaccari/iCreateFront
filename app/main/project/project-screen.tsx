@@ -1,4 +1,4 @@
-import ProjectBoard from "@/app/project-board";
+import ProjectBoard from "@/app/main/project/project-board";
 import AddButton from "@/components/add-button";
 import ImageModal from "@/components/image-modal";
 import LinkModal from "@/components/linking-modal";
