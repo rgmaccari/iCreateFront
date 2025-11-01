@@ -39,9 +39,8 @@ const DraggableItem = (props: DraggableItemProps) => {
   useEffect(() => {
     translateX.value = props.item.x;
     translateY.value = props.item.y;
-    width.value = props.item.width || 180;
-    height.value = props.item.height || 100;
-  }, [props.item]);
+  }, [props.item.x, props.item.y]);
+
 
   //Att posição
   const updatePositionInJS = () => {
@@ -80,8 +79,9 @@ const DraggableItem = (props: DraggableItemProps) => {
   //Redimensionar item
   const resizeGesture = Gesture.Pan()
     .onUpdate((e) => {
-      width.value = Math.max(80, width.value + e.translationX);
-      height.value = Math.max(60, height.value + e.translationY);
+      "worklet";
+      width.value = Math.min(Math.max(120, width.value + e.translationX), 400);
+      height.value = Math.min(Math.max(100, height.value + e.translationY), 300); // mínimo agora 100
     })
     .onEnd(() => {
       runOnJS(updateSizeInJS)();
@@ -150,19 +150,31 @@ const DraggableItem = (props: DraggableItemProps) => {
     if (props.item.type === "note") {
       return (
         <View style={styles.sketchContainer}>
-          {/* Título */}
-          {props.item.title && (
-            <Text style={styles.sketchTitle} numberOfLines={1}>
-              {String(props.item.title || "")}
+          <View style={styles.noteContent}>
+            {props.item.title && (
+              <Text style={styles.sketchTitle} numberOfLines={1} ellipsizeMode="tail">
+                {String(props.item.title || "")}
+              </Text>
+            )}
+            <Text
+              style={styles.sketchText}
+              numberOfLines={3}
+              ellipsizeMode="tail"
+            >
+              {String(props.item.description || "")}
+            </Text>
+          </View>
+
+          {props.item.updatedAt && (
+            <Text style={styles.sketchDate}>
+              {new Date(props.item.updatedAt).toLocaleDateString("pt-BR")}
             </Text>
           )}
-          {/* Descrição */}
-          <Text style={styles.sketchText} numberOfLines={3}>
-            {String(props.item.description || "")}
-          </Text>
         </View>
       );
     }
+
+
 
     return null;
   };
@@ -233,14 +245,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  sketchContainer: {
-    flex: 1,
-    backgroundColor: "#fff9c4",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ffeb3b",
-    borderRadius: 8,
-  },
   sketchTitle: {
     fontSize: 14,
     fontWeight: "bold",
@@ -251,6 +255,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#555",
   },
+  sketchContainer: {
+    flex: 1,
+    backgroundColor: "#fff9c4",
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    borderWidth: 1,
+    borderColor: "#ffeb3b",
+    borderRadius: 8,
+    position: "relative",
+    justifyContent: "space-between",
+  },
+  noteContent: {
+    flexShrink: 1,
+    marginBottom: 16, // margem maior para isolar a data
+    overflow: "hidden",
+  },
+  sketchDate: {
+    position: "absolute",
+    bottom: 4,
+    left: 8,
+    fontSize: 8,
+    color: "#777",
+  },
+
 });
 
 export default DraggableItem;
