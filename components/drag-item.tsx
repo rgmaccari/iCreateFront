@@ -21,7 +21,7 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 interface DraggableItemProps {
   item: ProjectItem;
   onPositionChange: (code: number, x: number, y: number) => void;
-  onDelete: (code: number, task: string, type?: string) => void;
+  onDelete: (itemCode: number, componentCode: number, task: string, type?: string) => void;
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
@@ -102,13 +102,13 @@ const DraggableItem = (props: DraggableItemProps) => {
       { text: "Cancelar", style: "cancel" },
       {
         text: "Excluir arquivo",
-        onPress: () => props.onDelete(props.item.componentCode, 'archive', props.item.type),
+        onPress: () => props.onDelete(props.item.code, props.item.componentCode, 'archive', props.item.type),
         style: "destructive",
       },
 
       {
         text: "Apenas o item",
-        onPress: () => props.onDelete(props.item.code, 'item'),
+        onPress: () => props.onDelete(props.item.code, props.item.componentCode, 'item'),
         style: "destructive",
       },
     ]);

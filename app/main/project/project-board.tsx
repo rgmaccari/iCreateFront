@@ -261,42 +261,49 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   };
 
   //Remove itens: através do code do item apenas, realizo o delet
-  const deleteItem = async (code: number, task: string, type?: string) => {
-    if (task === "archive") {
-      props.onDelete?.(code, task, type);
-      return;
-    }
+  const deleteItem = async (itemCode: number, componentCode: number, task: string, type?: string) => {
+    try {
+      if (task === "archive") {
+        await ItemService.delete(itemCode); //Deletar o item primeiro
+        // Deleta Item + Componente (via cascade no backend)
+        props.onDelete?.(componentCode, task, type);
+      } else {
+        console.log('acessou else do item')
+        // Apenas o Item (componente fica)
+        await ItemService.delete(itemCode);
+      }
 
-    if (task === "item") {
-      await ItemService.delete(code);
-      return;
+      setItems(prev => prev.filter(item => item.code !== itemCode));
+    } catch (error: any) {
+      showToast("error", error.formattedMessage);
     }
-
-    setItems((currentItems) =>
-      currentItems.filter((item) => item.code !== code)
-    );
   };
 
 
   //Padrão pontilhado otimizado (sem milhoes de elementos)
   const renderDotsBackground = () => (
-    <Svg width="100%" height="100%">
-      <Defs>
-        <Pattern id="dots" patternUnits="userSpaceOnUse" width="24" height="24">
-          <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
-        </Pattern>
-      </Defs>
-      <Rect width="100%" height="100%" fill="url(#dots)" x={2} y={8} />
-    </Svg>
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      <Svg width="100%" height="100%">
+        <Defs>
+          <Pattern id="dots" patternUnits="userSpaceOnUse" width="24" height="24">
+            <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
+          </Pattern>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#dots)" />
+      </Svg>
+    </View>
   );
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.canvas}>
-        {renderDotsBackground()} {/*Carrega os portinhos*/}
+        {renderDotsBackground()}
         <ScrollView
           style={StyleSheet.absoluteFill}
           contentContainerStyle={[styles.canvasContent, { transform: [{ scale }] }]}
+          pointerEvents="box-none"
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
         >
           {items.map((item) => (
             <DraggableItem
@@ -309,13 +316,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         </ScrollView>
       </View>
 
-      {/* Controles de zoom */}
       <View style={styles.zoomControls}>
         <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>＋</Text>
+          <Text style={styles.zoomText}>+</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>－</Text>
+          <Text style={styles.zoomText}>-</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
           <Text style={styles.zoomText}>⟳</Text>
@@ -356,12 +362,15 @@ const styles = StyleSheet.create({
   },
   canvas: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    backgroundColor: '#e8e8e8ff', // fundo base
+    overflow: 'hidden',
   },
   canvasContent: {
     flexGrow: 1,
-    minHeight: "100%",
+    minHeight: '100%',
+    minWidth: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
