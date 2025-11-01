@@ -5,4 +5,5 @@ export interface Checklist {
     title: string;
     itens: ChecklistItem[];
     projectCode: number | null;
+    updatedAt: string;
 }

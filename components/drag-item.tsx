@@ -115,6 +115,7 @@ const DraggableItem = (props: DraggableItemProps) => {
   };
 
   const renderContent = () => {
+    console.log('render content acionado')
     if (props.item.type === "link") {
       return (
         <View style={[styles.linkContainer]}>
@@ -174,7 +175,50 @@ const DraggableItem = (props: DraggableItemProps) => {
       );
     }
 
+    if (props.item.type === "checklist") {
+      return (
+        <View style={styles.checklistContainer}>
+          {props.item.title && (
+            <Text style={styles.checklistTitle} numberOfLines={1} ellipsizeMode="tail">
+              {String(props.item.title || "")}
+            </Text>
+          )}
 
+          <View style={styles.checklistItems}>
+            {props.item.items?.slice(0, 4).map((it, idx) => (
+              <View key={idx} style={styles.checkItemRow}>
+                <View
+                  style={[
+                    styles.checkbox,
+                    it.checked ? styles.checkboxChecked : styles.checkboxUnchecked,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.checkItemText,
+                    it.checked && styles.checkItemTextChecked,
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {it.text}
+                </Text>
+              </View>
+            ))}
+
+            {props.item.items && props.item.items.length > 4 && (
+              <Text style={styles.checkItemMore}>+{props.item.items.length - 4} itens</Text>
+            )}
+          </View>
+
+          {props.item.updatedAt && (
+            <Text style={styles.checklistDate}>
+              {new Date(props.item.updatedAt).toLocaleDateString("pt-BR")}
+            </Text>
+          )}
+        </View>
+      );
+    }
 
     return null;
   };
@@ -278,6 +322,75 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#777",
   },
+  checklistContainer: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    position: "relative",
+  },
+
+  checklistTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 6,
+  },
+
+  checklistItems: {
+    gap: 4,
+    marginBottom: 10,
+  },
+
+  checkItemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  checkbox: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 1,
+    marginRight: 6,
+  },
+
+  checkboxChecked: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+
+  checkboxUnchecked: {
+    borderColor: "#999",
+    backgroundColor: "transparent",
+  },
+
+  checkItemText: {
+    fontSize: 12,
+    color: "#444",
+  },
+
+  checkItemTextChecked: {
+    textDecorationLine: "line-through",
+    color: "#777",
+  },
+
+  checkItemMore: {
+    fontSize: 10,
+    color: "#999",
+    marginTop: 2,
+  },
+
+  checklistDate: {
+    position: "absolute",
+    bottom: 4,
+    left: 8,
+    fontSize: 8,
+    color: "#777",
+  },
+
 
 });
 

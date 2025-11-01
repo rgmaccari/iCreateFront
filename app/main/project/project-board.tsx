@@ -5,6 +5,7 @@ import { Image } from "@/services/image/image";
 import { BaseItemDto } from "@/services/item/base-item.dto";
 import { ItemService } from "@/services/item/item.service";
 import {
+  ChecklistBoardItem,
   ImageItem,
   LinkItem,
   NoteItem,
@@ -44,6 +45,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const [lastLinks, setLastLinks] = useState<Link[]>([]); //Novos links
   const [lastImages, setLastImages] = useState<Image[]>([]); //Novas images
   const [lastNotes, setLastNotes] = useState<Note[]>([]); //Noas notas
+  const [lastChecklists, setLastChecklists] = useState<Checklist[]>([]);
 
   //Controle de zoom
   const [scale, setScale] = useState(1);
@@ -127,6 +129,26 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     setLastImages(props.images); //Atualiza o estado da lista
   }, [props.images]);
 
+  useEffect(() => {
+    if (lastChecklists.length === 0) {
+      setLastChecklists(props.checklists);
+      return;
+    }
+
+    const newChecklists = props.checklists.filter(
+      (checklist) => !lastChecklists.some((oldChecklist) => oldChecklist.code === checklist.code)
+    );
+
+    newChecklists.forEach((checklist) => {
+      if (checklist.code) {
+        handleAddChecklist(checklist);
+      }
+
+      setLastChecklists(props.checklists);
+    });
+
+  }, [props.checklists]);
+
   //Transforma um novo objeto Note em um Item
   const handleAddNote = async (noteData: Note) => {
     try {
@@ -168,6 +190,46 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     }
   };
 
+  const handleAddChecklist = async (checklistData: Checklist) => {
+    try {
+      const baseItemDto: BaseItemDto = {
+        type: 'checklist',
+        componentCode: checklistData.code,
+        x: 50,
+        y: 50,
+        width: 180,
+        height: 100,
+        projectCode: props.project?.code!
+      };
+
+      const response = await ItemService.create(baseItemDto);
+
+      console.log(
+        "[ProjectBoard] handleAddChecklist ",
+        JSON.stringify(response, null, 2)
+      );
+
+      const checklistBoardItem: ChecklistBoardItem = {
+        code: response.code,
+        type: response.type as 'checklist',
+        componentCode: response.componentCode,
+        x: response.x,
+        y: response.y,
+        width: response.width,
+        height: response.height,
+
+        title: response.title,
+        items: response.items,
+        updatedAt: response.updatedAt
+      }
+
+      setItems((prev) => [...prev, checklistBoardItem]);
+
+    } catch (error: any) {
+      showToast('error', error.formattedMessage)
+    }
+  }
+
   //Transofrma um novo
   const handleAddLink = async (linkData: Link) => {
     try {
@@ -182,11 +244,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       };
 
       const response = await ItemService.create(baseItemDto);
-
-      console.log(
-        "[ProjectBoard] handleAddLink ",
-        JSON.stringify(response, null)
-      );
 
       const linkItem: LinkItem = {
         code: response.code,
@@ -278,7 +335,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       showToast("error", error.formattedMessage);
     }
   };
-
 
   //Padrão pontilhado otimizado (sem milhoes de elementos)
   const renderDotsBackground = () => (

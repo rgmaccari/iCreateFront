@@ -1,3 +1,4 @@
+import { ChecklistItem } from '../checklist/checklist-item';
 export type BaseItem = {
   code: number;
   componentCode: number;
@@ -17,6 +18,13 @@ export type LinkItem = BaseItem & {
   createdAt?: string;
 };
 
+export type ChecklistBoardItem = BaseItem & {
+  type: 'checklist',
+  title: string,
+  items: ChecklistItem[]
+  updatedAt: string
+}
+
 export type ImageItem = BaseItem & {
   type: "image"; // literal fixo
   filename?: string;
@@ -33,4 +41,4 @@ export type NoteItem = BaseItem & {
   updatedAt: string;
 };
 
-export type ProjectItem = LinkItem | ImageItem | NoteItem;
+export type ProjectItem = LinkItem | ImageItem | NoteItem | ChecklistBoardItem;

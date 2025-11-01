@@ -3,4 +3,6 @@ export interface ChecklistItem {
     text: string;
     checked: boolean;
     sort: number;
+    updatedAt: number;
+    checklistCode: number;
 }
