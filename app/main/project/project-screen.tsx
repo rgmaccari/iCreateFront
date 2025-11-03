@@ -3,7 +3,7 @@ import AddButton from "@/components/add-button";
 import ImageModal from "@/components/image-modal";
 import LinkModal from "@/components/linking-modal";
 import PageHeader from "@/components/page-header";
-import ProjectForm from "@/components/project-form";
+import ProjectGrid from "@/components/project-grid";
 import ProjectViewTabs, {
   ProjectViewMode,
 } from "@/components/project-view-tabs";
@@ -377,29 +377,29 @@ export default function ProjectScreen() {
 
   const handleDelete = async (code: number, task: string, type?: string) => {
     if (task === "item") {
-      showToast("success", 'Item removido!');
+      showToast("success", "Item removido!");
     }
 
     if (task === "archive") {
       if (type === "image") {
         await ImageService.deleteByCode(code);
-        showToast("success", 'Imagem removida!');
+        showToast("success", "Imagem removida!");
       }
 
       if (type === "link") {
         await LinkService.deleteByCode(code);
-        showToast("success", 'Link removido!');
+        showToast("success", "Link removido!");
       }
 
       if (type === "checklist") {
         await ChecklistService.deleteByCode(code);
-        showToast("success", 'Checklist removido!');
+        showToast("success", "Checklist removido!");
       }
 
       if (type === "note") {
-        console.log('acessou aqui')
+        console.log("acessou aqui");
         await NoteService.deleteByCode(code);
-        showToast("success", 'Anotação removida!');
+        showToast("success", "Anotação removida!");
       }
       return;
     }
@@ -463,7 +463,7 @@ export default function ProjectScreen() {
         );
       case "form":
         return (
-          <ProjectForm
+          <ProjectGrid
             project={project}
             onChange={setFormData}
             images={images}
@@ -474,7 +474,7 @@ export default function ProjectScreen() {
         );
       default:
         return (
-          <ProjectForm
+          <ProjectGrid
             project={project}
             onChange={setFormData}
             images={images}
@@ -495,7 +495,7 @@ export default function ProjectScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <PageHeader
         title={formData.title || ""}
         onBack={handleReturn}

@@ -3,7 +3,7 @@ import { Image } from "@/services/image/image";
 import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -21,7 +21,7 @@ type CombinedItem = (Image | Link | Note) & {
   __type: "image" | "link" | "note";
 };
 
-interface ProjectFormProps {
+interface ProjectGridProps {
   project?: Project;
   onChange: (data: Partial<Project>) => void;
   images: Image[];
@@ -30,7 +30,7 @@ interface ProjectFormProps {
   checklists: Checklist[];
 }
 
-export default function ProjectForm(props: ProjectFormProps) {
+export default function ProjectGrid(props: ProjectGridProps) {
   const [form, setForm] = useState<Partial<Project>>({
     title: props.project?.title || "",
     sketch: props.project?.sketch || "",
@@ -211,7 +211,7 @@ export default function ProjectForm(props: ProjectFormProps) {
               ? "image"
               : type === "link"
               ? "link"
-              : "sticky-note";
+              : "document-text";
           const isActive = activeFilters.includes(type);
           return (
             <TouchableOpacity
@@ -222,7 +222,7 @@ export default function ProjectForm(props: ProjectFormProps) {
                 isActive && styles.filterButtonActive,
               ]}
             >
-              <FontAwesome
+              <Ionicons
                 name={iconName}
                 size={20}
                 color={isActive ? "#fff" : "#362946"}
