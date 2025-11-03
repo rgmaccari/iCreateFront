@@ -14,14 +14,9 @@ import {
 import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg"; //Pontilhados
 
@@ -136,7 +131,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     }
 
     const newChecklists = props.checklists.filter(
-      (checklist) => !lastChecklists.some((oldChecklist) => oldChecklist.code === checklist.code)
+      (checklist) =>
+        !lastChecklists.some(
+          (oldChecklist) => oldChecklist.code === checklist.code
+        )
     );
 
     newChecklists.forEach((checklist) => {
@@ -146,7 +144,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       setLastChecklists(props.checklists);
     });
-
   }, [props.checklists]);
 
   //Transforma um novo objeto Note em um Item
@@ -159,7 +156,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 180,
         height: 100,
-        projectCode: props.project?.code!
+        projectCode: props.project?.code!,
       };
 
       const response = await ItemService.create(baseItemDto);
@@ -181,7 +178,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         description: response.description,
         sort: response.sort,
         updatedAt: response.updatedAt,
-        projectCode: response.projectCode
+        projectCode: response.projectCode,
       };
 
       setItems((prev) => [...prev, noteItem]);
@@ -193,13 +190,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleAddChecklist = async (checklistData: Checklist) => {
     try {
       const baseItemDto: BaseItemDto = {
-        type: 'checklist',
+        type: "checklist",
         componentCode: checklistData.code,
         x: 50,
         y: 50,
         width: 180,
         height: 100,
-        projectCode: props.project?.code!
+        projectCode: props.project?.code!,
       };
 
       const response = await ItemService.create(baseItemDto);
@@ -211,7 +208,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       const checklistBoardItem: ChecklistBoardItem = {
         code: response.code,
-        type: response.type as 'checklist',
+        type: response.type as "checklist",
         componentCode: response.componentCode,
         x: response.x,
         y: response.y,
@@ -220,15 +217,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
         title: response.title,
         items: response.items,
-        updatedAt: response.updatedAt
-      }
+        updatedAt: response.updatedAt,
+      };
 
       setItems((prev) => [...prev, checklistBoardItem]);
-
     } catch (error: any) {
-      showToast('error', error.formattedMessage)
+      showToast("error", error.formattedMessage);
     }
-  }
+  };
 
   //Transofrma um novo
   const handleAddLink = async (linkData: Link) => {
@@ -240,7 +236,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 180,
         height: 100,
-        projectCode: props.project?.code!
+        projectCode: props.project?.code!,
       };
 
       const response = await ItemService.create(baseItemDto);
@@ -258,7 +254,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         url: response.url,
         previewImageUrl: response.previewImageUrl,
         createdAt: response.createdAt,
-        projectCode: response.projectCode
+        projectCode: response.projectCode,
       };
 
       setItems((prev) => [...prev, linkItem]);
@@ -276,7 +272,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: 50,
         width: 180,
         height: 100,
-        projectCode: props.project?.code!
+        projectCode: props.project?.code!,
       };
 
       const response = await ItemService.create(baseItemDto);
@@ -299,7 +295,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         isCover: response.isCover,
         source: response.source,
         createdAt: response.createdAt,
-        projectCode: response.projectCode
+        projectCode: response.projectCode,
       };
 
       setItems((prev) => [...prev, imageItem]);
@@ -318,19 +314,24 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   };
 
   //Remove itens: através do code do item apenas, realizo o delet
-  const deleteItem = async (itemCode: number, componentCode: number, task: string, type?: string) => {
+  const deleteItem = async (
+    itemCode: number,
+    componentCode: number,
+    task: string,
+    type?: string
+  ) => {
     try {
       if (task === "archive") {
         await ItemService.delete(itemCode); //Deletar o item primeiro
         // Deleta Item + Componente (via cascade no backend)
         props.onDelete?.(componentCode, task, type);
       } else {
-        console.log('acessou else do item')
+        console.log("acessou else do item");
         // Apenas o Item (componente fica)
         await ItemService.delete(itemCode);
       }
 
-      setItems(prev => prev.filter(item => item.code !== itemCode));
+      setItems((prev) => prev.filter((item) => item.code !== itemCode));
     } catch (error: any) {
       showToast("error", error.formattedMessage);
     }
@@ -341,7 +342,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
       <Svg width="100%" height="100%">
         <Defs>
-          <Pattern id="dots" patternUnits="userSpaceOnUse" width="24" height="24">
+          <Pattern
+            id="dots"
+            patternUnits="userSpaceOnUse"
+            width="24"
+            height="24"
+          >
             <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
           </Pattern>
         </Defs>
@@ -356,7 +362,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         {renderDotsBackground()}
         <ScrollView
           style={StyleSheet.absoluteFill}
-          contentContainerStyle={[styles.canvasContent, { transform: [{ scale }] }]}
+          contentContainerStyle={[
+            styles.canvasContent,
+            { transform: [{ scale }] },
+          ]}
           pointerEvents="box-none"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
@@ -372,18 +381,39 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         </ScrollView>
       </View>
 
-      <View style={styles.zoomControls}>
-        <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
-          <Feather name="plus" size={18} color="#333" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
-          <Feather name="minus" size={18} color="#333" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
-          <Feather name="refresh-cw" size={18} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <View
+        style={{
+          position: "absolute",
+          top: 25,
+          right: 25,
+          alignItems: "center",
+          gap: 30, //Espaçamento entre grupos
+        }}
+      >
+        <View style={styles.zoomControls}>
+          <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
+            <Feather name="plus" size={18} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
+            <Feather name="minus" size={18} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
+            <Feather name="refresh-cw" size={18} color="#333" />
+          </TouchableOpacity>
+        </View>
 
+        <View style={styles.archiveControls}>
+          <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
+            <Ionicons name="image" size={18} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
+            <Ionicons name="link" size={18} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
+            <Ionicons name="document-text" size={18} color="#333" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </GestureHandlerRootView>
   );
 };
@@ -396,9 +426,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#e8e8e8ff",
   },
   zoomControls: {
-    position: "absolute",
-    top: 25,
-    right: 25,
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+  },
+  archiveControls: {
     flexDirection: "column",
     alignItems: "center",
     gap: 8,
@@ -420,15 +452,15 @@ const styles = StyleSheet.create({
   },
   canvas: {
     flex: 1,
-    backgroundColor: '#e8e8e8ff', // fundo base
-    overflow: 'hidden',
+    backgroundColor: "#e8e8e8ff", // fundo base
+    overflow: "hidden",
   },
   canvasContent: {
     flexGrow: 1,
-    minHeight: '100%',
-    minWidth: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    minHeight: "100%",
+    minWidth: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
