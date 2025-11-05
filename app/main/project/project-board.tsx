@@ -1,4 +1,5 @@
 import DraggableItem from "@/components/drag-item";
+import ImagesProjectModal from "@/components/images-project-modal";
 import { showToast } from "@/constants/showToast";
 import { Checklist } from "@/services/checklist/checklist";
 import { Image } from "@/services/image/image";
@@ -15,10 +16,18 @@ import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg"; //Pontilhados
+import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 
 interface ProjectBoardProps {
   project?: Project;
@@ -36,11 +45,13 @@ interface ProjectBoardProps {
 }
 
 const ProjectBoard = (props: ProjectBoardProps) => {
-  const [items, setItems] = useState<ProjectItem[]>([]); //Itens ja existentes
-  const [lastLinks, setLastLinks] = useState<Link[]>([]); //Novos links
-  const [lastImages, setLastImages] = useState<Image[]>([]); //Novas images
-  const [lastNotes, setLastNotes] = useState<Note[]>([]); //Noas notas
+  const [items, setItems] = useState<ProjectItem[]>([]);
+  const [lastLinks, setLastLinks] = useState<Link[]>([]);
+  const [lastImages, setLastImages] = useState<Image[]>([]);
+  const [lastNotes, setLastNotes] = useState<Note[]>([]);
   const [lastChecklists, setLastChecklists] = useState<Checklist[]>([]);
+  const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
+  const [showProjectImages, setShowProjectImages] = useState(false);
 
   //Controle de zoom
   const [scale, setScale] = useState(1);
@@ -48,13 +59,37 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
   const handleResetZoom = () => setScale(1);
 
-  //useEffect que verifica a abertura da tela para inserir os itens:
+  const handleLongPressItem = (item: ProjectItem) => setSelectedItem(item);
+  const clearSelection = () => setSelectedItem(null);
+
+  const handleDeleteItem = () => {
+    if (!selectedItem) return;
+    deleteItem(
+      selectedItem.code,
+      selectedItem.componentCode,
+      "item",
+      selectedItem.type
+    );
+    clearSelection();
+  };
+
+  const handleDeleteArchive = () => {
+    if (!selectedItem) return;
+    deleteItem(
+      selectedItem.code,
+      selectedItem.componentCode,
+      "archive",
+      selectedItem.type
+    );
+    clearSelection();
+  };
+
+  //useEffect que verifica a abertura da tela para inserir os itens
   useEffect(() => {
     const findByCode = async () => {
       if (!props.project?.code) return;
       try {
         const components = await ItemService.getComponents(props.project.code);
-        console.log("Itens carregados:", JSON.stringify(components, null, 2));
         setItems(components);
       } catch (error: any) {
         showToast("error", error.formattedMessage);
@@ -63,90 +98,69 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     findByCode();
   }, [props.project?.code]);
 
-  //Notes UseEffect que valida a existência de um novo item, caso detecado, insere na lista...
+  //Notes UseEffect
   useEffect(() => {
     if (lastNotes.length === 0) {
       setLastNotes(props.notes);
       return;
     }
-
     const newNotes = props.notes.filter(
       (note) => !lastNotes.some((oldNote) => oldNote.code === note.code)
     );
-
-    //handleAddNote para cada nova note
     newNotes.forEach((note) => {
-      if (note.code) {
-        handleAddNote(note);
-      }
+      if (note.code) handleAddNote(note);
     });
-
-    setLastNotes(props.notes); //Atualiza o estado da lista
+    setLastNotes(props.notes);
   }, [props.notes]);
 
+  //Links UseEffect
   useEffect(() => {
     if (lastLinks.length === 0) {
       setLastLinks(props.links);
       return;
     }
-
     const newLinks = props.links.filter(
       (link) => !lastLinks.some((oldLink) => oldLink.code === link.code)
     );
-
-    //handleAddNote para cada nova note
     newLinks.forEach((link) => {
-      if (link.code) {
-        handleAddLink(link);
-      }
+      if (link.code) handleAddLink(link);
     });
-
-    setLastLinks(props.links); //Atualiza o estado da lista
+    setLastLinks(props.links);
   }, [props.links]);
 
+  //Images UseEffect
   useEffect(() => {
     if (lastImages.length === 0) {
       setLastImages(props.images);
       return;
     }
-
     const newImages = props.images.filter(
       (image) => !lastImages.some((oldImage) => oldImage.code === image.code)
     );
-
-    //handleAddNote para cada nova note
     newImages.forEach((image) => {
-      if (image.code) {
-        handleAddImage(image);
-      }
+      if (image.code) handleAddImage(image);
     });
-
-    setLastImages(props.images); //Atualiza o estado da lista
+    setLastImages(props.images);
   }, [props.images]);
 
+  //Cheklists UseEffect
   useEffect(() => {
     if (lastChecklists.length === 0) {
       setLastChecklists(props.checklists);
       return;
     }
-
     const newChecklists = props.checklists.filter(
       (checklist) =>
         !lastChecklists.some(
           (oldChecklist) => oldChecklist.code === checklist.code
         )
     );
-
     newChecklists.forEach((checklist) => {
-      if (checklist.code) {
-        handleAddChecklist(checklist);
-      }
-
-      setLastChecklists(props.checklists);
+      if (checklist.code) handleAddChecklist(checklist);
     });
+    setLastChecklists(props.checklists);
   }, [props.checklists]);
 
-  //Transforma um novo objeto Note em um Item
   const handleAddNote = async (noteData: Note) => {
     try {
       const baseItemDto: BaseItemDto = {
@@ -158,14 +172,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         height: 100,
         projectCode: props.project?.code!,
       };
-
       const response = await ItemService.create(baseItemDto);
-
-      console.log(
-        "[ProjectBoard] handleAddNote ",
-        JSON.stringify(response, null)
-      );
-
       const noteItem: NoteItem = {
         code: response.code,
         type: response.type as "note",
@@ -180,7 +187,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         updatedAt: response.updatedAt,
         projectCode: response.projectCode,
       };
-
       setItems((prev) => [...prev, noteItem]);
     } catch (error: any) {
       showToast("error", error.formattedMessage || "Erro desconhecido!");
@@ -198,14 +204,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         height: 100,
         projectCode: props.project?.code!,
       };
-
       const response = await ItemService.create(baseItemDto);
-
-      console.log(
-        "[ProjectBoard] handleAddChecklist ",
-        JSON.stringify(response, null, 2)
-      );
-
       const checklistBoardItem: ChecklistBoardItem = {
         code: response.code,
         type: response.type as "checklist",
@@ -214,19 +213,16 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: response.y,
         width: response.width,
         height: response.height,
-
         title: response.title,
         items: response.items,
         updatedAt: response.updatedAt,
       };
-
       setItems((prev) => [...prev, checklistBoardItem]);
     } catch (error: any) {
       showToast("error", error.formattedMessage);
     }
   };
 
-  //Transofrma um novo
   const handleAddLink = async (linkData: Link) => {
     try {
       const baseItemDto: BaseItemDto = {
@@ -238,9 +234,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         height: 100,
         projectCode: props.project?.code!,
       };
-
       const response = await ItemService.create(baseItemDto);
-
       const linkItem: LinkItem = {
         code: response.code,
         type: response.type as "link",
@@ -249,14 +243,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: response.y,
         width: response.width,
         height: response.height,
-
         title: response.title,
         url: response.url,
         previewImageUrl: response.previewImageUrl,
         createdAt: response.createdAt,
         projectCode: response.projectCode,
       };
-
       setItems((prev) => [...prev, linkItem]);
     } catch (error: any) {
       showToast("error", error.formattedMessage || "Erro desconhecido!");
@@ -274,14 +266,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         height: 100,
         projectCode: props.project?.code!,
       };
-
       const response = await ItemService.create(baseItemDto);
-
-      console.log(
-        "[ProjectBoard] handleAddImage ",
-        JSON.stringify(response, null)
-      );
-
       const imageItem: ImageItem = {
         code: response.code,
         type: response.type as "image",
@@ -290,21 +275,18 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         y: response.y,
         width: response.width,
         height: response.height,
-
         filename: response.filename,
         isCover: response.isCover,
         source: response.source,
         createdAt: response.createdAt,
         projectCode: response.projectCode,
       };
-
       setItems((prev) => [...prev, imageItem]);
     } catch (error: any) {
       showToast("error", error.formattedMessage || "Erro desconhecido!");
     }
   };
 
-  //Atualizar posição do item: através dos eixos e o code do item, realizo a alteração pelo gesto
   const updateItemPosition = (code: number, x: number, y: number) => {
     setItems((currentItems) =>
       currentItems.map((item) =>
@@ -313,7 +295,6 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     );
   };
 
-  //Remove itens: através do code do item apenas, realizo o delet
   const deleteItem = async (
     itemCode: number,
     componentCode: number,
@@ -322,22 +303,17 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   ) => {
     try {
       if (task === "archive") {
-        await ItemService.delete(itemCode); //Deletar o item primeiro
-        // Deleta Item + Componente (via cascade no backend)
+        await ItemService.delete(itemCode);
         props.onDelete?.(componentCode, task, type);
       } else {
-        console.log("acessou else do item");
-        // Apenas o Item (componente fica)
         await ItemService.delete(itemCode);
       }
-
       setItems((prev) => prev.filter((item) => item.code !== itemCode));
     } catch (error: any) {
       showToast("error", error.formattedMessage);
     }
   };
 
-  //Padrão pontilhado otimizado (sem milhoes de elementos)
   const renderDotsBackground = () => (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
       <Svg width="100%" height="100%">
@@ -356,6 +332,51 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     </View>
   );
 
+  //Animações do modal
+  const modalOpacity = useRef(new Animated.Value(0)).current;
+  const modalScale = useRef(new Animated.Value(0.8)).current;
+
+  const openModal = () => {
+    Animated.parallel([
+      Animated.timing(modalOpacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.spring(modalScale, {
+        toValue: 1,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeModal = () => {
+    Animated.parallel([
+      Animated.timing(modalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalScale, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      clearSelection();
+    });
+  };
+
+  useEffect(() => {
+    if (selectedItem) {
+      openModal();
+    } else {
+      modalOpacity.setValue(0);
+      modalScale.setValue(0.8);
+    }
+  }, [selectedItem]);
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.canvas}>
@@ -369,6 +390,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           pointerEvents="box-none"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
+          onTouchStart={clearSelection}
         >
           {items.map((item) => (
             <DraggableItem
@@ -376,10 +398,78 @@ const ProjectBoard = (props: ProjectBoardProps) => {
               item={item}
               onPositionChange={updateItemPosition}
               onDelete={deleteItem}
+              onLongPress={handleLongPressItem}
             />
           ))}
         </ScrollView>
       </View>
+
+      {/*Modal com as 3 opções*/}
+      <Modal transparent visible={!!selectedItem} onRequestClose={closeModal}>
+        <Animated.View
+          style={[styles.modalOverlay, { opacity: modalOpacity }]}
+          pointerEvents="box-none"
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={closeModal}
+          />
+          <Animated.View
+            style={[
+              styles.modalContent,
+              { transform: [{ scale: modalScale }] },
+            ]}
+          >
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                onPress={() => {
+                  handleDeleteArchive();
+                  closeModal();
+                }}
+                style={styles.modalButton}
+              >
+                <View
+                  style={[
+                    styles.modalIconWrapper,
+                    { backgroundColor: "#ff4d4d" },
+                  ]}
+                >
+                  <Ionicons name="trash" size={26} color="#fff" />
+                </View>
+                <Text style={styles.modalLabel}>Excluir</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  handleDeleteItem();
+                  closeModal();
+                }}
+                style={styles.modalButton}
+              >
+                <View
+                  style={[
+                    styles.modalIconWrapper,
+                    { backgroundColor: "#e2d40e" },
+                  ]}
+                >
+                  <Ionicons name="archive-outline" size={26} color="#fff" />
+                </View>
+                <Text style={styles.modalLabel}>Arquivar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={closeModal} style={styles.modalButton}>
+                <View
+                  style={[styles.modalIconWrapper, { backgroundColor: "#888" }]}
+                >
+                  <Ionicons name="close" size={26} color="#fff" />
+                </View>
+                <Text style={styles.modalLabel}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
 
       <View
         style={{
@@ -387,7 +477,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           top: 25,
           right: 25,
           alignItems: "center",
-          gap: 30, //Espaçamento entre grupos
+          gap: 30,
         }}
       >
         <View style={styles.zoomControls}>
@@ -403,7 +493,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         </View>
 
         <View style={styles.archiveControls}>
-          <TouchableOpacity onPress={handleZoomIn} style={styles.zoomButton}>
+          <TouchableOpacity
+            onPress={() => setShowProjectImages(true)}
+            style={styles.zoomButton}
+          >
             <Ionicons name="image" size={18} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
@@ -414,6 +507,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ImagesProjectModal
+        project={props.project}
+        userCode={props.project?.userCode}
+        visible={showProjectImages}
+        onClose={() => setShowProjectImages(false)}
+      />
     </GestureHandlerRootView>
   );
 };
@@ -445,14 +545,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
   },
-  zoomText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
   canvas: {
     flex: 1,
-    backgroundColor: "#e8e8e8ff", // fundo base
+    backgroundColor: "#e8e8e8ff",
     overflow: "hidden",
   },
   canvasContent: {
@@ -461,6 +556,46 @@ const styles = StyleSheet.create({
     minWidth: "100%",
     alignItems: "center",
     justifyContent: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "transparent", // remove o fundo branco
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 35,
+  },
+  modalButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  modalIconWrapper: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  modalLabel: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "600",
+    marginTop: 6,
+    textAlign: "center",
   },
 });
 

@@ -1,9 +1,9 @@
 import { Image } from "@/services/image/image";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
+  Dimensions,
   FlatList,
   Image as RNImage,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,11 +17,20 @@ interface ImageViewerProps {
   images: Image[];
   viewMode: ViewMode;
   onDelete: (code: number) => void;
+  onAddToBoard?: (image: Image) => void;
 }
+
+const { width: screenWidth } = Dimensions.get("window");
+const CAROUSEL_IMAGE_WIDTH = 300;
+const CAROUSEL_IMAGE_HEIGHT = 300;
 
 export default function ImageViewerPanel(props: ImageViewerProps) {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
+
+  const [carouselWidth, setCarouselWidth] = useState(screenWidth);
 
   const openViewer = (index: number) => {
     setViewerIndex(index);
@@ -35,25 +44,29 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
     return dateB - dateA;
   });
 
+  //Para scroll infinito
   const imageSources = sortedImages.map((img) => ({ uri: img.url }));
+  const data = [...sortedImages, ...sortedImages, ...sortedImages];
 
   const renderList = () => (
-    <ScrollView contentContainerStyle={{ padding: 10, paddingBottom: 20 }}>
-      {sortedImages.map((img, index) => (
+    <FlatList
+      data={sortedImages}
+      keyExtractor={(img) => img.code.toString()}
+      contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
+      renderItem={({ item, index }) => (
         <TouchableOpacity
-          key={img.code}
           onPress={() => openViewer(index)}
-          onLongPress={() => props.onDelete(img.code)}
+          onLongPress={() => props.onDelete(item.code)}
           style={styles.listItemRow}
         >
-          <RNImage source={{ uri: img.url }} style={styles.thumbnail} />
+          <RNImage source={{ uri: item.url }} style={styles.thumbnail} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.filename}>{img.filename}</Text>
-            {img.isCover && <Text style={styles.coverBadge}>Capa</Text>}
+            <Text style={styles.filename}>{item.filename}</Text>
+            {item.isCover && <Text style={styles.coverBadge}>Capa</Text>}
           </View>
         </TouchableOpacity>
-      ))}
-    </ScrollView>
+      )}
+    />
   );
 
   const renderGrid = () => (
@@ -61,37 +74,54 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
       data={sortedImages}
       keyExtractor={(img) => img.code.toString()}
       numColumns={3}
-      contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 20 }}
+      contentContainerStyle={styles.gridContent}
       renderItem={({ item, index }) => (
-        <TouchableOpacity
-          onPress={() => openViewer(index)}
-          onLongPress={() => props.onDelete(item.code)}
-        >
-          <RNImage source={{ uri: item.url }} style={styles.gridImage} />
-        </TouchableOpacity>
+        <View style={styles.gridItem}>
+          <TouchableOpacity
+            onPress={() => openViewer(index)}
+            onLongPress={() => props.onDelete(item.code)}
+          >
+            <RNImage source={{ uri: item.url }} style={styles.gridImage} />
+          </TouchableOpacity>
+        </View>
       )}
     />
   );
 
-  const renderCarousel = () => (
-    <ScrollView
-      horizontal
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 20 }}
-    >
-      {sortedImages.map((img, index) => (
-        <TouchableOpacity
-          key={img.code}
-          onPress={() => openViewer(index)}
-          onLongPress={() => props.onDelete(img.code)}
-        >
-          <RNImage source={{ uri: img.url }} style={styles.carouselImage} />
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  );
+  const renderCarousel = () => {
+    const [index, setIndex] = useState(0);
+    const total = sortedImages.length;
 
+    const next = () => setIndex((prev) => (prev + 1) % total);
+    const prev = () => setIndex((prev) => (prev - 1 + total) % total);
+    const current = sortedImages[index];
+
+    return (
+      <View style={styles.carouselContainer}>
+        <View style={styles.imageRow}>
+          <TouchableOpacity onPress={prev} style={styles.navButton}>
+            <Text style={styles.navArrow}>‹</Text>
+          </TouchableOpacity>
+
+          <View style={styles.imageWrapper}>
+            <RNImage
+              source={{ uri: current.url }}
+              style={styles.carouselImage}
+              resizeMode="cover"
+            />
+          </View>
+
+          <TouchableOpacity onPress={next} style={styles.navButton}>
+            <Text style={styles.navArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.counter}>
+          {index + 1} / {total}
+        </Text>
+      </View>
+    );
+  };
   const renderView = () => {
     switch (props.viewMode) {
       case "grid":
@@ -146,22 +176,96 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
-  gridContainer: {
+  gridContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 20,
     alignItems: "center",
+  },
+  gridItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 4,
   },
   gridImage: {
-    width: 100,
-    height: 100,
-    margin: 5,
+    width: (screenWidth - 48) / 3,
+    height: (screenWidth - 48) / 3,
     borderRadius: 8,
   },
-  carouselContainer: {
+  carouselItem: {
+    width: screenWidth,
+    justifyContent: "center",
     alignItems: "center",
   },
+  carouselTouchable: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  centeredImage: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 30,
+  },
+  controlButton: {
+    padding: 10,
+  },
+  controlText: {
+    fontSize: 24,
+    color: "#333",
+    fontWeight: "bold",
+  },
+
+  carouselContainer: {
+    width: "100%",
+    height: 340,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  navButton: {
+    width: 50,
+    height: CAROUSEL_IMAGE_HEIGHT,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  navArrow: {
+    fontSize: 36,
+    color: "#555",
+    fontWeight: "600",
+  },
+  imageWrapper: {
+    width: CAROUSEL_IMAGE_WIDTH,
+    height: CAROUSEL_IMAGE_HEIGHT,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 3,
+  },
   carouselImage: {
-    width: 300,
-    height: 300,
-    marginHorizontal: 10,
-    borderRadius: 8,
+    width: "100%",
+    height: "100%",
+  },
+  counter: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
 });
