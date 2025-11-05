@@ -75,8 +75,8 @@ export default function ProjectScreen() {
 
           //Carrega os itens do projeto
           await loadProjectItems(projectCode);
-        } catch (err) {
-          console.error("Erro ao carregar projeto:", err);
+        } catch (error: any) {
+          showToast("error", error.formattedMessage);
         }
       }
       setLoading(false);
@@ -337,7 +337,6 @@ export default function ProjectScreen() {
 
   //Manipular seleção de componente
   const handleOptions = (componentType: "link" | "image" | "sketch") => {
-    console.log("[Front] Componente selecionado:", componentType);
     setShowComponentSelector(false);
     switch (componentType) {
       case "link":
