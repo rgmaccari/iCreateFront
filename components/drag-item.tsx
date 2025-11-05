@@ -1,14 +1,7 @@
 import { ItemService } from "@/services/item/item.service";
 import { ProjectItem } from "@/services/item/project-item";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -21,7 +14,13 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 interface DraggableItemProps {
   item: ProjectItem;
   onPositionChange: (code: number, x: number, y: number) => void;
-  onDelete: (itemCode: number, componentCode: number, task: string, type?: string) => void;
+  onDelete: (
+    itemCode: number,
+    componentCode: number,
+    task: string,
+    type?: string
+  ) => void;
+  onLongPress?: (item: ProjectItem) => void;
 }
 
 const DraggableItem = (props: DraggableItemProps) => {
@@ -41,12 +40,19 @@ const DraggableItem = (props: DraggableItemProps) => {
     translateY.value = props.item.y;
   }, [props.item.x, props.item.y]);
 
-
   //Att posição
   const updatePositionInJS = () => {
-    ItemService.updatePosition(props.item.code, translateX.value, translateY.value)
+    ItemService.updatePosition(
+      props.item.code,
+      translateX.value,
+      translateY.value
+    )
       .then(() =>
-        props.onPositionChange(props.item.code, translateX.value, translateY.value)
+        props.onPositionChange(
+          props.item.code,
+          translateX.value,
+          translateY.value
+        )
       )
       .catch((err) => console.error("Falha ao salvar posição:", err));
   };
@@ -59,7 +65,9 @@ const DraggableItem = (props: DraggableItemProps) => {
       translateY.value,
       width.value,
       height.value
-    ).catch((error: any) => console.error("Falha ao salvar tamanho:", error.formattedMessage));
+    ).catch((error: any) =>
+      console.error("Falha ao salvar tamanho:", error.formattedMessage)
+    );
   };
 
   //O que ocorre ao realizar gestos (arrastar redimencionar)
@@ -81,7 +89,10 @@ const DraggableItem = (props: DraggableItemProps) => {
     .onUpdate((e) => {
       "worklet";
       width.value = Math.min(Math.max(120, width.value + e.translationX), 400);
-      height.value = Math.min(Math.max(100, height.value + e.translationY), 300); // mínimo agora 100
+      height.value = Math.min(
+        Math.max(100, height.value + e.translationY),
+        300
+      ); // mínimo agora 100
     })
     .onEnd(() => {
       runOnJS(updateSizeInJS)();
@@ -97,25 +108,10 @@ const DraggableItem = (props: DraggableItemProps) => {
   }));
 
   //Pressionar o item por um tempo...
-  const handleLongPress = () => {
-    Alert.alert("Opções", "O que você deseja excluir?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir arquivo",
-        onPress: () => props.onDelete(props.item.code, props.item.componentCode, 'archive', props.item.type),
-        style: "destructive",
-      },
-
-      {
-        text: "Apenas o item",
-        onPress: () => props.onDelete(props.item.code, props.item.componentCode, 'item'),
-        style: "destructive",
-      },
-    ]);
-  };
+  const handleLongPress = () => props.onLongPress?.(props.item);
 
   const renderContent = () => {
-    console.log('render content acionado')
+    console.log("render content acionado");
     if (props.item.type === "link") {
       return (
         <View style={[styles.linkContainer]}>
@@ -153,7 +149,11 @@ const DraggableItem = (props: DraggableItemProps) => {
         <View style={styles.sketchContainer}>
           <View style={styles.noteContent}>
             {props.item.title && (
-              <Text style={styles.sketchTitle} numberOfLines={1} ellipsizeMode="tail">
+              <Text
+                style={styles.sketchTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {String(props.item.title || "")}
               </Text>
             )}
@@ -179,7 +179,11 @@ const DraggableItem = (props: DraggableItemProps) => {
       return (
         <View style={styles.checklistContainer}>
           {props.item.title && (
-            <Text style={styles.checklistTitle} numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              style={styles.checklistTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {String(props.item.title || "")}
             </Text>
           )}
@@ -190,7 +194,9 @@ const DraggableItem = (props: DraggableItemProps) => {
                 <View
                   style={[
                     styles.checkbox,
-                    it.checked ? styles.checkboxChecked : styles.checkboxUnchecked,
+                    it.checked
+                      ? styles.checkboxChecked
+                      : styles.checkboxUnchecked,
                   ]}
                 />
                 <Text
@@ -207,7 +213,9 @@ const DraggableItem = (props: DraggableItemProps) => {
             ))}
 
             {props.item.items && props.item.items.length > 4 && (
-              <Text style={styles.checkItemMore}>+{props.item.items.length - 4} itens</Text>
+              <Text style={styles.checkItemMore}>
+                +{props.item.items.length - 4} itens
+              </Text>
             )}
           </View>
 
@@ -225,15 +233,11 @@ const DraggableItem = (props: DraggableItemProps) => {
 
   return (
     <GestureDetector gesture={panGesture}>
-      <AnimatedView
-        style={[styles.container, animatedStyle, isPressed && styles.pressed]}
-        onTouchStart={() => setIsPressed(true)}
-        onTouchEnd={() => setIsPressed(false)}
-      >
+      <AnimatedView style={[styles.container, animatedStyle]}>
         <TouchableOpacity
           onLongPress={handleLongPress}
           delayLongPress={500}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
           style={{ flex: 1 }}
         >
           {renderContent()}
@@ -390,8 +394,6 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#777",
   },
-
-
 });
 
 export default DraggableItem;

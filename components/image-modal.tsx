@@ -24,11 +24,15 @@ const ImageModal = (props: ImageModalProps) => {
   const [selectedImages, setSelectedImages] = useState<ImageCreateDto[]>([]);
   const [isCoverIndex, setIsCoverIndex] = useState<number | null>(null);
 
+  //Seletor de imagens
   const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
-      Alert.alert("Permissão necessária", "Precisamos de acesso à sua galeria para selecionar imagens.");
+      Alert.alert(
+        "Permissão necessária",
+        "Precisamos de acesso à sua galeria para selecionar imagens."
+      );
       return;
     }
 
@@ -45,7 +49,10 @@ const ImageModal = (props: ImageModalProps) => {
         uri: asset.uri,
         filename: asset.fileName || `image_${Date.now()}_${index}.jpg`,
         mimeType: asset.mimeType || "image/jpeg",
-        isCover: isCoverIndex === null && selectedImages.length === 0 && index === 0 ? true : false,
+        isCover:
+          isCoverIndex === null && selectedImages.length === 0 && index === 0
+            ? true
+            : false,
       }));
 
       setSelectedImages((prev) => [...prev, ...newImages]);
@@ -53,10 +60,13 @@ const ImageModal = (props: ImageModalProps) => {
         setIsCoverIndex(selectedImages.length);
       }
     } else {
-      console.log("[ImageModal] Seleção de imagens cancelada ou sem resultados");
+      console.log(
+        "[ImageModal] Seleção de imagens cancelada ou sem resultados"
+      );
     }
   };
 
+  //Remove a lista
   const removeImage = (index: number) => {
     setSelectedImages((prev) => prev.filter((_, i) => i !== index));
     if (isCoverIndex === index) {
@@ -66,6 +76,7 @@ const ImageModal = (props: ImageModalProps) => {
     }
   };
 
+  //Define como cover
   const toggleCover = (index: number) => {
     setIsCoverIndex(index);
     setSelectedImages((prev) =>
@@ -76,6 +87,7 @@ const ImageModal = (props: ImageModalProps) => {
     );
   };
 
+  //Salvar
   const handleSave = async () => {
     if (props.projectCode) {
       if (selectedImages.length > 0) {
@@ -88,6 +100,7 @@ const ImageModal = (props: ImageModalProps) => {
     }
   };
 
+  //Fechar
   const handleClose = () => {
     setSelectedImages([]);
     setIsCoverIndex(null);
@@ -114,10 +127,15 @@ const ImageModal = (props: ImageModalProps) => {
         <View style={styles.content}>
           <ScrollView style={styles.scrollView}>
             {/* Componente "Selecionar da Galeria" sempre visível */}
-            <TouchableOpacity style={styles.pickImageButton} onPress={pickImages}>
+            <TouchableOpacity
+              style={styles.pickImageButton}
+              onPress={pickImages}
+            >
               <Ionicons name="images" size={48} color="#ccc" />
               <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
-              <Text style={styles.pickImageSubtext}>Múltiplas imagens permitidas</Text>
+              <Text style={styles.pickImageSubtext}>
+                Múltiplas imagens permitidas
+              </Text>
             </TouchableOpacity>
 
             {/* Lista de imagens selecionadas */}
@@ -147,7 +165,6 @@ const ImageModal = (props: ImageModalProps) => {
                     >
                       <Ionicons name="close" size={16} color="#ff3b30" />
                     </TouchableOpacity>
-
                   </View>
                 ))}
               </View>
@@ -164,7 +181,10 @@ const ImageModal = (props: ImageModalProps) => {
             disabled={selectedImages.length === 0}
           >
             <Text style={styles.saveButtonText}>
-              Adicionar {selectedImages.length > 0 ? `${selectedImages.length} Imagens` : "Imagem"}
+              Adicionar{" "}
+              {selectedImages.length > 0
+                ? `${selectedImages.length} Imagens`
+                : "Imagem"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -260,7 +280,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   saveButton: {
-    backgroundColor: '#81c091ff',
+    backgroundColor: "#81c091ff",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
