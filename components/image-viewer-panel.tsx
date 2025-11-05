@@ -28,13 +28,18 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
     setViewerVisible(true);
   };
 
-  const imageSources = props.images.map((img) => ({
-    uri: img.url,
-  }));
+  //Ordenação de imgs
+  const sortedImages = [...props.images].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
+  });
+
+  const imageSources = sortedImages.map((img) => ({ uri: img.url }));
 
   const renderList = () => (
     <ScrollView contentContainerStyle={{ padding: 10, paddingBottom: 20 }}>
-      {props.images.map((img, index) => (
+      {sortedImages.map((img, index) => (
         <TouchableOpacity
           key={img.code}
           onPress={() => openViewer(index)}
@@ -53,7 +58,7 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
 
   const renderGrid = () => (
     <FlatList
-      data={props.images}
+      data={sortedImages}
       keyExtractor={(img) => img.code.toString()}
       numColumns={3}
       contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 20 }}
@@ -75,7 +80,7 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 20 }}
     >
-      {props.images.map((img, index) => (
+      {sortedImages.map((img, index) => (
         <TouchableOpacity
           key={img.code}
           onPress={() => openViewer(index)}
