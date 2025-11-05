@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     //backgroundColor: "#fff",
   },
   filterButtonActive: {
-    backgroundColor: "#362946",
+    backgroundColor: "#d6a867ff",
   },
   gridContainer: {
     justifyContent: "space-between",
