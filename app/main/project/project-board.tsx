@@ -513,6 +513,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         userCode={props.project?.userCode}
         visible={showProjectImages}
         onClose={() => setShowProjectImages(false)}
+        onAddToBoard={(image) => {
+          handleAddImage(image);
+          setShowProjectImages(false);
+        }}
       />
     </GestureHandlerRootView>
   );

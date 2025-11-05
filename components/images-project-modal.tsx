@@ -13,6 +13,7 @@ interface ImagesProjectModalProps {
   userCode?: number;
   visible: boolean;
   onClose: () => void;
+  onAddToBoard?: (image: Image) => void;
 }
 
 const ImagesProjectModal = (props: ImagesProjectModalProps) => {
@@ -40,6 +41,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
       setProjectImages(projectImages || []);
     }
   };
+
   return (
     <Modal
       visible={props.visible}
@@ -63,6 +65,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
                 images={projectImages}
                 viewMode="carousel"
                 onDelete={() => console.log("aopa")}
+                onAddToBoard={props.onAddToBoard}
               />
             </View>
           ) : (

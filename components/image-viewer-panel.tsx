@@ -79,7 +79,8 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
         <View style={styles.gridItem}>
           <TouchableOpacity
             onPress={() => openViewer(index)}
-            onLongPress={() => props.onDelete(item.code)}
+            onLongPress={() => props.onAddToBoard?.(item)}
+            delayLongPress={300}
           >
             <RNImage source={{ uri: item.url }} style={styles.gridImage} />
           </TouchableOpacity>
@@ -103,13 +104,18 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
             <Text style={styles.navArrow}>‹</Text>
           </TouchableOpacity>
 
-          <View style={styles.imageWrapper}>
+          <TouchableOpacity
+            style={styles.imageWrapper}
+            onPress={() => openViewer(index)}
+            onLongPress={() => props.onAddToBoard?.(current)}
+            delayLongPress={300}
+          >
             <RNImage
               source={{ uri: current.url }}
               style={styles.carouselImage}
               resizeMode="cover"
             />
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity onPress={next} style={styles.navButton}>
             <Text style={styles.navArrow}>›</Text>
@@ -122,6 +128,7 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
       </View>
     );
   };
+
   const renderView = () => {
     switch (props.viewMode) {
       case "grid":
