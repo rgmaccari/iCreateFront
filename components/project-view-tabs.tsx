@@ -17,7 +17,7 @@ const ProjectViewMode: React.FC<ProjectViewModeProps> = (
   const tabs = [
     { id: "document" as ProjectViewMode, label: "Documento", icon: FileText },
     { id: "board" as ProjectViewMode, label: "Board", icon: LayoutDashboard },
-    { id: "form" as ProjectViewMode, label: "Grade", icon: ClipboardList },
+    { id: "form" as ProjectViewMode, label: "Arquivos", icon: ClipboardList },
   ];
 
   return (

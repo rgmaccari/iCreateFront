@@ -1,5 +1,6 @@
 import ProjectBoard from "@/app/main/project/project-board";
 import AddButton from "@/components/add-button";
+import IaToolsModal from "@/components/ia-tools-modal";
 import ImageModal from "@/components/image-modal";
 import LinkModal from "@/components/linking-modal";
 import PageHeader from "@/components/page-header";
@@ -58,6 +59,7 @@ export default function ProjectScreen() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSketchModal, setShowSketchModal] = useState(false);
+  const [showIaModal, setShowIaModal] = useState(false);
 
   const [images, setImages] = useState<Image[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
@@ -336,7 +338,7 @@ export default function ProjectScreen() {
   };
 
   //Manipular seleção de componente
-  const handleOptions = (componentType: "link" | "image" | "sketch") => {
+  const handleOptions = (componentType: "link" | "image" | "sketch" | "ia") => {
     setShowComponentSelector(false);
     switch (componentType) {
       case "link":
@@ -347,6 +349,9 @@ export default function ProjectScreen() {
         break;
       case "sketch":
         setShowSketchModal(true);
+        break;
+      case "ia":
+        setShowIaModal(true);
         break;
     }
   };
@@ -539,6 +544,14 @@ export default function ProjectScreen() {
         projectCode={projectCode}
         visible={showSketchModal}
         onClose={() => setShowSketchModal(false)}
+        onSaveNote={createNote}
+        onSaveChecklist={createChecklist}
+      />
+
+      <IaToolsModal
+        projectCode={projectCode}
+        visible={showIaModal}
+        onClose={() => setShowIaModal(false)}
         onSaveNote={createNote}
         onSaveChecklist={createChecklist}
       />

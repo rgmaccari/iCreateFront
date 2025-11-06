@@ -37,6 +37,13 @@ const ComponentSelectorModal = (props: ComponentSelectorModalProps) => {
       icon: 'document-text' as const,
       color: '#d6a867ff',
     },
+    {
+      type: 'ia',
+      title: 'Ferramentas com I.A.',
+      description: 'Explore ferramentas com I.A.',
+      icon: 'hardware-chip-outline' as const,
+      color: '#d67370ff',
+    }
   ];
 
   //Calcula a altura dinâmica baseada no número de componentes -> ver depois...
