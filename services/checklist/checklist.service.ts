@@ -18,6 +18,12 @@ export class ChecklistService {
         const response = await api.get(`/checklists/${code}`);
         return response.data;
     }
+
+    static async findAllChecklists(): Promise<Checklist[]> {
+        const response = await api.get(`/checklists/allByUser`);
+        return response.data;
+    }
+
     static async findAllByProjectCode(projectCode: number): Promise<Checklist[]> {
         const response = await api.get(`/checklists/all/${projectCode}`);
         return response.data;

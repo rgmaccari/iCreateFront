@@ -32,7 +32,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
 
   const findAllImages = async () => {
     if (props.project?.code && props.userCode) {
-      const allImages = await ImageService.findAllImages(props.userCode);
+      const allImages = await ImageService.findAllImages();
       setImages(allImages || []);
 
       const projectImages = await ImageService.findAllByProjectCode(

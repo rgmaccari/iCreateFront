@@ -17,9 +17,15 @@ export class NoteService {
         const response = await api.get(`/notes/${code}`);
         return response.data;
     }
+
     static async findAllByProjectCode(projectCode: number): Promise<Note[]> {
         console.log(`Buscando notas para o projeto com código: ${projectCode}`);
         const response = await api.get(`/notes/all/${projectCode}`);
+        return response.data;
+    }
+
+    static async findAllNotes(): Promise<Note[]> {
+        const response = await api.get(`/notes/allByUser`);
         return response.data;
     }
 

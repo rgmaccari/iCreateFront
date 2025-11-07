@@ -42,11 +42,11 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
 
   const findAllData = async () => {
     if (props.project?.code && props.userCode) {
-      //const allNotes = await NoteService.findAllByUser(props.userCode);
-      //const allChecklists = await ChecklistService.findAllByUser(props.userCode);
+      const allNotes = await NoteService.findAllNotes();
+      const allChecklists = await ChecklistService.findAllChecklists();
 
-      //setNotes(allNotes || []);
-      //setChecklists(allChecklists || []);
+      setNotes(allNotes || []);
+      setChecklists(allChecklists || []);
 
       const projNotes = await NoteService.findAllByProjectCode(props.project.code);
       const projChecklists = await ChecklistService.findAllByProjectCode(

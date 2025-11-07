@@ -33,8 +33,8 @@ export class ImageService {
         return response.data;
     }
 
-    static async findAllImages(userCode: number): Promise<Image[]> {
-        const response = await api.get(`/images/allByUser/${userCode}`);
+    static async findAllImages(): Promise<Image[]> {
+        const response = await api.get(`/images/allByUser`);
         return response.data;
     }
 

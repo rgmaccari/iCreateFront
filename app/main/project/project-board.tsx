@@ -509,7 +509,9 @@ const ProjectBoard = (props: ProjectBoardProps) => {
             style={styles.zoomButton}>
             <Ionicons name="link" size={18} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
+          <TouchableOpacity
+            onPress={() => setShowProjectNotes(true)}
+            style={styles.zoomButton}>
             <Ionicons name="document-text" size={18} color="#333" />
           </TouchableOpacity>
         </View>

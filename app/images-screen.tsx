@@ -29,7 +29,7 @@ export default function ImageScreen() {
 
     const findAllImages = async () => {
         if (userCode) {
-            const result = await ImageService.findAllImages(userCode);
+            const result = await ImageService.findAllImages();
             console.log('result ', result)
             setImages(result || []);
         }
