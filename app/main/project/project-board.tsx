@@ -1,5 +1,6 @@
 import DraggableItem from "@/components/drag-item";
 import ImagesProjectModal from "@/components/images-project-modal";
+import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
 import { showToast } from "@/constants/showToast";
 import { Checklist } from "@/services/checklist/checklist";
 import { Image } from "@/services/image/image";
@@ -45,13 +46,17 @@ interface ProjectBoardProps {
 }
 
 const ProjectBoard = (props: ProjectBoardProps) => {
+  //Itens adicionados em tempo de execução
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [lastLinks, setLastLinks] = useState<Link[]>([]);
   const [lastImages, setLastImages] = useState<Image[]>([]);
   const [lastNotes, setLastNotes] = useState<Note[]>([]);
   const [lastChecklists, setLastChecklists] = useState<Checklist[]>([]);
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
+
+  //Itens buscados do repositorio ja existente
   const [showProjectImages, setShowProjectImages] = useState(false);
+  const [showProjectNotes, setShowProjectNotes] = useState(false);
 
   //Controle de zoom
   const [scale, setScale] = useState(1);
@@ -499,7 +504,9 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           >
             <Ionicons name="image" size={18} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleZoomOut} style={styles.zoomButton}>
+          <TouchableOpacity
+            onPress={() => setShowProjectNotes(true)}
+            style={styles.zoomButton}>
             <Ionicons name="link" size={18} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleResetZoom} style={styles.zoomButton}>
@@ -518,6 +525,18 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           setShowProjectImages(false);
         }}
       />
+
+      <NotesChecklistsProjectModal
+        project={props.project}
+        userCode={props.project?.userCode}
+        visible={showProjectNotes}
+        onClose={() => setShowProjectNotes(false)}
+        onAddToBoard={(data: any) => {
+          handleAddNote(data);
+          setShowProjectNotes(false);
+        }}
+      />
+
     </GestureHandlerRootView>
   );
 };
