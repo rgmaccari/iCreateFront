@@ -23,6 +23,11 @@ export class LinkService {
         return response.data;
     }
 
+    static async findAllLinks(): Promise<Link[]> {
+        const response = await api.get(`/links/allByUser`);
+        return response.data;
+    }
+
     static async deleteByCode(code: number): Promise<void> {
         await api.delete(`/links/${code}`);
     }

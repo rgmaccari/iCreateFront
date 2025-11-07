@@ -1,5 +1,6 @@
 import DraggableItem from "@/components/drag-item";
 import ImagesProjectModal from "@/components/images-project-modal";
+import LinksProjectModal from "@/components/links-project-modal";
 import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
 import { showToast } from "@/constants/showToast";
 import { Checklist } from "@/services/checklist/checklist";
@@ -57,6 +58,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   //Itens buscados do repositorio ja existente
   const [showProjectImages, setShowProjectImages] = useState(false);
   const [showProjectNotes, setShowProjectNotes] = useState(false);
+  const [showProjectLinks, setShowProjectLinks] = useState(false);
 
   //Controle de zoom
   const [scale, setScale] = useState(1);
@@ -505,7 +507,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
             <Ionicons name="image" size={18} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setShowProjectNotes(true)}
+            onPress={() => setShowProjectLinks(true)}
             style={styles.zoomButton}>
             <Ionicons name="link" size={18} color="#333" />
           </TouchableOpacity>
@@ -536,6 +538,17 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         onAddToBoard={(data: any) => {
           handleAddNote(data);
           setShowProjectNotes(false);
+        }}
+      />
+
+      <LinksProjectModal
+        project={props.project}
+        userCode={props.project?.userCode}
+        visible={showProjectLinks}
+        onClose={() => setShowProjectLinks(false)}
+        onAddToBoard={(data: any) => {
+          handleAddLink(data);
+          setShowProjectLinks(false);
         }}
       />
 
