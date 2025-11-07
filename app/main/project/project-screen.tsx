@@ -549,11 +549,11 @@ export default function ProjectScreen() {
       />
 
       <IaToolsModal
-        projectCode={projectCode}
+        project={project}
         visible={showIaModal}
         onClose={() => setShowIaModal(false)}
-        onSaveNote={createNote}
-        onSaveChecklist={createChecklist}
+      //onSaveNote={createNote}
+      //onSaveChecklist={createChecklist}
       />
     </SafeAreaView>
   );
