@@ -116,6 +116,7 @@ const ImageModal = (props: ImageModalProps) => {
     >
       <View style={styles.container}>
         <View style={styles.header}>
+          <Ionicons name="image" size={24} color="#70a1d6ff" />
           <Text style={styles.title}>
             Adicionar Imagens ({selectedImages.length})
           </Text>
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   saveButton: {
-    backgroundColor: "#81c091ff",
+    backgroundColor: "#70a1d6ff",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",

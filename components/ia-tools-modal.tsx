@@ -1,3 +1,4 @@
+import { showToast } from "@/constants/showToast";
 import { GeminiService } from "@/services/gemini/gemini.service";
 import { Project } from "@/services/project/project";
 import { Ionicons } from "@expo/vector-icons";
@@ -47,7 +48,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
 
   const geminiService = new GeminiService();
 
-  // Animação de entrada
+  //Animação de entrada
   React.useEffect(() => {
     if (visible) {
       Animated.timing(fadeAnim, {
@@ -60,19 +61,17 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     }
   }, [visible]);
 
-  // === Áudio ===
+  //Áudio
   async function requestAudioPermissions() {
     const { status } = await Audio.requestPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permissão negada",
-        "Permita o acesso ao microfone para usar esta funcionalidade."
-      );
+      showToast("error", "Permissão negada!");
       return false;
     }
     return true;
   }
 
+  //Inicializa
   async function startRecording() {
     const hasPermission = await requestAudioPermissions();
     if (!hasPermission) return;
@@ -91,17 +90,18 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
       setIsRecording(true);
       setRecordingDuration(0);
 
-      // Timer para duração da gravação
+      //Timer para duração da gravação
       const timer = setInterval(() => {
         setRecordingDuration((prev) => prev + 1);
       }, 1000);
       setRecordingTimer(timer);
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível iniciar a gravação.");
+      showToast("error", "Não foi possível iniciar a gravação.");
       console.error(error);
     }
   }
 
+  //Encerra
   async function stopRecording() {
     if (!recording) return;
 
@@ -117,11 +117,12 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
       if (uri) setAudioUri(uri);
       setRecording(null);
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível parar a gravação.");
+      showToast("error", "Não foi possível iniciar a gravação.");
       console.error(error);
     }
   }
 
+  //Formata o tempo de duração do áudio
   function formatTime(seconds: number) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -130,14 +131,11 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
       .padStart(2, "0")}`;
   }
 
-  // === Imagem ===
+  //Pega imagem imagem
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permissão necessária",
-        "Precisamos acessar sua galeria para selecionar imagens."
-      );
+      showToast("info", "Permissão necessária!");
       return;
     }
 
@@ -153,12 +151,12 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
         setImageUri(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível selecionar a imagem.");
+      showToast("error", "Não foi possível selecionar a imagem.");
       console.error(error);
     }
   }
 
-  // === Ações ===
+  //Ações
   async function handleExecute() {
     if (!mode) return;
 
@@ -168,10 +166,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
 
       if (mode === "generateImage") {
         if (!prompt.trim()) {
-          Alert.alert(
-            "Prompt necessário",
-            "Descreva com detalhes o que deseja gerar."
-          );
+          showToast("info", "Descreva a imagem!");
           return;
         }
         result = await geminiService.transcribeImage(prompt);
@@ -185,20 +180,16 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
         result = await geminiService.transcribeAudio(audioUri);
       }
 
-      Alert.alert("Sucesso", "Operação concluída com sucesso!", [
-        { text: "OK", onPress: resetAll },
-      ]);
-    } catch (err) {
-      console.error(err);
-      Alert.alert(
-        "Erro",
-        "Falha ao processar a operação. Verifique sua conexão e tente novamente."
-      );
+      showToast("success", "Operação concluída com sucesso!");
+    } catch (error: any) {
+      console.error(error);
+      showToast("error", error.formattedMessage);
     } finally {
       setIsLoading(false);
     }
   }
 
+  //Limpa os campos
   function resetAll() {
     setMode(null);
     setAudioUri(null);
@@ -213,6 +204,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     }
   }
 
+  //Encerrar
   function handleClose() {
     if (isRecording) {
       Alert.alert(
@@ -256,7 +248,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Ionicons name="sparkles" size={24} color="#007AFF" />
+              <Ionicons name="sparkles" size={24} color="#d67370" />
               <Text style={styles.title}>Assistente de I.A.</Text>
             </View>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
@@ -288,7 +280,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                     <Ionicons
                       name="mic"
                       size={24}
-                      color={mode === "audio" ? "#007AFF" : "#6B7280"}
+                      color={mode === "audio" ? "#d67370" : "#6B7280"}
                     />
                   </View>
                   <Text
@@ -317,7 +309,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                     <Ionicons
                       name="image"
                       size={24}
-                      color={mode === "readImage" ? "#007AFF" : "#6B7280"}
+                      color={mode === "readImage" ? "#d67370" : "#6B7280"}
                     />
                   </View>
                   <Text
@@ -346,7 +338,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                     <Ionicons
                       name="color-palette"
                       size={24}
-                      color={mode === "generateImage" ? "#007AFF" : "#6B7280"}
+                      color={mode === "generateImage" ? "#d67370" : "#6B7280"}
                     />
                   </View>
                   <Text
@@ -386,7 +378,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                           color="#fff"
                         />
                         <Text style={styles.recordButtonText}>
-                          {isRecording ? "Parar" : "Gravar"}
+                          {isRecording ? "Parar Gravação" : "Iniciar Gravação"}
                         </Text>
                       </TouchableOpacity>
 
@@ -421,7 +413,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                       style={styles.imagePickerButton}
                       onPress={pickImage}
                     >
-                      <Ionicons name="cloud-upload" size={32} color="#007AFF" />
+                      <Ionicons name="cloud-upload" size={32} color="#d67370" />
                       <Text style={styles.imagePickerText}>
                         Selecionar da Galeria
                       </Text>
@@ -458,7 +450,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                       multiline
                       numberOfLines={4}
                       outlineColor="#E5E7EB"
-                      activeOutlineColor="#007AFF"
+                      activeOutlineColor="#d67370"
                     />
                     <Text style={styles.promptHint}>
                       Seja específico e detalhado para melhores resultados
@@ -496,7 +488,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
   },
   keyboardView: {
     flex: 1,
@@ -509,7 +501,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fffafa",
   },
   headerContent: {
     flexDirection: "row",
@@ -519,7 +511,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
+    color: "#2d3748",
   },
   closeButton: {
     padding: 4,
@@ -549,25 +541,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#fffafa",
     borderWidth: 2,
     borderColor: "transparent",
   },
   modeCardActive: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#007AFF",
+    backgroundColor: "#fbeae9",
+    borderColor: "#d67370",
   },
   modeIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#f3f4f6",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
   },
   modeIconActive: {
-    backgroundColor: "#DBEAFE",
+    backgroundColor: "#f8d6d5",
   },
   modeCardText: {
     fontSize: 12,
@@ -576,62 +568,63 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modeCardTextActive: {
-    color: "#007AFF",
+    color: "#d67370",
   },
   audioSection: {
     gap: 16,
   },
   audioControls: {
-    alignItems: "center",
     gap: 12,
   },
   recordButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#d67370",
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 20,
     borderRadius: 12,
-    gap: 8,
-    minWidth: 140,
+    gap: 12,
+    width: "100%",
   },
   recordButtonActive: {
-    backgroundColor: "#EF4444",
+    backgroundColor: "#c55a57",
   },
   recordButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 18,
   },
   recordingInfo: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   recordingDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#EF4444",
+    backgroundColor: "#c55a57",
   },
   recordingTimer: {
     color: "#6B7280",
     fontWeight: "500",
+    fontSize: 14,
   },
   audioPreview: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    padding: 12,
-    backgroundColor: "#F0FDF4",
+    padding: 16,
+    backgroundColor: "#f0fdf4",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#D1FAE5",
+    borderColor: "#d1fae5",
   },
   audioPreviewText: {
-    color: "#065F46",
+    color: "#10B981",
     fontWeight: "500",
   },
   imageSection: {
@@ -642,7 +635,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 32,
     borderRadius: 12,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#fffafa",
     borderWidth: 2,
     borderColor: "#E5E7EB",
     borderStyle: "dashed",
@@ -674,13 +667,13 @@ const styles = StyleSheet.create({
     right: 8,
     backgroundColor: "rgba(0,0,0,0.6)",
     borderRadius: 12,
-    padding: 4,
+    padding: 6,
   },
   promptSection: {
     gap: 8,
   },
   textInput: {
-    backgroundColor: "#fff",
+    backgroundColor: "#fffafa",
   },
   promptHint: {
     fontSize: 12,
@@ -691,9 +684,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#10B981",
+    backgroundColor: "#d67370",
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: 18,
     gap: 8,
     marginTop: 8,
   },
