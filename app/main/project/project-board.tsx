@@ -18,6 +18,7 @@ import { Link } from "@/services/link/link";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -90,6 +91,24 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     );
     clearSelection();
   };
+
+  //Get do zoom
+  useEffect(() => {
+    const loadZoom = async () => {
+      if (!props.project?.code) return;
+      const key = `project_zoom_${props.project.code}`;
+      const savedZoom = await AsyncStorage.getItem(key);
+      if (savedZoom) setScale(parseFloat(savedZoom));
+    };
+    loadZoom();
+  }, [props.project?.code]);
+
+  //Get do zoom
+  useEffect(() => {
+    if (!props.project?.code) return;
+    const key = `project_zoom_${props.project.code}`;
+    AsyncStorage.setItem(key, scale.toString());
+  }, [scale, props.project?.code]);
 
   //useEffect que verifica a abertura da tela para inserir os itens
   useEffect(() => {
