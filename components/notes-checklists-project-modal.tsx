@@ -1,7 +1,9 @@
 import { showToast } from "@/constants/showToast";
 import { Checklist } from "@/services/checklist/checklist";
+import { ChecklistDto } from "@/services/checklist/checklist.dto";
 import { ChecklistService } from "@/services/checklist/checklist.service";
 import { Note } from "@/services/notes/note";
+import { NoteCreateDto } from "@/services/notes/note.create.dto";
 import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,7 +78,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     <TouchableOpacity
       key={note.code}
       style={styles.noteCard}
-      onPress={() => props.onAddToBoard?.(note)}
+      onLongPress={() => props.project && handleAddToBoard(note)}
     >
       <Text style={styles.noteTitle}>{note.title || "Sem título"}</Text>
       <Text style={styles.noteDescription} numberOfLines={3}>
@@ -89,7 +91,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     <TouchableOpacity
       key={checklist.code}
       style={styles.checklistCard}
-      onPress={() => props.onAddToBoard?.(checklist)}
+      onLongPress={() => props.project && handleAddToBoard(checklist)}
     >
       <Text style={styles.checklistTitle}>{checklist.title}</Text>
       <Text style={styles.checklistInfo}>
@@ -98,6 +100,37 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
       </Text>
     </TouchableOpacity>
   );
+
+  const handleAddToBoard = async (item: Note | Checklist) => {
+    if (item.projectCode !== props.project?.code && props.project?.code) {
+      if ("description" in item) {
+        const dto: NoteCreateDto = {
+          title: item.title?.slice(0, 20) || "",
+          description: item.description || "",
+          projectCode: props.project.code,
+        };
+        await NoteService.create(dto);
+        const [newNote] = await NoteService.findAllByProjectCode(
+          props.project.code
+        );
+        props.onAddToBoard?.(newNote);
+      } else {
+        const checklist = item as Checklist;
+        const dto: ChecklistDto = {
+          title: checklist.title?.slice(0, 20) || "",
+          itens: checklist.itens,
+          projectCode: props.project.code,
+        };
+        await ChecklistService.create(dto);
+        const [newChecklist] = await ChecklistService.findAllByProjectCode(
+          props.project.code
+        );
+        props.onAddToBoard?.(newChecklist);
+      }
+    } else {
+      props.onAddToBoard?.(item);
+    }
+  };
 
   return (
     <Modal
