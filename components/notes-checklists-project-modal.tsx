@@ -59,7 +59,9 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
       setNotes(allNotes || []);
       setChecklists(allChecklists || []);
 
-      const projNotes = await NoteService.findAllByProjectCode(props.project.code);
+      const projNotes = await NoteService.findAllByProjectCode(
+        props.project.code
+      );
       const projChecklists = await ChecklistService.findAllByProjectCode(
         props.project.code
       );
@@ -91,7 +93,8 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     >
       <Text style={styles.checklistTitle}>{checklist.title}</Text>
       <Text style={styles.checklistInfo}>
-        {checklist.itens.filter((i) => i.checked).length}/{checklist.itens.length} concluídos
+        {checklist.itens.filter((i) => i.checked).length}/
+        {checklist.itens.length} concluídos
       </Text>
     </TouchableOpacity>
   );
@@ -116,10 +119,12 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
           {/* Seção do Projeto - APENAS se houver projeto */}
           {props.project?.code && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Do projeto</Text>
+              <Text style={styles.sectionTitle}>Deste projeto</Text>
 
               {projectNotes.length === 0 && projectChecklists.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum item associado a este projeto.</Text>
+                <Text style={styles.emptyText}>
+                  Nenhum item associado a este projeto.
+                </Text>
               ) : (
                 <>
                   {projectNotes.map(renderNote)}

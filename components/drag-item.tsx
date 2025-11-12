@@ -111,7 +111,6 @@ const DraggableItem = (props: DraggableItemProps) => {
   const handleLongPress = () => props.onLongPress?.(props.item);
 
   const renderContent = () => {
-    console.log("render content acionado");
     if (props.item.type === "link") {
       return (
         <View style={[styles.linkContainer]}>

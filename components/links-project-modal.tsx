@@ -1,5 +1,6 @@
 import { showToast } from "@/constants/showToast";
 import { Link } from "@/services/link/link";
+import { LinkCreateDto } from "@/services/link/link.create.dto";
 import { LinkService } from "@/services/link/link.service";
 import { Project } from "@/services/project/project";
 import { Ionicons } from "@expo/vector-icons";
@@ -50,7 +51,9 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
       const allLinks = await LinkService.findAllLinks();
       setLinks(allLinks || []);
 
-      const projectLinks = await LinkService.findAllByProjectCode(props.project.code);
+      const projectLinks = await LinkService.findAllByProjectCode(
+        props.project.code
+      );
       setProjectLinks(projectLinks || []);
     }
     setLoading(false);
@@ -69,10 +72,13 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
       style={styles.linkCard}
       activeOpacity={0.9}
       onPress={() => openLink(link.url)}
-      onLongPress={() => props.onAddToBoard?.(link)}
+      onLongPress={() => props.project && handleAddToBoard(link)}
     >
       {link.previewImageUrl ? (
-        <Image source={{ uri: link.previewImageUrl }} style={styles.thumbnail} />
+        <Image
+          source={{ uri: link.previewImageUrl }}
+          style={styles.thumbnail}
+        />
       ) : (
         <View style={styles.thumbnailPlaceholder}>
           <Ionicons name="link-outline" size={28} color="#888" />
@@ -102,6 +108,26 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
     </TouchableOpacity>
   );
 
+  const handleAddToBoard = async (link: Link) => {
+    console.log("oao");
+    if (link.projectCode !== props.project?.code && props.project?.code) {
+      console.log("oaossss");
+      const dto = new LinkCreateDto();
+      (dto.title = link.title?.slice(0, 20)),
+        (dto.url = link.url),
+        (dto.projectCode = props.project.code);
+
+      await LinkService.create(dto);
+      const [newLink] = await LinkService.findAllByProjectCode(
+        props.project.code
+      );
+      props.onAddToBoard?.(newLink);
+    } else {
+      console.log("oaowr33r3r3");
+      props.onAddToBoard?.(link);
+    }
+  };
+
   return (
     <Modal
       visible={props.visible}
@@ -122,7 +148,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
           {/* Seção do Projeto - APENAS se houver projeto */}
           {props.project?.code && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Do projeto</Text>
+              <Text style={styles.sectionTitle}>Deste projeto</Text>
               {projectLinks.length > 0 ? (
                 projectLinks.map(renderLinkCard)
               ) : (
