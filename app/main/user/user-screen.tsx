@@ -3,11 +3,20 @@ import LinksProjectModal from "@/components/links-project-modal";
 import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
+import { PreferencesService } from "@/services/preferences/preferences.service";
 import { UserActivityService } from "@/services/user_activity/user_activity.service";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -26,7 +35,7 @@ export default function UserScreen() {
     images: 0,
     links: 0,
     sketchs: 0,
-    projects: 0
+    projects: 0,
   });
 
   const userCode = userData?.code;
@@ -46,9 +55,22 @@ export default function UserScreen() {
         loadUserFromStorage();
       } else {
         loadUserStats();
+        loadUserInterests();
       }
     }, [userData, loadUserStats])
   );
+
+  const loadUserInterests = useCallback(async () => {
+    console.log("loadUserInterests");
+    try {
+      console.log("try");
+      const preferences = await PreferencesService.find();
+      setInterests(preferences.interests || []);
+    } catch (error: any) {
+      console.log("catch");
+      setInterests([]);
+    }
+  }, []);
 
   const loadUserFromStorage = async () => {
     try {
@@ -58,7 +80,11 @@ export default function UserScreen() {
         loadUserStats();
       }
     } catch (error: any) {
-      showToast("error", error.formattedMessage, 'Não foi possível obter os dados do usuário');
+      showToast(
+        "error",
+        error.formattedMessage,
+        "Não foi possível obter os dados do usuário"
+      );
     }
   };
 
@@ -93,15 +119,27 @@ export default function UserScreen() {
   };
 
   const popularInterests = [
-    "Tecnologia", "Esportes", "Música", "Arte", "Leitura",
-    "Culinária", "Viagens", "Fotografia", "Cinema", "Jogos",
-    "Programação", "Design", "Natureza", "Moda", "Carros"
+    "Tecnologia",
+    "Esportes",
+    "Música",
+    "Arte",
+    "Leitura",
+    "Culinária",
+    "Viagens",
+    "Fotografia",
+    "Cinema",
+    "Jogos",
+    "Programação",
+    "Design",
+    "Natureza",
+    "Moda",
+    "Carros",
   ];
 
   const handleInterestInput = (text: string) => {
     setNewInterest(text);
     if (text.length > 1) {
-      const filtered = popularInterests.filter(interest =>
+      const filtered = popularInterests.filter((interest) =>
         interest.toLowerCase().includes(text.toLowerCase())
       );
       setSuggestions(filtered.slice(0, 3));
@@ -110,16 +148,32 @@ export default function UserScreen() {
     }
   };
 
-  const addInterest = (interest: string) => {
+  const addInterest = async (interest: string) => {
     if (interest.trim() && !interests.includes(interest.trim())) {
-      setInterests([...interests, interest.trim()]);
+      const updatedInterests = [...interests, interest.trim()];
+      setInterests(updatedInterests);
       setNewInterest("");
       setSuggestions([]);
+
+      try {
+        await PreferencesService.update({ interests: updatedInterests });
+      } catch (error: any) {
+        showToast("error", error.formattedMessage);
+      }
     }
   };
 
-  const removeInterest = (interestToRemove: string) => {
-    setInterests(interests.filter(interest => interest !== interestToRemove));
+  const removeInterest = async (interestToRemove: string) => {
+    const updatedInterests = interests.filter(
+      (interest) => interest !== interestToRemove
+    );
+    setInterests(updatedInterests);
+
+    try {
+      await PreferencesService.update({ interests: updatedInterests });
+    } catch (error: any) {
+      showToast("error", "Erro ao remover interesse");
+    }
   };
 
   // Função para construir a URI da imagem do avatar
@@ -161,11 +215,14 @@ export default function UserScreen() {
           </View>
 
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userData?.name || 'Usuário'}</Text>
-            <Text style={styles.userNickname}>@{userData?.nickname || ''}</Text>
+            <Text style={styles.userName}>{userData?.name || "Usuário"}</Text>
+            <Text style={styles.userNickname}>@{userData?.nickname || ""}</Text>
           </View>
 
-          <TouchableOpacity style={styles.editProfileButton} onPress={handleEditUser}>
+          <TouchableOpacity
+            style={styles.editProfileButton}
+            onPress={handleEditUser}
+          >
             <Ionicons name="create-outline" size={20} color="#666" />
             <Text style={styles.editButtonText}>Editar</Text>
           </TouchableOpacity>
@@ -173,28 +230,40 @@ export default function UserScreen() {
 
         {/* Quick Actions Grid */}
         <View style={styles.actionsGrid}>
-          <TouchableOpacity style={styles.actionCard} onPress={handleOpenImagesModal}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleOpenImagesModal}
+          >
             <View style={[styles.actionIcon]}>
               <Ionicons name="image" size={30} color="#2196F3" />
             </View>
             <Text style={styles.actionTitle}>Imagens</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={handleOpenLinksModal}>
-            <View style={[styles.actionIcon,]}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleOpenLinksModal}
+          >
+            <View style={[styles.actionIcon]}>
               <Ionicons name="link" size={30} color="#81c091ff" />
             </View>
             <Text style={styles.actionTitle}>Links</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={handleOpenNotesModal}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleOpenNotesModal}
+          >
             <View style={[styles.actionIcon]}>
               <Ionicons name="document-text" size={30} color="#FF9800" />
             </View>
             <Text style={styles.actionTitle}>Anotações</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={handleOpenChecklistsModal}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleOpenChecklistsModal}
+          >
             <View style={[styles.actionIcon]}>
               <Ionicons name="list" size={30} color="#FF9500" />
             </View>
@@ -251,7 +320,11 @@ export default function UserScreen() {
                     onPress={() => addInterest(suggestion)}
                   >
                     <Text style={styles.suggestionText}>{suggestion}</Text>
-                    <Ionicons name="add-circle-outline" size={16} color="#666" />
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={16}
+                      color="#666"
+                    />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -277,7 +350,7 @@ export default function UserScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#666" />
+          <Ionicons name="log-out-outline" size={20} color="#eb2121ff" />
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -287,7 +360,6 @@ export default function UserScreen() {
         userCode={userCode}
         visible={showImagesModal}
         onClose={() => setShowImagesModal(false)}
-
       />
 
       <LinksProjectModal
@@ -316,15 +388,15 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     padding: 20,
     borderRadius: 12,
     margin: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -346,122 +418,122 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#CCCCCC',
+    borderColor: "#CCCCCC",
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
+    fontWeight: "bold",
+    color: "#1A1A1A",
     marginBottom: 4,
   },
   userNickname: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   editProfileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     gap: 4,
   },
   editButtonText: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 10,
   },
   actionCard: {
-    width: '47%',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    width: "47%",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
   },
   actionIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
   actionTitle: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
   },
   section: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: "#F0F0F0",
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
+    fontWeight: "bold",
+    color: "#1A1A1A",
     marginBottom: 16,
   },
   interestsInputContainer: {
     marginBottom: 16,
   },
   interestsInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     fontSize: 14,
   },
   suggestionsContainer: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
+    borderColor: "#E0E0E0",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
   suggestionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   suggestionText: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   interestsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   interestTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E3F2FD',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E3F2FD",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -469,55 +541,56 @@ const styles = StyleSheet.create({
   },
   interestText: {
     fontSize: 14,
-    color: '#1976D2',
-    fontWeight: '500',
+    color: "#1976D2",
+    fontWeight: "500",
   },
   noInterestsText: {
     fontSize: 14,
-    color: '#999',
-    fontStyle: 'italic',
-    textAlign: 'center',
+    color: "#999",
+    fontStyle: "italic",
+    textAlign: "center",
     paddingVertical: 20,
   },
   statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 8,
   },
   statCard: {
     flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
     padding: 12,
     borderRadius: 8,
     minWidth: 0,
   },
   statNumber: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
+    fontWeight: "bold",
+    color: "#1A1A1A",
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 11,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8F9FA',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8F9FA",
     margin: 20,
+    marginBottom: 0,
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#eb2121ff",
     gap: 8,
   },
   logoutText: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
+    color: "#eb2121ff",
+    fontWeight: "500",
   },
 });

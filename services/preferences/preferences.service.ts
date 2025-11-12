@@ -3,16 +3,14 @@ import { Preferences } from "./preferences";
 import { PreferencesUpdateDto } from "./preferences.update.dto";
 
 export class PreferencesService {
+  static async update(preferences: PreferencesUpdateDto): Promise<Preferences> {
+    console.log("preferences ", preferences);
+    const response = await api.put<Preferences>(`/preferences`, preferences);
+    return response.data;
+  }
 
-    static async update(userCode: number, preferences: PreferencesUpdateDto): Promise<Preferences> {
-        const response = await api.put<Preferences>(`/preferences/${userCode}`, preferences);
-        return response.data;
-    }
-
-    static async findByCode(userCode: number): Promise<Preferences> {
-        const response = await api.get(`/preferences/${userCode}`);
-        return response.data;
-    }
-
-
+  static async find(): Promise<Preferences> {
+    const response = await api.get(`/preferences`);
+    return response.data;
+  }
 }
