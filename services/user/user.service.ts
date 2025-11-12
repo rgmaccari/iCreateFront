@@ -4,19 +4,20 @@ import { User } from "./user";
 
 
 export class UserService {
-
   static async create(user: Omit<FormData, "code" | "createdAt" | "alteratedAt">): Promise<User> {
-    const response = await api.post<User>("/users", user, {
+    const response = await api.post<{ access_token: string; user: User }>("/users", user, {
       headers: {
         "Content-Type": "multipart/form-data"
       }
     });
 
-    if (response && response.data) {
-      AuthService.registerInMemory(response.data, await AuthService.getToken() || '');
+    const { access_token, user: userData } = response.data;
+
+    if (userData && access_token) {
+      await AuthService.registerInMemory(userData, access_token);
     }
 
-    return response.data;
+    return userData;
   }
 
   static async update(code: number, user: FormData): Promise<User> {

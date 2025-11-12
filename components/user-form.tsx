@@ -61,7 +61,7 @@ export default function UserForm(props: UpdateUserFormProps) {
                         uri: user.avatarBase64.startsWith("data:image") ? user.avatarBase64 : `data:image/jpeg;base64,${user.avatarBase64}`,
                         name: "avatar.jpg",
                         mimeType: "image/jpeg",
-                        } : null,
+                    } : null,
 
                 };
                 setForm(mapped);
@@ -227,6 +227,7 @@ export default function UserForm(props: UpdateUserFormProps) {
                                         style={[styles.input, errors.password && styles.inputError]}
                                         placeholder="Senha"
                                         secureTextEntry
+                                        autoCapitalize="none"
                                         value={form.password}
                                         onChangeText={(t) => handleFieldChange("password", t)}
                                     />
@@ -236,6 +237,7 @@ export default function UserForm(props: UpdateUserFormProps) {
                                         style={[styles.input, errors.confirmPassword && styles.inputError]}
                                         placeholder="Confirmar senha"
                                         secureTextEntry
+                                        autoCapitalize="none"
                                         value={confirmPassword}
                                         onChangeText={setConfirmPassword}
                                     />
