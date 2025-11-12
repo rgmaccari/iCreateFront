@@ -109,9 +109,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
   );
 
   const handleAddToBoard = async (link: Link) => {
-    console.log("oao");
     if (link.projectCode !== props.project?.code && props.project?.code) {
-      console.log("oaossss");
       const dto = new LinkCreateDto();
       (dto.title = link.title?.slice(0, 50)),
         (dto.url = link.url),
@@ -123,7 +121,6 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
       );
       props.onAddToBoard?.(newLink);
     } else {
-      console.log("oaowr33r3r3");
       props.onAddToBoard?.(link);
     }
   };
