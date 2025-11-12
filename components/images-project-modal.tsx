@@ -31,7 +31,14 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
   }, [props.visible]);
 
   const findAllImages = async () => {
-    if (props.project?.code && props.userCode) {
+    //Se não tm projeto definido, carrega apenas todas as imagens
+    if (!props.project?.code && props.userCode) {
+      const allImages = await ImageService.findAllImages();
+      setImages(allImages || []);
+      setProjectImages([]);
+    }
+    //Se tem projeto definido, carrega imagens do projeto e todas as imagens
+    else if (props.project?.code && props.userCode) {
       const allImages = await ImageService.findAllImages();
       setImages(allImages || []);
 
@@ -40,6 +47,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
       );
       setProjectImages(projectImages || []);
     }
+    setLoading(false);
   };
 
   return (
@@ -50,41 +58,55 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
       onRequestClose={props.onClose}
     >
       <SafeAreaView style={styles.container}>
+        {/* Header */}
         <View style={styles.header}>
+          <Ionicons name="image" size={24} color="#70a1d6ff" />
           <Text style={styles.title}>Imagens</Text>
           <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.fixedSection}>
-          <Text style={styles.sectionTitle}>Do projeto</Text>
-          {projectImages.length > 0 ? (
-            <View style={styles.carouselWrapper}>
-              <ImageViewerPanel
-                images={projectImages}
-                viewMode="carousel"
-                onDelete={() => console.log("aopa")}
-                onAddToBoard={props.onAddToBoard}
-              />
-            </View>
-          ) : (
-            <Text style={styles.emptyText}>
-              Nenhuma imagem associada a este projeto.
-            </Text>
-          )}
-        </View>
+        {/* Seção de Imagens do Projeto - APENAS se houver projeto */}
+        {props.project?.code && (
+          <View style={styles.fixedSection}>
+            <Text style={styles.sectionTitle}>Do projeto</Text>
+            {projectImages.length > 0 ? (
+              <View style={styles.carouselWrapper}>
+                <ImageViewerPanel
+                  images={projectImages}
+                  viewMode="carousel"
+                  onDelete={() => console.log("aopa")}
+                  onAddToBoard={props.onAddToBoard}
+                />
+              </View>
+            ) : (
+              <Text style={styles.emptyText}>
+                Nenhuma imagem associada a este projeto.
+              </Text>
+            )}
+          </View>
+        )}
 
+        {/* Seção de Todas as Imagens */}
         <View style={styles.scrollSection}>
-          <Text style={styles.sectionTitle}>Todas</Text>
+          <Text style={styles.sectionTitle}>
+            {props.project?.code ? "Todas as imagens" : "Minhas imagens"}
+          </Text>
           {images.length > 0 ? (
             <ImageViewerPanel
               images={images}
               viewMode="grid"
               onDelete={() => console.log("aopa")}
+              onAddToBoard={props.onAddToBoard}
             />
           ) : (
-            <Text style={styles.emptyText}>Nenhuma imagem encontrada.</Text>
+            <Text style={styles.emptyText}>
+              {props.project?.code
+                ? "Nenhuma imagem encontrada."
+                : "Nenhuma imagem encontrada."
+              }
+            </Text>
           )}
         </View>
       </SafeAreaView>
@@ -104,6 +126,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+    backgroundColor: "#f8f9fa",
   },
   title: {
     fontSize: 20,
@@ -111,12 +134,15 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
   },
   fixedSection: {
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    backgroundColor: "#fafafa",
   },
   carouselWrapper: {
     width: "100%",
@@ -125,20 +151,19 @@ const styles = StyleSheet.create({
   scrollSection: {
     flex: 1,
     padding: 20,
-    paddingTop: 0,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#362946",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   emptyText: {
     color: "#777",
     fontStyle: "italic",
     fontSize: 14,
-    marginTop: 6,
-    marginLeft: 6,
+    marginTop: 8,
+    textAlign: "center",
   },
 });
 

@@ -55,7 +55,7 @@ const LinkModal = (props: LinkModalProps) => {
       >
         <View style={styles.header}>
           <Ionicons name="link" size={24} color="#81c091ff" />
-          <Text style={styles.title}>Adicionar Link</Text>
+          <Text style={styles.title}>Novo link</Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>

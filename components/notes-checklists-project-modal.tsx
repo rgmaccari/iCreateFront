@@ -41,7 +41,18 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
   }, [props.visible]);
 
   const findAllData = async () => {
-    if (props.project?.code && props.userCode) {
+    // Se não há projeto definido, carrega apenas todos os dados
+    if (!props.project?.code && props.userCode) {
+      const allNotes = await NoteService.findAllNotes();
+      const allChecklists = await ChecklistService.findAllChecklists();
+
+      setNotes(allNotes || []);
+      setChecklists(allChecklists || []);
+      setProjectNotes([]);
+      setProjectChecklists([]);
+    }
+    // Se há projeto definido, carrega dados do projeto e todos os dados
+    else if (props.project?.code && props.userCode) {
       const allNotes = await NoteService.findAllNotes();
       const allChecklists = await ChecklistService.findAllChecklists();
 
@@ -55,8 +66,8 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
 
       setProjectNotes(projNotes || []);
       setProjectChecklists(projChecklists || []);
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const renderNote = (note: Note) => (
@@ -94,6 +105,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
+          <Ionicons name="list" size={24} color="#FF9500" />
           <Text style={styles.title}>Anotações e Checklists</Text>
           <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
@@ -101,23 +113,27 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Seção do Projeto */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Do projeto</Text>
+          {/* Seção do Projeto - APENAS se houver projeto */}
+          {props.project?.code && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Do projeto</Text>
 
-            {projectNotes.length === 0 && projectChecklists.length === 0 ? (
-              <Text style={styles.emptyText}>Nenhum item associado a este projeto.</Text>
-            ) : (
-              <>
-                {projectNotes.map(renderNote)}
-                {projectChecklists.map(renderChecklist)}
-              </>
-            )}
-          </View>
+              {projectNotes.length === 0 && projectChecklists.length === 0 ? (
+                <Text style={styles.emptyText}>Nenhum item associado a este projeto.</Text>
+              ) : (
+                <>
+                  {projectNotes.map(renderNote)}
+                  {projectChecklists.map(renderChecklist)}
+                </>
+              )}
+            </View>
+          )}
 
           {/* Todas */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Todas</Text>
+            <Text style={styles.sectionTitle}>
+              {props.project?.code ? "Todas" : "Minhas anotações e checklists"}
+            </Text>
 
             {notes.length === 0 && checklists.length === 0 ? (
               <Text style={styles.emptyText}>Nenhum item encontrado.</Text>
@@ -146,6 +162,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+    backgroundColor: "#f8f9fa",
   },
   title: {
     fontSize: 20,
@@ -153,7 +170,9 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
   },
   content: {
     flex: 1,
@@ -166,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#362946",
-    marginBottom: 10,
+    marginBottom: 16,
   },
   noteCard: {
     backgroundColor: "#f6f6f9",
@@ -208,7 +227,8 @@ const styles = StyleSheet.create({
     color: "#777",
     fontStyle: "italic",
     fontSize: 14,
-    marginTop: 6,
+    marginTop: 8,
+    textAlign: "center",
   },
 });
 

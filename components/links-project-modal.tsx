@@ -39,15 +39,21 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
   }, [props.visible]);
 
   const findAllLinks = async () => {
-    if (props.project?.code && props.userCode) {
+    // Se não há projeto definido, carrega apenas todos os links
+    if (!props.project?.code && props.userCode) {
+      const allLinks = await LinkService.findAllLinks();
+      setLinks(allLinks || []);
+      setProjectLinks([]);
+    }
+    // Se há projeto definido, carrega links do projeto e todos os links
+    else if (props.project?.code && props.userCode) {
       const allLinks = await LinkService.findAllLinks();
       setLinks(allLinks || []);
 
       const projectLinks = await LinkService.findAllByProjectCode(props.project.code);
       setProjectLinks(projectLinks || []);
-
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const openLink = (url?: string) => {
@@ -105,6 +111,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
+          <Ionicons name="link" size={24} color="#81c091ff" />
           <Text style={styles.title}>Links</Text>
           <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
@@ -112,21 +119,25 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
         </View>
 
         <ScrollView style={styles.content}>
-          {/* Seção do Projeto */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Do projeto</Text>
-            {projectLinks.length > 0 ? (
-              projectLinks.map(renderLinkCard)
-            ) : (
-              <Text style={styles.emptyText}>
-                Nenhum link associado a este projeto.
-              </Text>
-            )}
-          </View>
+          {/* Seção do Projeto - APENAS se houver projeto */}
+          {props.project?.code && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Do projeto</Text>
+              {projectLinks.length > 0 ? (
+                projectLinks.map(renderLinkCard)
+              ) : (
+                <Text style={styles.emptyText}>
+                  Nenhum link associado a este projeto.
+                </Text>
+              )}
+            </View>
+          )}
 
           {/* Todas */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Todas</Text>
+            <Text style={styles.sectionTitle}>
+              {props.project?.code ? "Todos os links" : "Meus links"}
+            </Text>
             {links.length > 0 ? (
               links.map(renderLinkCard)
             ) : (
@@ -151,6 +162,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+    backgroundColor: "#f8f9fa",
   },
   title: {
     fontSize: 20,
@@ -158,7 +170,9 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
   },
   content: {
     flex: 1,
@@ -171,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#362946",
-    marginBottom: 10,
+    marginBottom: 16,
   },
   linkCard: {
     flexDirection: "row",
@@ -229,7 +243,8 @@ const styles = StyleSheet.create({
     color: "#777",
     fontStyle: "italic",
     fontSize: 14,
-    marginTop: 6,
+    marginTop: 8,
+    textAlign: "center",
   },
 });
 

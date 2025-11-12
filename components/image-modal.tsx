@@ -118,7 +118,7 @@ const ImageModal = (props: ImageModalProps) => {
         <View style={styles.header}>
           <Ionicons name="image" size={24} color="#70a1d6ff" />
           <Text style={styles.title}>
-            Adicionar Imagens ({selectedImages.length})
+            Nova imagem ({selectedImages.length})
           </Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
