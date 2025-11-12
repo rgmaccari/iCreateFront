@@ -25,7 +25,7 @@ export default function UserScreen() {
   const [userStats, setUserStats] = useState({
     images: 0,
     links: 0,
-    drafts: 0,
+    sketchs: 0,
     projects: 0
   });
 
@@ -216,7 +216,7 @@ export default function UserScreen() {
               <Text style={styles.statLabel}>Links</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{userStats.drafts}</Text>
+              <Text style={styles.statNumber}>{userStats.sketchs}</Text>
               <Text style={styles.statLabel}>Rascunhos</Text>
             </View>
             <View style={styles.statCard}>
