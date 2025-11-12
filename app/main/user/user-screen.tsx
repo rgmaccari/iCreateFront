@@ -34,7 +34,6 @@ export default function UserScreen() {
   const loadUserStats = useCallback(async () => {
     try {
       const stats = await UserActivityService.countDataByUser();
-      console.log(stats);
       setUserStats(stats);
     } catch (error: any) {
       showToast("error", "Erro ao carregar estatísticas");
