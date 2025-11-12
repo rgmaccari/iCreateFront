@@ -508,12 +508,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowProjectLinks(true)}
-            style={styles.zoomButton}>
+            style={styles.zoomButton}
+          >
             <Ionicons name="link" size={18} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowProjectNotes(true)}
-            style={styles.zoomButton}>
+            style={styles.zoomButton}
+          >
             <Ionicons name="document-text" size={18} color="#333" />
           </TouchableOpacity>
         </View>
@@ -524,8 +526,9 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         userCode={props.project?.userCode}
         visible={showProjectImages}
         onClose={() => setShowProjectImages(false)}
-        onAddToBoard={(image) => {
-          handleAddImage(image);
+        onAddToBoard={async (data: any) => {
+          if (!props.project) return;
+          await handleAddImage(data);
           setShowProjectImages(false);
         }}
       />
@@ -535,7 +538,8 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         userCode={props.project?.userCode}
         visible={showProjectNotes}
         onClose={() => setShowProjectNotes(false)}
-        onAddToBoard={(data: any) => {
+        onAddToBoard={async (data: any) => {
+          if (!props.project) return;
           handleAddNote(data);
           setShowProjectNotes(false);
         }}
@@ -546,12 +550,12 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         userCode={props.project?.userCode}
         visible={showProjectLinks}
         onClose={() => setShowProjectLinks(false)}
-        onAddToBoard={(data: any) => {
+        onAddToBoard={async (data: any) => {
+          if (!props.project) return;
           handleAddLink(data);
           setShowProjectLinks(false);
         }}
       />
-
     </GestureHandlerRootView>
   );
 };

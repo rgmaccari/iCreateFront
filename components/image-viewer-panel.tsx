@@ -1,5 +1,5 @@
 import { Image } from "@/services/image/image";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -27,10 +27,6 @@ const CAROUSEL_IMAGE_HEIGHT = 300;
 export default function ImageViewerPanel(props: ImageViewerProps) {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-
-  const [carouselWidth, setCarouselWidth] = useState(screenWidth);
 
   const openViewer = (index: number) => {
     setViewerIndex(index);
@@ -46,7 +42,6 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
 
   //Para scroll infinito
   const imageSources = sortedImages.map((img) => ({ uri: img.url }));
-  const data = [...sortedImages, ...sortedImages, ...sortedImages];
 
   const renderList = () => (
     <FlatList

@@ -50,6 +50,27 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
     setLoading(false);
   };
 
+  const handleAddToBoard = async (image: Image) => {
+    if (image.projectCode != props.project?.code) {
+      const formData = new FormData();
+      formData.append("images", {
+        uri: image.url,
+        type: image.mimeType || "image/jpeg",
+        name: image.filename || `clone_${Date.now()}.jpg`,
+      } as any);
+      formData.append("isCover", String(false));
+
+      await ImageService.create(props.project?.code!, formData);
+      const [newImage] = await ImageService.findAllByProjectCode(
+        props.project?.code!
+      );
+      props.onAddToBoard?.(newImage);
+    } else {
+      console.log("project");
+      props.onAddToBoard?.(image);
+    }
+  };
+
   return (
     <Modal
       visible={props.visible}
@@ -70,14 +91,14 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
         {/* Seção de Imagens do Projeto - APENAS se houver projeto */}
         {props.project?.code && (
           <View style={styles.fixedSection}>
-            <Text style={styles.sectionTitle}>Do projeto</Text>
+            <Text style={styles.sectionTitle}>Deste projeto</Text>
             {projectImages.length > 0 ? (
               <View style={styles.carouselWrapper}>
                 <ImageViewerPanel
                   images={projectImages}
                   viewMode="carousel"
                   onDelete={() => console.log("aopa")}
-                  onAddToBoard={props.onAddToBoard}
+                  onAddToBoard={props.project ? handleAddToBoard : undefined}
                 />
               </View>
             ) : (
@@ -98,14 +119,13 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
               images={images}
               viewMode="grid"
               onDelete={() => console.log("aopa")}
-              onAddToBoard={props.onAddToBoard}
+              onAddToBoard={props.project ? handleAddToBoard : undefined}
             />
           ) : (
             <Text style={styles.emptyText}>
               {props.project?.code
                 ? "Nenhuma imagem encontrada."
-                : "Nenhuma imagem encontrada."
-              }
+                : "Nenhuma imagem encontrada."}
             </Text>
           )}
         </View>
