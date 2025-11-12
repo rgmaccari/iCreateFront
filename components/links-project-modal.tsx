@@ -113,7 +113,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
     if (link.projectCode !== props.project?.code && props.project?.code) {
       console.log("oaossss");
       const dto = new LinkCreateDto();
-      (dto.title = link.title?.slice(0, 20)),
+      (dto.title = link.title?.slice(0, 50)),
         (dto.url = link.url),
         (dto.projectCode = props.project.code);
 
