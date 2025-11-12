@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   projectCard: {
     width: "48%",
     borderRadius: 10,
-    backgroundColor: "#9191d8ff",
+    backgroundColor: "#b8b8ebff",
     padding: 10,
     marginBottom: 12,
     alignItems: "center",

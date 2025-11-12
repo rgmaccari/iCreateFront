@@ -164,7 +164,7 @@ export default function AllProjectsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f0faff",
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",

@@ -3,9 +3,10 @@ import LinksProjectModal from "@/components/links-project-modal";
 import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
-import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { UserActivityService } from "@/services/user_activity/user_activity.service";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,18 +21,43 @@ export default function UserScreen() {
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showChecklistsModal, setShowChecklistsModal] = useState(false);
 
+  //Sem Dto ainda
+  const [userStats, setUserStats] = useState({
+    images: 0,
+    links: 0,
+    drafts: 0,
+    projects: 0
+  });
+
   const userCode = userData?.code;
 
-  useFocusEffect(() => {
-    if (!userData) loadUserFromStorage();
-  });
+  const loadUserStats = useCallback(async () => {
+    try {
+      const stats = await UserActivityService.countDataByUser();
+      console.log(stats);
+      setUserStats(stats);
+    } catch (error: any) {
+      showToast("error", "Erro ao carregar estatísticas");
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userData) {
+        loadUserFromStorage();
+      } else {
+        loadUserStats();
+      }
+    }, [userData, loadUserStats])
+  );
 
   const loadUserFromStorage = async () => {
     try {
       const user = await AuthService.loadUserFromStorage();
-
-      if (user !== undefined) setUserData(AuthService.getUser());
-
+      if (user !== undefined) {
+        setUserData(AuthService.getUser());
+        loadUserStats();
+      }
     } catch (error: any) {
       showToast("error", error.formattedMessage, 'Não foi possível obter os dados do usuário');
     }
@@ -99,8 +125,10 @@ export default function UserScreen() {
 
   // Função para construir a URI da imagem do avatar
   const getAvatarUri = () => {
-    if (userData?.avatarBase64 && userData?.avatarMimeType) {
-      return `data:${userData.avatarMimeType};base64,${userData.avatarBase64}`;
+    if (userData?.avatarBase64) {
+      return userData.avatarBase64.startsWith("data:image")
+        ? userData.avatarBase64
+        : `data:image/jpeg;base64,${userData.avatarBase64}`;
     }
     return null;
   };
@@ -147,32 +175,55 @@ export default function UserScreen() {
         {/* Quick Actions Grid */}
         <View style={styles.actionsGrid}>
           <TouchableOpacity style={styles.actionCard} onPress={handleOpenImagesModal}>
-            <View style={[styles.actionIcon, { backgroundColor: '#E8F4FD' }]}>
-              <Ionicons name="image" size={20} color="#2196F3" />
+            <View style={[styles.actionIcon]}>
+              <Ionicons name="image" size={30} color="#2196F3" />
             </View>
             <Text style={styles.actionTitle}>Imagens</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionCard} onPress={handleOpenLinksModal}>
-            <View style={[styles.actionIcon, { backgroundColor: '#F0F8FF' }]}>
-              <FontAwesome5 name="link" size={16} color="#1976D2" />
+            <View style={[styles.actionIcon,]}>
+              <Ionicons name="link" size={30} color="#81c091ff" />
             </View>
             <Text style={styles.actionTitle}>Links</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionCard} onPress={handleOpenNotesModal}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FFF8E1' }]}>
-              <Ionicons name="document-text" size={20} color="#FF9800" />
+            <View style={[styles.actionIcon]}>
+              <Ionicons name="document-text" size={30} color="#FF9800" />
             </View>
             <Text style={styles.actionTitle}>Anotações</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionCard} onPress={handleOpenChecklistsModal}>
-            <View style={[styles.actionIcon, { backgroundColor: '#F3E5F5' }]}>
-              <MaterialIcons name="checklist" size={20} color="#7B1FA2" />
+            <View style={[styles.actionIcon]}>
+              <Ionicons name="list" size={30} color="#FF9500" />
             </View>
             <Text style={styles.actionTitle}>Checklists</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Stats Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Estatísticas</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{userStats.images}</Text>
+              <Text style={styles.statLabel}>Imagens</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{userStats.links}</Text>
+              <Text style={styles.statLabel}>Links</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{userStats.drafts}</Text>
+              <Text style={styles.statLabel}>Rascunhos</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{userStats.projects}</Text>
+              <Text style={styles.statLabel}>Projetos</Text>
+            </View>
+          </View>
         </View>
 
         {/* Interests Section */}
@@ -222,29 +273,6 @@ export default function UserScreen() {
                 Nenhum interesse adicionado. Comece digitando acima!
               </Text>
             )}
-          </View>
-        </View>
-
-        {/* Stats Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Estatísticas</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>Imagens</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>8</Text>
-              <Text style={styles.statLabel}>Links</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>5</Text>
-              <Text style={styles.statLabel}>Anotações</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>3</Text>
-              <Text style={styles.statLabel}>Checklists</Text>
-            </View>
           </View>
         </View>
 
