@@ -128,16 +128,20 @@ const ImageModal = (props: ImageModalProps) => {
         <View style={styles.content}>
           <ScrollView style={styles.scrollView}>
             {/* Componente "Selecionar da Galeria" sempre visível */}
-            <TouchableOpacity
-              style={styles.pickImageButton}
-              onPress={pickImages}
-            >
-              <Ionicons name="images" size={48} color="#ccc" />
-              <Text style={styles.pickImageText}>Selecionar da Galeria</Text>
-              <Text style={styles.pickImageSubtext}>
-                Múltiplas imagens permitidas
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.imageSection}>
+              <TouchableOpacity
+                style={styles.imagePickerButton}
+                onPress={pickImages}
+              >
+                <Ionicons name="cloud-upload" size={32} color="#70A0D6" />
+                <Text style={styles.imagePickerText}>
+                  Selecionar da Galeria
+                </Text>
+                <Text style={styles.imagePickerSubtext}>
+                  Toque para escolher uma ou várias imagens
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Lista de imagens selecionadas */}
             {selectedImages.length > 0 && (
@@ -293,6 +297,30 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  imageSection: {
+    gap: 16,
+  },
+  imagePickerButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+    borderRadius: 12,
+    backgroundColor: "#f5f9ff",
+    borderWidth: 2,
+    borderColor: "#4870c0ff",
+    borderStyle: "dashed",
+  },
+  imagePickerText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#374151",
+    marginTop: 8,
+  },
+  imagePickerSubtext: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 4,
   },
 });
 

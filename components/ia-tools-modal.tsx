@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -29,8 +28,6 @@ interface IaToolsProps {
   onClose: () => void;
   project?: Project;
 }
-
-const { width } = Dimensions.get("window");
 
 export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
   const [mode, setMode] = useState<ToolMode>(null);
