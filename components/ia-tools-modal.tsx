@@ -41,9 +41,10 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(
-    null
-  );
+  const [recordingTimer, setRecordingTimer] = useState<ReturnType<
+    typeof setInterval
+  > | null>(null);
+
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const geminiService = new GeminiService();
@@ -246,13 +247,12 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
           style={styles.keyboardView}
         >
           {/* Header */}
+
           <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Ionicons name="sparkles" size={24} color="#d67370" />
-              <Text style={styles.title}>Assistente de I.A.</Text>
-            </View>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons name="close" size={24} color="#6B7280" />
+            <Ionicons name="sparkles" size={24} color="#d67370" />
+            <Text style={styles.title}>Assistente de I.A.</Text>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
@@ -497,11 +497,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-    backgroundColor: "#fffafa",
+    borderBottomColor: "#e0e0e0",
   },
   headerContent: {
     flexDirection: "row",
@@ -510,8 +508,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#2d3748",
+    fontWeight: "bold",
+    color: "#333",
   },
   closeButton: {
     padding: 4,
