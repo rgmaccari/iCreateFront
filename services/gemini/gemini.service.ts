@@ -2,7 +2,6 @@ import api from "../api/api";
 
 export class GeminiService {
   async transcribeAudio(fileUri: string) {
-    console.log("acionando img transcribe");
     const formData = new FormData();
     formData.append("file", {
       uri: fileUri,
@@ -29,6 +28,6 @@ export class GeminiService {
       headers: { "Content-Type": "multipart/form-data" },
     });
     console.log("service - transcribe image", response.data);
-    return response.data;
+    return response.data.content;
   }
 }

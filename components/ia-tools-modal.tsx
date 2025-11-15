@@ -1,5 +1,7 @@
 import { showToast } from "@/constants/showToast";
 import { GeminiService } from "@/services/gemini/gemini.service";
+import { NoteCreateDto } from "@/services/notes/note.create.dto";
+import { NoteService } from "@/services/notes/note.service";
 import { Project } from "@/services/project/project";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
@@ -21,7 +23,7 @@ import {
 } from "react-native";
 import { TextInput } from "react-native-paper";
 
-type ToolMode = "audio" | "readImage" | "generateImage" | null;
+type ToolMode = "audio" | "readImage" | null;
 
 interface IaToolsProps {
   visible: boolean;
@@ -29,12 +31,11 @@ interface IaToolsProps {
   project?: Project;
 }
 
-export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
+export default function IaToolsModal(props: IaToolsProps) {
   const [mode, setMode] = useState<ToolMode>(null);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -42,13 +43,17 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     typeof setInterval
   > | null>(null);
 
+  //Anotacoes
+  const [resultText, setResultText] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
+
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const geminiService = new GeminiService();
 
   //Animação de entrada
   React.useEffect(() => {
-    if (visible) {
+    if (props.visible) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
@@ -57,7 +62,7 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     } else {
       fadeAnim.setValue(0);
     }
-  }, [visible]);
+  }, [props.visible]);
 
   //Áudio
   async function requestAudioPermissions() {
@@ -154,6 +159,36 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     }
   }
 
+  //Salvar anotacao
+  async function saveNote() {
+    try {
+      if (!props.project?.code) {
+        showToast("error", "Projeto inválido.");
+        return;
+      }
+
+      const dto: NoteCreateDto = {
+        title: noteTitle,
+        description: resultText,
+        projectCode: props.project.code,
+      };
+
+      await NoteService.create(dto);
+
+      showToast("success", "Anotação criada!");
+
+      setNoteTitle("");
+      setResultText("");
+
+      //Voltar?
+      setMode(null);
+
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro ao salvar anotação.");
+    }
+  }
+
   //Ações
   async function handleExecute() {
     if (!mode) return;
@@ -162,20 +197,17 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
       setIsLoading(true);
       let result;
 
-      if (mode === "generateImage") {
-        if (!prompt.trim()) {
-          showToast("info", "Descreva a imagem!");
-          return;
-        }
-        result = await geminiService.transcribeImage(prompt);
-      }
-
       if (mode === "readImage" && imageUri) {
         result = await geminiService.transcribeImage(imageUri);
+        setResultText(result ?? "");
+        setNoteTitle("Transcrição");
       }
 
       if (mode === "audio" && audioUri) {
         result = await geminiService.transcribeAudio(audioUri);
+
+        setResultText(result ?? "");
+        setNoteTitle("Transcrição");
       }
 
       showToast("success", "Operação concluída com sucesso!");
@@ -192,10 +224,12 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
     setMode(null);
     setAudioUri(null);
     setImageUri(null);
-    setPrompt("");
     setRecording(null);
     setIsRecording(false);
     setRecordingDuration(0);
+    setNoteTitle("");
+    setResultText("");
+
     if (recordingTimer) {
       clearInterval(recordingTimer);
       setRecordingTimer(null);
@@ -214,26 +248,25 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
             text: "Sair",
             onPress: () => {
               resetAll();
-              onClose();
+              props.onClose();
             },
           },
         ]
       );
     } else {
       resetAll();
-      onClose();
+      props.onClose();
     }
   }
 
   const canExecute =
     mode &&
-    ((mode === "generateImage" && prompt.trim()) ||
-      (mode === "readImage" && imageUri) ||
+    ((mode === "readImage" && imageUri) ||
       (mode === "audio" && audioUri));
 
   return (
     <Modal
-      visible={visible}
+      visible={props.visible}
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
@@ -318,35 +351,6 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                     Ler Imagem
                   </Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.modeCard,
-                    mode === "generateImage" && styles.modeCardActive,
-                  ]}
-                  onPress={() => setMode("generateImage")}
-                >
-                  <View
-                    style={[
-                      styles.modeIconContainer,
-                      mode === "generateImage" && styles.modeIconActive,
-                    ]}
-                  >
-                    <Ionicons
-                      name="color-palette"
-                      size={24}
-                      color={mode === "generateImage" ? "#d67370" : "#6B7280"}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      styles.modeCardText,
-                      mode === "generateImage" && styles.modeCardTextActive,
-                    ]}
-                  >
-                    Gerar Imagem
-                  </Text>
-                </TouchableOpacity>
               </View>
             </View>
 
@@ -356,7 +360,6 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                 <Text style={styles.sectionTitle}>
                   {mode === "audio" && "Gravar Áudio"}
                   {mode === "readImage" && "Analisar Imagem"}
-                  {mode === "generateImage" && "Criar Imagem"}
                 </Text>
 
                 {mode === "audio" && (
@@ -436,43 +439,68 @@ export default function IaToolsModal({ visible, onClose }: IaToolsProps) {
                   </View>
                 )}
 
-                {mode === "generateImage" && (
-                  <View style={styles.promptSection}>
-                    <TextInput
-                      label="Descreva a imagem que deseja criar..."
-                      mode="outlined"
-                      value={prompt}
-                      onChangeText={setPrompt}
-                      style={styles.textInput}
-                      multiline
-                      numberOfLines={4}
-                      outlineColor="#E5E7EB"
-                      activeOutlineColor="#d67370"
-                    />
-                    <Text style={styles.promptHint}>
-                      Seja específico e detalhado para melhores resultados
-                    </Text>
-                  </View>
-                )}
+                {/* Se resultado existe → permite criar anotação */}
+                {(mode === "audio" || mode === "readImage") &&
+                  resultText !== "" && (
+                    <View style={{ marginTop: 16, gap: 12 }}>
+                      <Text style={styles.sectionTitle}>
+                        Transformar em Anotação
+                      </Text>
+
+                      <TextInput
+                        label="Título"
+                        value={noteTitle}
+                        onChangeText={setNoteTitle}
+                        mode="outlined"
+                        style={styles.textInput}
+                        outlineColor="#E5E7EB"
+                        activeOutlineColor="#d67370"
+                      />
+
+                      <TextInput
+                        label="Descrição"
+                        value={resultText}
+                        onChangeText={setResultText}
+                        mode="outlined"
+                        multiline
+                        numberOfLines={6}
+                        style={[styles.textInput, { height: 150 }]}
+                        outlineColor="#E5E7EB"
+                        activeOutlineColor="#d67370"
+                      />
+
+                      <TouchableOpacity
+                        style={[styles.executeButton]}
+                        onPress={saveNote}
+                      >
+                        <Ionicons name="save" size={20} color="#fff" />
+                        <Text style={styles.executeText}>
+                          Salvar como Anotação
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
                 {/* Botão de Execução */}
-                <TouchableOpacity
-                  style={[
-                    styles.executeButton,
-                    (!canExecute || isLoading) && styles.executeButtonDisabled,
-                  ]}
-                  disabled={!canExecute || isLoading}
-                  onPress={handleExecute}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Ionicons name="flash" size={20} color="#fff" />
-                  )}
-                  <Text style={styles.executeText}>
-                    {isLoading ? "Processando..." : "Executar"}
-                  </Text>
-                </TouchableOpacity>
+                {resultText === "" && (
+                  <TouchableOpacity
+                    style={[
+                      styles.executeButton,
+                      (!canExecute || isLoading) && styles.executeButtonDisabled,
+                    ]}
+                    disabled={!canExecute || isLoading}
+                    onPress={handleExecute}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Ionicons name="flash" size={20} color="#fff" />
+                    )}
+                    <Text style={styles.executeText}>
+                      {isLoading ? "Processando..." : "Executar"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </ScrollView>
@@ -664,16 +692,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
   },
-  promptSection: {
-    gap: 8,
-  },
   textInput: {
     backgroundColor: "#fffafa",
-  },
-  promptHint: {
-    fontSize: 12,
-    color: "#6B7280",
-    fontStyle: "italic",
   },
   executeButton: {
     flexDirection: "row",
