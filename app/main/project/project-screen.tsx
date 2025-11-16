@@ -562,23 +562,33 @@ export default function ProjectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f0faff",
+    backgroundColor: "#FFFFFF",
   },
+
   contentContainer: {
     flex: 1,
+    backgroundColor: "#FFFFFF",
   },
+
   viewContent: {
     flex: 1,
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    margin: 16,
   },
+
   viewTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#362946",
+    color: "#1A1A1A",
     marginBottom: 10,
   },
+
   viewText: {
     fontSize: 14,
     color: "#666",
@@ -586,3 +596,4 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+

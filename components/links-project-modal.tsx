@@ -99,12 +99,14 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => props.onAddToBoard?.(link)}
-      >
-        <Ionicons name="add" size={20} color="#fff" />
-      </TouchableOpacity>
+      {props.project?.code && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => props.onAddToBoard?.(link)}
+        >
+          <Ionicons name="add" size={20} color="#fff" />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
   },
   linkUrl: {
     fontSize: 13,
-    color: "#007aff",
+    color: "#81c091ff",
     marginTop: 2,
   },
   linkDate: {
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#007aff",
+    backgroundColor: "#81c091ff",
     justifyContent: "center",
     alignItems: "center",
   },

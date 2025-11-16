@@ -93,8 +93,8 @@ export default function ProjectGrid(props: ProjectGridProps) {
       item.__type === "image"
         ? "image"
         : item.__type === "link"
-        ? "link"
-        : "sticky-note";
+          ? "link"
+          : "sticky-note";
 
     return (
       <TouchableOpacity
@@ -210,22 +210,33 @@ export default function ProjectGrid(props: ProjectGridProps) {
             type === "image"
               ? "image"
               : type === "link"
-              ? "link"
-              : "document-text";
+                ? "link"
+                : "document-text";
+
           const isActive = activeFilters.includes(type);
+          const color =
+            type === "image"
+              ? "#2196F3"
+              : type === "link"
+                ? "#4CAF50"
+                : "#FFB300";
+
           return (
             <TouchableOpacity
               key={type}
               onPress={() => toggleFilter(type)}
               style={[
                 styles.filterButton,
-                isActive && styles.filterButtonActive,
+                isActive && {
+                  backgroundColor: color + "22",
+                  borderColor: color,
+                },
               ]}
             >
               <Ionicons
                 name={iconName}
                 size={20}
-                color={isActive ? "#fff" : "#362946"}
+                color={isActive ? color : "#666"}
               />
             </TouchableOpacity>
           );
@@ -261,117 +272,143 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
+    backgroundColor: "#FFFFFF",
   },
+
   label: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 4,
-    color: "#362946",
+    color: "#1A1A1A",
   },
+
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
+    color: "#1A1A1A",
   },
+
   multiline: {
     textAlignVertical: "top",
     height: 100,
   },
+
   filterContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginBottom: 8,
   },
+
   filterButton: {
     width: 30,
     height: 30,
-    borderWidth: 0.5,
-    //borderColor: "#362946",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 6,
-    //backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 6,
   },
+
   filterButtonActive: {
-    backgroundColor: "#d6a867ff",
+    backgroundColor: "#F8F9FA",
+    borderColor: "#C5C5C5",
   },
+
   gridContainer: {
     justifyContent: "space-between",
   },
+
   gridItem: {
     flex: 1 / 3,
     aspectRatio: 1,
     margin: 1,
     position: "relative",
-    backgroundColor: "#eee",
+    backgroundColor: "#F8F9FA",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
+
   gridImage: {
     width: "100%",
     height: "100%",
   },
+
   placeholder: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ddd",
+    backgroundColor: "#E0E0E0",
   },
+
   iconFooter: {
     position: "absolute",
     bottom: 4,
     right: 4,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
     borderRadius: 6,
     padding: 2,
   },
+
   modalFullScreen: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
   },
+
   modalContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
   },
+
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#362946",
+    color: "#1A1A1A",
     marginBottom: 8,
   },
+
   modalText: {
     fontSize: 16,
-    color: "#362946",
+    color: "#666666",
     marginBottom: 8,
     textAlign: "center",
   },
+
   coverBadge: {
     fontSize: 14,
-    color: "green",
-    fontWeight: "bold",
+    color: "#1A1A1A",
+    fontWeight: "600",
     marginBottom: 8,
   },
+
   fullImage: {
     width: "100%",
     height: "70%",
     borderRadius: 8,
     marginBottom: 16,
   },
+
   modalCloseButton: {
-    backgroundColor: "#362946",
+    backgroundColor: "#7B1FA2",
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
   },
+
   modalCloseText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontWeight: "bold",
     textAlign: "center",
   },
 });
+
