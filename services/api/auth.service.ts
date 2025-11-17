@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../user/user";
 import api from "./api";
+import websocketService from "./websocket.service";
 
 export class AuthService {
   private static currentUser: User | null = null;
@@ -15,6 +16,7 @@ export class AuthService {
   }
 
   static async logout(): Promise<void> {
+    websocketService.disconnect();
     await AsyncStorage.removeItem('access_token');
     await AsyncStorage.removeItem('current_user');
     AuthService.currentUser = null;
