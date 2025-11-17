@@ -1,4 +1,3 @@
-// app/feed/Template3.tsx
 import { showToast } from "@/constants/showToast";
 import { FeedItem } from "@/services/feed/feed";
 import { FeedService } from "@/services/feed/feed.service";
@@ -27,7 +26,6 @@ export default function FeedScreen() {
     const [otherItems, setOtherItems] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // States para o modal de projetos
     const [projects, setProjects] = useState<ProjectPreview[]>([]);
     const [showProjectModal, setShowProjectModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
