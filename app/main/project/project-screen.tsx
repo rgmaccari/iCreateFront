@@ -178,14 +178,16 @@ export default function ProjectScreen() {
 
   const loadProjectItems = async (code: number) => {
     try {
-      const [loadedImages, loadedLinks, loadedNotes] = await Promise.all([
+      const [loadedImages, loadedLinks, loadedNotes, loadedChecklists] = await Promise.all([
         ImageService.findAllByProjectCode(code),
         LinkService.findAllByProjectCode(code),
         NoteService.findAllByProjectCode(code),
+        ChecklistService.findAllByProjectCode(code)
       ]);
       setImages(loadedImages || []);
       setLinks(loadedLinks || []);
       setNotes(loadedNotes || []);
+      setChecklists(loadedChecklists || [])
     } catch (err) {
       console.error("Erro ao carregar itens do projeto:", err);
     }
@@ -344,6 +346,13 @@ export default function ProjectScreen() {
     }
   };
 
+  const reloadChecklists = async () => {
+    if (projectCode) {
+      const updatedChecklists = await ChecklistService.findAllByProjectCode(projectCode);
+      setChecklists(updatedChecklists || []);
+    }
+  };
+
   //Alteração dinâmica no título
   const handleTitleChange = (newTitle: string) => {
     setFormData((prev) => ({ ...prev, title: newTitle }));
@@ -399,22 +408,26 @@ export default function ProjectScreen() {
     if (task === "archive") {
       if (type === "image") {
         await ImageService.deleteByCode(code);
+        setImages(prev => prev.filter(img => img.code !== code));
         showToast("success", "Imagem removida!");
       }
 
       if (type === "link") {
         await LinkService.deleteByCode(code);
+        setLinks(prev => prev.filter(link => link.code !== code));
         showToast("success", "Link removido!");
       }
 
       if (type === "checklist") {
         await ChecklistService.deleteByCode(code);
+        setChecklists(prev => prev.filter(checklist => checklist.code !== code));
         showToast("success", "Checklist removido!");
       }
 
       if (type === "note") {
         console.log("acessou aqui");
         await NoteService.deleteByCode(code);
+        setNotes(prev => prev.filter(note => note.code !== code));
         showToast("success", "Anotação removida!");
       }
       return;
@@ -462,6 +475,8 @@ export default function ProjectScreen() {
             onUpdateNote={reloadNotes}
             onUpdateLinks={reloadLinks}
             onUpdateImages={reloadImages}
+            onUpdateChecklists={reloadChecklists}
+            onDelete={(code, type) => handleDelete(code, "archive", type)}
           />
         );
       default:
@@ -473,6 +488,11 @@ export default function ProjectScreen() {
             links={links}
             notes={notes}
             checklists={checklists}
+            onUpdateNote={reloadNotes}
+            onUpdateLinks={reloadLinks}
+            onUpdateImages={reloadImages}
+            onUpdateChecklists={reloadChecklists}
+            onDelete={(code, type) => handleDelete(code, "archive", type)}
           />
         );
     }

@@ -5,8 +5,9 @@ import { LinkService } from "@/services/link/link.service";
 import { Note } from "@/services/notes/note";
 import { Project } from "@/services/project/project";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   Linking,
   Modal,
@@ -20,12 +21,14 @@ import {
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 
 import { showToast } from "@/constants/showToast";
+import { ChecklistDto } from "@/services/checklist/checklist.dto";
+import { ChecklistService } from "@/services/checklist/checklist.service";
 import { NoteService } from "@/services/notes/note.service";
 import * as Clipboard from 'expo-clipboard';
 import ImageViewing from "react-native-image-viewing";
 
-type CombinedItem = (Image | Link | Note) & {
-  __type: "image" | "link" | "note";
+type CombinedItem = (Image | Link | Note | Checklist) & {
+  __type: "image" | "link" | "note" | "checklist";
 };
 
 interface ProjectGridProps {
@@ -38,6 +41,8 @@ interface ProjectGridProps {
   onUpdateNote?: () => void;
   onUpdateLinks?: () => void;
   onUpdateImages?: () => void;
+  onUpdateChecklists?: () => void;
+  onDelete?: (code: number, type: "image" | "link" | "note" | "checklist") => void;
 }
 
 export default function ProjectGrid(props: ProjectGridProps) {
@@ -45,12 +50,12 @@ export default function ProjectGrid(props: ProjectGridProps) {
     title: props.project?.title || "",
     sketch: props.project?.sketch || "",
   }); //Title e Description do Project
-  const [selectedItem, setSelectedItem] = useState<Image | Link | Note | null>(
+  const [selectedItem, setSelectedItem] = useState<Image | Link | Note | Checklist | null>(
     null
   ); //Item acessado
   const [modalVisible, setModalVisible] = useState(false); //Visibilidade do modal
   const [activeFilters, setActiveFilters] = useState<
-    ("image" | "link" | "note")[]
+    ("image" | "link" | "note" | "checklist")[]
   >([]); //Filtros ativos
 
   // No componente ProjectGrid, adicionar APENAS estes estados:
@@ -60,19 +65,32 @@ export default function ProjectGrid(props: ProjectGridProps) {
   const [editableNoteDescription, setEditableNoteDescription] = useState("");
   const [isEditingNote, setIsEditingNote] = useState(false);
 
+  // Estados para edição do checklist
+  const [editingChecklist, setEditingChecklist] = useState<Checklist | null>(null);
+  const [newChecklistItem, setNewChecklistItem] = useState("");
+  const [isEditingChecklist, setIsEditingChecklist] = useState(false);
+  const lastChecklistItemRef = useRef<TextInput | null>(null);
+
   //Notificar a tela pai (projectScreen) quando o form mudar
   useEffect(() => {
     props.onChange(form);
   }, [form, props.onChange]);
 
   //Abrir modal com o objeto em tela cheia
-  const openItemModal = (item: Image | Link | Note) => {
+  const openItemModal = (item: Image | Link | Note | Checklist) => {
     setSelectedItem(item);
     setModalVisible(true);
+
+    // Se for um checklist, inicializa os estados de edição
+    if ("itens" in item) {
+      setEditingChecklist(JSON.parse(JSON.stringify(item)));
+      setEditableTitle(item.title || "");
+      setIsEditingChecklist(false);
+    }
   };
 
   // Alternar filtros (permitindo múltiplos)
-  const toggleFilter = (type: "image" | "link" | "note") => {
+  const toggleFilter = (type: "image" | "link" | "note" | "checklist") => {
     setActiveFilters((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
@@ -84,6 +102,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
       ...props.images.map((i) => ({ ...i, __type: "image" as const })),
       ...props.links.map((l) => ({ ...l, __type: "link" as const })),
       ...props.notes.map((n) => ({ ...n, __type: "note" as const })),
+      ...props.checklists.map((n) => ({ ...n, __type: "checklist" as const })),
     ];
 
     return all.sort((a, b) => {
@@ -91,7 +110,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
       const db = (b as any).updatedAt || (b as any).createdAt || "";
       return new Date(db).getTime() - new Date(da).getTime();
     });
-  }, [props.images, props.links, props.notes]);
+  }, [props.images, props.links, props.notes, props.checklists]);
 
   // Aplica os filtros ativos
   const filteredItems = useMemo(() => {
@@ -99,31 +118,175 @@ export default function ProjectGrid(props: ProjectGridProps) {
     return combinedItems.filter((item) => activeFilters.includes(item.__type));
   }, [activeFilters, combinedItems]);
 
-  //Renderizar o item de grid (imagem, link ou nota)
+  const getItemTypeName = (type: string) => {
+    switch (type) {
+      case "image": return "imagem";
+      case "link": return "link";
+      case "note": return "nota";
+      case "checklist": return "checklist";
+      default: return "item";
+    }
+  };
+
+  //Funções para edição do checklist
+  const updateChecklistItem = (index: number, text: string) => {
+    if (!editingChecklist) return;
+
+    setEditingChecklist(prev => ({
+      ...prev!,
+      itens: prev!.itens.map((item, i) =>
+        i === index ? { ...item, text } : item
+      )
+    }));
+    setIsEditingChecklist(true);
+  };
+
+  const toggleChecklistItem = (index: number) => {
+    if (!editingChecklist) return;
+
+    setEditingChecklist(prev => ({
+      ...prev!,
+      itens: prev!.itens.map((item, i) =>
+        i === index ? { ...item, checked: !item.checked } : item
+      )
+    }));
+    setIsEditingChecklist(true);
+  };
+
+  const removeChecklistItem = (index: number) => {
+    if (!editingChecklist) return;
+
+    setEditingChecklist(prev => ({
+      ...prev!,
+      itens: prev!.itens.filter((_, i) => i !== index)
+    }));
+    setIsEditingChecklist(true);
+  };
+
+  const moveChecklistItem = (fromIndex: number, toIndex: number) => {
+    if (!editingChecklist) return;
+
+    const items = [...editingChecklist.itens];
+    const [movedItem] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, movedItem);
+
+    setEditingChecklist(prev => ({
+      ...prev!,
+      itens: items
+    }));
+    setIsEditingChecklist(true);
+  };
+
+  const addChecklistItem = () => {
+    if (!editingChecklist || !newChecklistItem.trim()) return;
+
+    setEditingChecklist(prev => ({
+      ...prev!,
+      itens: [
+        ...prev!.itens,
+        {
+          text: newChecklistItem.trim(),
+          checked: false,
+          sort: prev!.itens.length
+        }
+      ]
+    }));
+
+    setNewChecklistItem("");
+    setIsEditingChecklist(true);
+
+    setTimeout(() => {
+      lastChecklistItemRef.current?.focus();
+    }, 50);
+  };
+
+  const handleSaveChecklist = async () => {
+    if (!editingChecklist) return;
+
+    try {
+      const dto: ChecklistDto = {
+        title: editableTitle.trim() || "Checklist",
+        itens: editingChecklist.itens.map((item, index) => ({
+          text: item.text.trim(),
+          checked: item.checked,
+          sort: index
+        })),
+        projectCode: editingChecklist.projectCode
+      };
+
+      await ChecklistService.update(editingChecklist.code, dto);
+      showToast('success', 'Checklist atualizado com sucesso!');
+      setIsEditingChecklist(false);
+
+      if (props.onUpdateChecklists) {
+        props.onUpdateChecklists();
+      }
+
+      setModalVisible(false);
+    } catch (error: any) {
+      showToast('error', error.formattedMessage || 'Erro ao salvar checklist');
+    }
+  };
+
+  //Renderizar o item de grid (imagem, link, nota ou checklist)
   const renderGridItem = ({ item }: { item: any }) => {
     let imageUri: string | undefined;
     if (item.__type === "image") imageUri = item.url;
     if (item.__type === "link") imageUri = item.previewImageUrl || undefined;
-    // notas não têm imagem
+    //checklists e notas não têm imagem
 
     const iconName =
       item.__type === "image"
         ? "image"
         : item.__type === "link"
           ? "link"
-          : "sticky-note";
+          : item.__type === 'checklist'
+            ? "check-square"
+            : "sticky-note";
+
+    const handleLongPress = () => {
+      Alert.alert(
+        "Excluir item",
+        `Deseja excluir este ${getItemTypeName(item.__type)}?`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Excluir",
+            style: "destructive",
+            onPress: () => {
+              if (props.onDelete && item.code) {
+                props.onDelete(item.code, item.__type);
+              }
+            },
+          },
+        ]
+      );
+    };
 
     return (
       <TouchableOpacity
         style={styles.gridItem}
         onPress={() => openItemModal(item)}
+        onLongPress={handleLongPress}
         activeOpacity={0.8}
+        delayLongPress={500}
       >
         {imageUri ? (
           <RNImage source={{ uri: imageUri }} style={styles.gridImage} />
         ) : (
-          <View style={styles.placeholder}>
+          <View style={[
+            styles.placeholder,
+            item.__type === 'checklist' && styles.checklistPlaceholder
+          ]}>
             <FontAwesome name={iconName} size={30} color="#888" />
+            {/* Mostrar progresso do checklist no grid */}
+            {item.__type === 'checklist' && (
+              <View style={styles.checklistBadge}>
+                <Text style={styles.checklistBadgeText}>
+                  {item.itens?.filter((i: any) => i.checked).length || 0}/{item.itens?.length || 0}
+                </Text>
+              </View>
+            )}
           </View>
         )}
         <View style={styles.iconFooter}>
@@ -133,8 +296,170 @@ export default function ProjectGrid(props: ProjectGridProps) {
     );
   };
 
-  //Renderizar o item modal tela cheia (imagem, link ou nota)
-  // No ProjectGrid, substituir APENAS a função renderItemModal:
+  // Nova função para renderizar modal do checklist editável
+  const renderChecklistModal = (checklist: Checklist) => {
+    const completed = editingChecklist?.itens?.filter((i) => i.checked).length || 0;
+    const total = editingChecklist?.itens?.length || 0;
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+
+    return (
+      <View style={styles.previewOverlay}>
+        <View style={styles.previewCard}>
+          {/* Header com título à esquerda e botão fechar à direita */}
+          <View style={[styles.modalHeader, { alignItems: "flex-start" }]}>
+            <TextInput
+              style={[
+                styles.checklistTitleInput,
+                { flex: 1 },
+                !editableTitle && { color: "#9CA3AF" }
+              ]}
+              value={editableTitle || ""}
+              onChangeText={(text) => {
+                setEditableTitle(text);
+                setIsEditingChecklist(true);
+              }}
+              placeholder="Informe um título"
+              placeholderTextColor="#9CA3AF"
+              onFocus={() => setIsEditingChecklist(true)}
+              multiline
+            />
+
+            <TouchableOpacity
+              style={styles.previewCloseButton}
+              onPress={() => {
+                if (isEditingChecklist) {
+                  Alert.alert(
+                    "Alterações não salvas",
+                    "Deseja salvar as alterações?",
+                    [
+                      { text: "Cancelar", style: "cancel" },
+                      { text: "Não salvar", style: "destructive", onPress: () => setModalVisible(false) },
+                      { text: "Salvar", onPress: handleSaveChecklist }
+                    ]
+                  );
+                } else {
+                  setModalVisible(false);
+                }
+              }}
+            >
+              <Ionicons name="close" size={24} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Barra de progresso - atualizada em tempo real */}
+          <View style={styles.checklistProgress}>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${progress}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {completed}/{total} concluídos
+            </Text>
+          </View>
+
+          {/* Lista de itens editável */}
+          <ScrollView style={styles.checklistItemsContainer}>
+            {editingChecklist?.itens?.map((item, index) => (
+              <View key={index} style={styles.checklistItem}>
+                <TouchableOpacity
+                  style={[
+                    styles.checkbox,
+                    item.checked && styles.checkboxChecked,
+                  ]}
+                  onPress={() => toggleChecklistItem(index)}
+                >
+                  {item.checked && (
+                    <Ionicons name="checkmark" size={12} color="#fff" />
+                  )}
+                </TouchableOpacity>
+
+                <TextInput
+                  ref={index === editingChecklist.itens.length - 1 ? lastChecklistItemRef : null}
+                  style={[
+                    styles.checklistItemInput,
+                    item.checked && styles.checklistItemInputChecked,
+                  ]}
+                  value={item.text}
+                  onChangeText={(text) => updateChecklistItem(index, text)}
+                  placeholder="Digite o item..."
+                  placeholderTextColor="#999"
+                />
+
+                {/* Botões de ordenação e remoção */}
+                <View style={styles.checklistItemActions}>
+                  {index > 0 && (
+                    <TouchableOpacity
+                      style={styles.moveButton}
+                      onPress={() => moveChecklistItem(index, index - 1)}
+                    >
+                      <Ionicons name="chevron-up" size={16} color="#666" />
+                    </TouchableOpacity>
+                  )}
+
+                  {index < editingChecklist.itens.length - 1 && (
+                    <TouchableOpacity
+                      style={styles.moveButton}
+                      onPress={() => moveChecklistItem(index, index + 1)}
+                    >
+                      <Ionicons name="chevron-down" size={16} color="#666" />
+                    </TouchableOpacity>
+                  )}
+
+                  <TouchableOpacity
+                    style={styles.removeChecklistItemButton}
+                    onPress={() => removeChecklistItem(index)}
+                  >
+                    <Ionicons name="close" size={16} color="#ff3b30" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Input para novo item */}
+          <View style={styles.newChecklistItemContainer}>
+            <TextInput
+              style={styles.newChecklistItemInput}
+              value={newChecklistItem}
+              onChangeText={setNewChecklistItem}
+              placeholder="Digite um novo item..."
+              placeholderTextColor="#999"
+              onSubmitEditing={addChecklistItem}
+              returnKeyType="done"
+            />
+            <TouchableOpacity
+              style={[
+                styles.addChecklistItemButton,
+                !newChecklistItem.trim() && styles.addChecklistItemButtonDisabled,
+              ]}
+              onPress={addChecklistItem}
+              disabled={!newChecklistItem.trim()}
+            >
+              <Ionicons
+                name="add"
+                size={20}
+                color={newChecklistItem.trim() ? "#fff" : "#ccc"}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Botão salvar */}
+          {isEditingChecklist && (
+            <TouchableOpacity
+              style={styles.saveChecklistButton}
+              onPress={handleSaveChecklist}
+            >
+              <Ionicons name="checkmark-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.saveChecklistButtonText}>Salvar Alterações</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  //Renderizar o item modal tela cheia (imagem, link, nota ou checklist)
   const renderItemModal = () => {
     if (!selectedItem) return null;
 
@@ -160,7 +485,6 @@ export default function ProjectGrid(props: ProjectGridProps) {
           setIsEditingLink(false);
           //Atualizar o item selecionado com o novo título
           setSelectedItem({ ...selectedItem, title: editableTitle });
-
 
           showToast('success', 'Nota atualizada!');
 
@@ -193,10 +517,11 @@ export default function ProjectGrid(props: ProjectGridProps) {
       return (
         <View style={styles.linkModalOverlay}>
           <View style={styles.linkModalCard}>
-            {/* Header com botão fechar */}
-            <View style={styles.linkModalHeader}>
+            {/* Header com título à esquerda e botão fechar à direita */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderTitle}>Editar Link</Text>
               <TouchableOpacity
-                style={styles.linkModalCloseButton}
+                style={styles.previewCloseButton}
                 onPress={() => {
                   setModalVisible(false);
                   setIsEditingLink(false);
@@ -264,7 +589,11 @@ export default function ProjectGrid(props: ProjectGridProps) {
           </View>
         </View>
       );
+    } else if ("itens" in selectedItem) {
+      //É um Checklist
+      return renderChecklistModal(selectedItem as Checklist);
     } else {
+      //É uma Note
       const note = selectedItem as Note;
 
       const handleSaveNote = async () => {
@@ -296,27 +625,37 @@ export default function ProjectGrid(props: ProjectGridProps) {
       return (
         <View style={styles.previewOverlay}>
           <View style={styles.previewCard}>
-            <TouchableOpacity
-              style={styles.previewCloseButton}
-              onPress={() => {
-                setModalVisible(false);
-                setIsEditingNote(false);
-                setEditableNoteTitle("");
-                setEditableNoteDescription("");
-              }}
-            >
-              <Ionicons name="close" size={24} color="#6B7280" />
-            </TouchableOpacity>
+            {/* Header com título à esquerda e botão fechar à direita */}
+            <View style={[styles.modalHeader, { alignItems: "flex-start" }]}>
+              <TextInput
+                style={[
+                  styles.noteTitleInput,
+                  { flex: 1 },
+                  !(editableNoteTitle || note.title) && { color: "#9CA3AF" }
+                ]}
+                value={editableNoteTitle || note.title || ""}
+                onChangeText={setEditableNoteTitle}
+                placeholder="Informe um título"
+                placeholderTextColor="#9CA3AF"
+                onFocus={() => setIsEditingNote(true)}
+                multiline
+              />
 
-            {/* Título editável */}
-            <TextInput
-              style={styles.noteTitleInput}
-              value={editableNoteTitle || note.title || ""}
-              onChangeText={setEditableNoteTitle}
-              placeholder="Título da nota"
-              onFocus={() => setIsEditingNote(true)}
-              multiline
-            />
+              <TouchableOpacity
+                style={styles.previewCloseButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  setIsEditingNote(false);
+                  setEditableNoteTitle("");
+                  setEditableNoteDescription("");
+                }}
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+
+
 
             {/* Descrição editável */}
             <ScrollView style={styles.previewBody}>
@@ -362,13 +701,15 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
         {/* Filtro por tipo */}
         <View style={styles.filterContainer}>
-          {(["image", "link", "note"] as const).map((type) => {
+          {(["image", "link", "note", "checklist"] as const).map((type) => {
             const iconName =
               type === "image"
                 ? "image"
                 : type === "link"
                   ? "link"
-                  : "document-text";
+                  : type === "checklist"
+                    ? "checkbox"
+                    : "document-text";
 
             const isActive = activeFilters.includes(type);
             const color =
@@ -376,7 +717,9 @@ export default function ProjectGrid(props: ProjectGridProps) {
                 ? "#2196F3"
                 : type === "link"
                   ? "#4CAF50"
-                  : "#FFB300";
+                  : type === "checklist"
+                    ? "#9C27B0"
+                    : "#FFB300";
 
             return (
               <TouchableOpacity
@@ -502,6 +845,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#E0E0E0",
   },
 
+  checklistPlaceholder: {
+    backgroundColor: '#F3E5F5',
+  },
+
+  checklistBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+
+  checklistBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+
   iconFooter: {
     position: "absolute",
     bottom: 4,
@@ -575,20 +938,21 @@ const styles = StyleSheet.create({
   },
   previewCard: {
     width: "100%",
-    maxHeight: "80%",
+    maxHeight: "90%",
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
     position: "relative",
   },
+  previewHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginBottom: 16,
+  },
   previewCloseButton: {
-    position: "absolute",
-    top: 12,
-    right: 12,
     padding: 6,
     borderRadius: 20,
     backgroundColor: "#F3F4F6",
-    zIndex: 1,
   },
   previewTitle: {
     fontSize: 18,
@@ -605,7 +969,143 @@ const styles = StyleSheet.create({
     color: "#374151",
     lineHeight: 22,
   },
-  // Adicionar APENAS estes estilos ao StyleSheet:
+  // Header consistente para todos os modais
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  modalHeaderTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+  // Estilos para checklist
+  checklistTitleInput: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    paddingVertical: 8,
+    textAlign: "center",
+  },
+  checklistProgress: {
+    marginBottom: 16,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 3,
+    overflow: "hidden",
+    marginBottom: 4,
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#4CAF50",
+    borderRadius: 3,
+  },
+  progressText: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  checklistItemsContainer: {
+    maxHeight: 400,
+    marginBottom: 16,
+  },
+  checklistItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+    marginBottom: 8,
+    gap: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: "#FF9500",
+    borderColor: "#FF9500",
+  },
+  checklistItemInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+  },
+  checklistItemInputChecked: {
+    textDecorationLine: "line-through",
+    color: "#666",
+  },
+  checklistItemActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  moveButton: {
+    padding: 4,
+  },
+  removeChecklistItemButton: {
+    padding: 4,
+  },
+  newChecklistItemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  newChecklistItemInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  addChecklistItemButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#FF9500",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addChecklistItemButtonDisabled: {
+    backgroundColor: "#ddd",
+  },
+  saveChecklistButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: "#FF9500",
+    gap: 8,
+  },
+  saveChecklistButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyText: {
+    color: "#9CA3AF",
+    fontStyle: "italic",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  // Estilos para link modal
   linkModalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.85)",
@@ -678,6 +1178,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#FFFFFF",
   },
+  // Estilos para note
   noteTitleInput: {
     fontSize: 18,
     fontWeight: "700",
@@ -711,4 +1212,3 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
-
