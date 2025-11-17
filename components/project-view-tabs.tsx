@@ -1,5 +1,5 @@
 // components/project-view-tabs.tsx
-import { ClipboardList, FileText, LayoutDashboard } from "lucide-react-native"; // ícones modernos
+import { ClipboardList, LayoutDashboard } from "lucide-react-native"; // ícones modernos
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -15,7 +15,7 @@ const ProjectViewMode: React.FC<ProjectViewModeProps> = (
 ) => {
   //Cada item
   const tabs = [
-    { id: "document" as ProjectViewMode, label: "Documento", icon: FileText },
+    //{ id: "document" as ProjectViewMode, label: "Documento", icon: FileText },
     { id: "board" as ProjectViewMode, label: "Board", icon: LayoutDashboard },
     { id: "form" as ProjectViewMode, label: "Arquivos", icon: ClipboardList },
   ];
