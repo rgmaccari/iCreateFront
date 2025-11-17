@@ -3,18 +3,18 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function UserScreen() {
+export default function ForYou() {
   const { user } = useLocalSearchParams();
   const userData: User = user ? JSON.parse(user as string) : null;
 
   const handleSelect = (screen: number) => {
-    if (screen === 1) router.push('/feed/feed');
+    if (screen === 1) router.push('/main/feed/for-you');
 
-    if (screen === 2) router.push('/feed/pinterest');
+    if (screen === 2) router.push('/main/feed/pinterest');
 
-    if (screen === 3) router.push('/feed/sla');
+    if (screen === 3) router.push('/main/feed/sla');
 
-    if (screen === 4) router.push('/feed/lucid');
+    if (screen === 4) router.push('/main/feed/lucid');
   }
 
   return (
