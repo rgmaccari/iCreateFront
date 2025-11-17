@@ -74,6 +74,11 @@ export default function UserRegisterScreen() {
         if (form.nickname) formData.append("nickname", form.nickname);
         if (form.password) formData.append("password", form.password);
 
+        if (!userData) {
+            if (form.securityQuestion) formData.append("securityQuestion", form.securityQuestion);
+            if (form.securityAnswer) formData.append("securityAnswer", form.securityAnswer);
+        }
+
         if (form.avatar) {
             formData.append("avatar", {
                 uri: form.avatar.uri,

@@ -26,6 +26,13 @@ interface UpdateUserFormProps {
     onDelete?: () => void;
 }
 
+//Perguntas de segurança
+const SECURITY_QUESTIONS = [
+    "Qual o nome do seu primeiro animal de estimação?",
+    "Qual o nome da sua cidade natal?",
+    "Qual o nome do seu melhor amigo de infância?",
+];
+
 export default function UserForm(props: UpdateUserFormProps) {
     const { image, pickImage } = useImagePicker();
     const navigation = useNavigation();
@@ -42,18 +49,24 @@ export default function UserForm(props: UpdateUserFormProps) {
         nickname: "",
         password: "",
         avatar: null,
+        securityQuestion: "",
+        securityAnswer: ""
     });
     const [initialForm, setInitialForm] = useState<UserDto>(form);
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isDirty, setIsDirty] = useState(false);
 
+    // Estados para o dropdown de perguntas de segurança
+    const [showQuestionsDropdown, setShowQuestionsDropdown] = useState(false);
+    const [selectedQuestion, setSelectedQuestion] = useState("");
+
     //Preencher os ddados existentes (if hasUser)
     useEffect(() => {
         if (props.hasUser) {
             const user = AuthService.getUser();
             if (user) {
-                const mapped = {
+                const mapped: UserDto = {
                     name: user.name || "",
                     nickname: user.nickname || "",
                     password: "",
@@ -62,10 +75,12 @@ export default function UserForm(props: UpdateUserFormProps) {
                         name: "avatar.jpg",
                         mimeType: "image/jpeg",
                     } : null,
-
+                    // Não incluir securityQuestion e securityAnswer para usuário existente
                 };
                 setForm(mapped);
                 setInitialForm(mapped);
+                // Se quiser preencher a pergunta selecionada, faça separadamente
+                // setSelectedQuestion(user.securityQuestion || "");
             }
         }
     }, [props.hasUser]);
@@ -91,7 +106,9 @@ export default function UserForm(props: UpdateUserFormProps) {
             form.nickname !== initialForm.nickname ||
             (form.avatar?.uri !== initialForm.avatar?.uri) ||
             (!!form.password && form.password !== initialForm.password) ||
-            !!passwordForm.newPassword;
+            !!passwordForm.newPassword ||
+            form.securityQuestion !== initialForm.securityQuestion ||
+            form.securityAnswer !== initialForm.securityAnswer;
         setIsDirty(changed);
     }, [form, passwordForm, initialForm]);
 
@@ -128,6 +145,10 @@ export default function UserForm(props: UpdateUserFormProps) {
                 newErrors.password = "Senha deve ter pelo menos 6 caracteres";
             if (form.password !== confirmPassword)
                 newErrors.confirmPassword = "As senhas não coincidem";
+
+            // Validação das perguntas de segurança apenas para novo usuário
+            if (!form.securityQuestion?.trim()) newErrors.securityQuestion = "Pergunta de segurança é obrigatória";
+            if (!form.securityAnswer?.trim()) newErrors.securityAnswer = "Resposta de segurança é obrigatória";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -174,6 +195,14 @@ export default function UserForm(props: UpdateUserFormProps) {
     const handlePasswordFieldChange = (field: string, value: string) => {
         setPasswordForm((prev) => ({ ...prev, [field]: value }));
         if (passwordErrors[field]) setPasswordErrors((prev) => ({ ...prev, [field]: "" }));
+    };
+
+    // Função para selecionar uma pergunta de segurança
+    const handleSelectQuestion = (question: string) => {
+        setSelectedQuestion(question);
+        setForm((prev) => ({ ...prev, securityQuestion: question }));
+        setShowQuestionsDropdown(false);
+        if (errors.securityQuestion) setErrors((prev) => ({ ...prev, securityQuestion: "" }));
     };
 
     return (
@@ -244,6 +273,57 @@ export default function UserForm(props: UpdateUserFormProps) {
                                     {errors.confirmPassword && (
                                         <Text style={styles.errorText}>{errors.confirmPassword}</Text>
                                     )}
+
+                                    {/* Dropdown de Perguntas de Segurança */}
+                                    <View style={styles.securitySection}>
+                                        <Text style={styles.sectionLabel}>Pergunta de Segurança</Text>
+
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.dropdownButton,
+                                                errors.securityQuestion && styles.inputError
+                                            ]}
+                                            onPress={() => setShowQuestionsDropdown(!showQuestionsDropdown)}
+                                        >
+                                            <Text style={selectedQuestion ? styles.dropdownText : styles.dropdownPlaceholder}>
+                                                {selectedQuestion || "Selecione uma pergunta de segurança"}
+                                            </Text>
+                                            <FontAwesome
+                                                name={showQuestionsDropdown ? "chevron-up" : "chevron-down"}
+                                                size={16}
+                                                color="#666"
+                                            />
+                                        </TouchableOpacity>
+                                        {errors.securityQuestion && (
+                                            <Text style={styles.errorText}>{errors.securityQuestion}</Text>
+                                        )}
+
+                                        {/* Dropdown de perguntas */}
+                                        {showQuestionsDropdown && (
+                                            <View style={styles.dropdownList}>
+                                                {SECURITY_QUESTIONS.map((question, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => handleSelectQuestion(question)}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{question}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        )}
+
+                                        {/* Campo de resposta */}
+                                        <TextInput
+                                            style={[styles.input, errors.securityAnswer && styles.inputError]}
+                                            placeholder="Resposta de segurança"
+                                            value={form.securityAnswer}
+                                            onChangeText={(t) => handleFieldChange("securityAnswer", t)}
+                                        />
+                                        {errors.securityAnswer && (
+                                            <Text style={styles.errorText}>{errors.securityAnswer}</Text>
+                                        )}
+                                    </View>
                                 </>
                             )}
 
@@ -385,4 +465,53 @@ const styles = StyleSheet.create({
     cancelButtonText: { color: "#666", fontSize: 16, fontWeight: "500" },
     confirmButton: { backgroundColor: "#9191d8ff" },
     confirmButtonText: { color: "white", fontSize: 16, fontWeight: "500" },
+    // Estilos para a seção de segurança
+    securitySection: {
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    sectionLabel: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#333",
+        marginBottom: 8,
+    },
+    dropdownButton: {
+        backgroundColor: "#FFF",
+        borderWidth: 1,
+        borderColor: "#E8DCCE",
+        padding: 12,
+        borderRadius: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 8,
+    },
+    dropdownText: {
+        fontSize: 16,
+        color: "#333",
+        flex: 1,
+    },
+    dropdownPlaceholder: {
+        fontSize: 16,
+        color: "#999",
+        flex: 1,
+    },
+    dropdownList: {
+        backgroundColor: "#FFF",
+        borderWidth: 1,
+        borderColor: "#E8DCCE",
+        borderRadius: 10,
+        marginBottom: 8,
+        maxHeight: 200,
+    },
+    dropdownItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+    },
+    dropdownItemText: {
+        fontSize: 14,
+        color: "#333",
+    },
 });

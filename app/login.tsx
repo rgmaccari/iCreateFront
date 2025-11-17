@@ -1,14 +1,27 @@
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function LoginScreen() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
   const router = useRouter();
+
   const [nicknameError, setNicknameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
 
@@ -26,25 +39,38 @@ export default function LoginScreen() {
 
     try {
       const user = await AuthService.login(nickname, password);
-      router.replace("/main/user/user-screen");
+      if (user) router.replace("/main/user/user-screen");
     } catch (error: any) {
       showToast("error", error.formattedMessage || "Erro inesperado!", "Verifique suas informações.");
     }
   };
 
   const handleCreate = () => {
-    router.push('/user-register-screen');
+    router.push("/user-register-screen");
+  };
+
+  const handleForgotPassword = () => {
+    router.push("/recover-password-security");
+  };
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} //Ajustar após testar em iPhone
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Image source={require("@/assets/images/icon-with-name.png")} style={styles.logo} resizeMode="contain" />
+        <Image
+          source={require("@/assets/images/icon-with-name.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
+        {/* Nickname */}
         <TextInput
           style={[styles.input, nicknameError && styles.inputError]}
           placeholder="Digite seu apelido..."
@@ -58,32 +84,61 @@ export default function LoginScreen() {
           }}
         />
 
-        <TextInput
-          style={[styles.input, passwordError && styles.inputError]}
-          placeholder="Senha"
-          placeholderTextColor="#7A7A7A"
-          value={password}
-          secureTextEntry
-          autoCapitalize="none"
-          maxLength={20}
-          onChangeText={(text) => {
-            setPassword(text);
-            setPasswordError(false);
-          }}
-        />
+        {/* Password com olho */}
+        <View
+          style={[
+            styles.inputContainer,
+            passwordError && styles.inputError,
+          ]}
+        >
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Senha"
+            placeholderTextColor="#7A7A7A"
+            value={password}
+            secureTextEntry={!isPasswordVisible}
+            autoCapitalize="none"
+            maxLength={20}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError(false);
+            }}
+          />
 
+          <TouchableOpacity
+            onPress={togglePasswordVisibility}
+            style={styles.eyeIcon}
+          >
+            <Feather
+              name={isPasswordVisible ? "eye-off" : "eye"}
+              size={20}
+              color="#7A7A7A"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Esqueci minha senha */}
+        <TouchableOpacity
+          style={styles.forgotPasswordLink}
+          onPress={handleForgotPassword}
+        >
+          <Text style={{ fontSize: 12, textDecorationLine: "underline" }}>
+            Esqueceu a senha?
+          </Text>
+        </TouchableOpacity>
+
+        {/* Botão Entrar */}
         <TouchableOpacity style={styles.button} onPress={login}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
-        <View style={styles.options}>
-          <TouchableOpacity onPress={handleCreate}>
-            <Text style={styles.linkText}>Cadastro</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCreate}>
-            <Text style={styles.linkText}>Esqueci minha senha</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Cadastro */}
+        <TouchableOpacity style={styles.options} onPress={handleCreate}>
+          <Text style={styles.linkText}>
+            Primeiro acesso?{" "}
+            <Text style={styles.underlinedLinkText}>Cadastre-se</Text>
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -100,14 +155,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
   },
-  inputError: {
-    borderColor: "#ff4d4d",
-  },
+
   logo: {
     width: 150,
     height: 150,
     marginBottom: 30,
   },
+
   input: {
     width: "100%",
     backgroundColor: "#FFF",
@@ -119,6 +173,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
+
+  inputError: {
+    borderColor: "#ff4d4d",
+  },
+
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E8DCCE",
+    borderRadius: 10,
+    marginBottom: 19,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  eyeIcon: {
+    padding: 12,
+  },
+
+  forgotPasswordLink: {
+    width: "100%",
+    alignItems: "flex-start",
+    marginBottom: 10,
+    marginTop: -15,
+  },
+
   button: {
     backgroundColor: "#9191d8ff",
     paddingVertical: 14,
@@ -128,12 +214,14 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginTop: 25,
   },
   buttonText: {
     color: "#fdfdfdff",
     fontSize: 16,
     fontWeight: "600",
   },
+
   options: {
     alignItems: "center",
   },
@@ -141,6 +229,8 @@ const styles = StyleSheet.create({
     color: "#505063ff",
     fontSize: 12,
     marginTop: 14,
+  },
+  underlinedLinkText: {
     textDecorationLine: "underline",
   },
 });

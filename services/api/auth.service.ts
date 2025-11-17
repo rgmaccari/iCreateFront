@@ -48,4 +48,29 @@ export class AuthService {
   static async getToken(): Promise<string | null> {
     return AsyncStorage.getItem('access_token');
   }
+
+  static async checkNickname(nickname: string): Promise<{ question: string; answer: string }> {
+    const response = await api.post<{
+      valid: boolean;
+      questions: { question: string; answer: string };
+    }>('/auth/recovery/check-nickname', { nickname });
+
+    //Se chegou aqui, valid é true (caso contrário o beck já lançou exceção)
+    return response.data.questions;
+  }
+
+  static async validateSecurityAnswers(nickname: string, securityAnswersJson: string): Promise<any> {
+    const response = await api.post('/auth/recovery/validate-answers', {
+      nickname,
+      securityAnswers: securityAnswersJson
+    });
+    return response.data;
+  }
+
+  static async resetPasswordBySecurity(nickname: string, newPassword: string): Promise<void> {
+    await api.post('/auth/recovery/reset-password', {
+      nickname,
+      newPassword
+    });
+  }
 }

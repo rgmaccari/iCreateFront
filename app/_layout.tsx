@@ -9,6 +9,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" />
         <Stack.Screen name="user-register-screen" />
         <Stack.Screen name="main" />
+        <Stack.Screen name="recover-password-security" />
       </Stack>
       <Toast />
     </>
