@@ -1,6 +1,7 @@
 import UserForm from "@/components/user-update-form";
 import { showToast } from "@/constants/showToast";
 import { AuthService } from "@/services/api/auth.service";
+import { User } from "@/services/user/user";
 import { UserService } from "@/services/user/user.service";
 import { UserDto } from "@/services/user/user.update.dto";
 import { Feather } from "@expo/vector-icons";
@@ -11,17 +12,25 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserRegisterScreen() {
     const router = useRouter();
-    const [userData, setUserData] = useState(AuthService.getUser());
+    const [userData, setUserData] = useState<User | null>(AuthService.getUser());
 
     const create = async (formData: FormData) => {
         try {
-            const user = await UserService.create(formData);
+            const response = await UserService.create(formData);
+
+            const user = response.user;
+            const token = response.access_token;
+            if (!user || !token) {
+                 throw new Error("Resposta inválida do servidor ao criar usuário.");
+            }
+            AuthService.registerInMemory(user, token);
             setUserData(user);
             showToast("success", "Sucesso", "Usuário criado com sucesso!");
             router.replace("/main/project/all-projects-screen");
-        } catch (err) {
+        } catch (err: any) {
             console.error("Erro ao criar usuário:", err);
-            showToast("error", "Erro", "Falha ao criar usuário.");
+            const message = err.response?.data?.message || "Falha ao criar usuário.";
+            showToast("error", "Erro", message);
         }
     };
 
@@ -30,11 +39,13 @@ export default function UserRegisterScreen() {
             if (!userData) return;
             const updatedUser = await UserService.update(userData.code!, formData);
             setUserData(updatedUser);
+            AuthService.registerInMemory(updatedUser, await AuthService.getToken() || '');
             showToast("success", "Sucesso", "Usuário atualizado com sucesso!");
             router.back();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Erro ao atualizar usuário:", err);
-            showToast("error", "Erro", "Falha ao atualizar usuário.");
+            const message = err.response?.data?.message || "Falha ao atualizar usuário.";
+            showToast("error", "Erro", message);
         }
     };
 
@@ -75,13 +86,16 @@ export default function UserRegisterScreen() {
         if (form.name) formData.append("name", form.name);
         if (form.nickname) formData.append("nickname", form.nickname);
         if (form.password) formData.append("password", form.password);
+        if (form.securityAnswers) formData.append("securityAnswers", form.securityAnswers);
 
-        if (form.avatar) {
-            formData.append("avatar", {
-                uri: form.avatar.uri,
-                type: form.avatar.mimeType,
-                name: form.avatar.name,
-            } as any);
+        if (form.avatar && form.avatar.uri) {
+            if (form.avatar.uri.startsWith('file:')) {
+                formData.append("avatar", {
+                    uri: form.avatar.uri,
+                    type: form.avatar.mimeType,
+                    name: form.avatar.name,
+                } as any);
+            }
         }
 
         if (userData) {
@@ -101,11 +115,13 @@ export default function UserRegisterScreen() {
                 <Feather name="arrow-left" size={28} color="#555" />
             </TouchableOpacity>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Text style={styles.welcomeText}>Seja bem vindo ao ICreate!</Text>  
+                <Text style={styles.welcomeText}>Seja bem vindo ao ICreate!</Text>
                 <UserForm
-                  onSubmit={handleSubmit}
-                  hasUser={!!userData}
-                onDelete={userData ? () => deleteUser(userData.code) : undefined}/>
+                    onSubmit={handleSubmit}
+                    hasUser={!!userData}
+                    onDelete={userData ? () => deleteUser(userData.code) : undefined}
+                    initialData={userData}
+                />
             </ScrollView>
         </SafeAreaView>
     );
@@ -115,21 +131,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#f2f0faff",
-  },
-  backButton: {
+    },
+    backButton: {
         position: "absolute",
         top: 60,
         left: 24,
         zIndex: 10,
-  },
-  scrollContainer: {
+    },
+    scrollContainer: {
         flexGrow: 1,
         justifyContent: "flex-start",
         alignItems: "center",
         paddingHorizontal: 24,
         paddingTop: 120,
         paddingBottom: 50,
-  },
+    },
     welcomeText: {
         fontSize: 26,
         fontWeight: "500",

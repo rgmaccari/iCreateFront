@@ -25,10 +25,14 @@ export default function LoginScreen() {
   const handleCreate = () => {
     router.push('/user-register-screen');
   }
-  //Função para alternar a visibilidade da senha
+  const handleForgotPassword = () => {
+    router.push('/recover-password-security'); 
+  }
+ 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
+  
 
   return (
     <View style={styles.container}>
@@ -46,7 +50,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.passwordInput} 
           placeholder="Senha"
-          placeholderTextColor="#999"
+          placeholderTextColor="#7A7A7A"
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!isPasswordVisible} 
@@ -56,15 +60,15 @@ export default function LoginScreen() {
           style={styles.eyeIcon}
         >
           <Feather
-            name={isPasswordVisible ? "eye-off" : "eye"} // Alterna o ícone
+            name={isPasswordVisible ? "eye-off" : "eye"}
             size={20}
-            color="#999"
+            color="#7A7A7A"
           />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.forgotPasswordLink}>
-        <Text style={[styles.linkText, styles.underlinedLinkText]}>Esqueceu a senha?</Text>
+      <TouchableOpacity style={styles.forgotPasswordLink} onPress={handleForgotPassword}>
+      <Text style={{ fontSize: 12, textDecorationLine: "underline" }}>Esqueceu a senha?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={login}>
@@ -124,11 +128,12 @@ const styles = StyleSheet.create({
     padding: 12, 
   },
   forgotPasswordLink: {
-    width: "97%",
-    alignItems: "flex-start",
-    marginBottom: 32, 
-    marginTop: -27,
-  },
+  width: "100%",
+  alignItems: "flex-start",
+  marginBottom: 10,
+  marginTop: -15,
+},
+
   button: {
     backgroundColor: "#9191d8ff",
     paddingVertical: 14,
@@ -138,6 +143,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginTop: 25,
   },
   buttonText: {
     color: "#fdfdfdff",

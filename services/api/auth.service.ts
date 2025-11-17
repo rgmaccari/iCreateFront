@@ -45,4 +45,19 @@ export class AuthService {
   static async getToken(): Promise<string | null> {
     return AsyncStorage.getItem('access_token');
   }
+  static async checkNickname(nickname: string): Promise<void> {
+        await api.post('/auth/recovery/check-nickname', { nickname });
+  }
+  static async validateSecurityAnswers(nickname: string, securityAnswersJson: string): Promise<void> {
+        await api.post('/auth/recovery/validate-answers', { 
+            nickname, 
+            securityAnswers: securityAnswersJson 
+        });
+  }
+  static async resetPasswordBySecurity(nickname: string, newPassword: string): Promise<void> {
+        await api.post('/auth/recovery/reset-password', { 
+            nickname, 
+            newPassword 
+        });
+    }
 }

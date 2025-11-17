@@ -6,6 +6,7 @@ export interface User {
   alteratedAt: string;
   avatarBase64?: string;
   avatarMimeType?: string;
+  securityAnswers?: string;
 }
 
 
