@@ -329,7 +329,7 @@ export default function UserForm(props: UpdateUserFormProps) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f2f0faff" },
+    container: { flex: 1, backgroundColor: "#FFFFFF" },
     scrollContainer: { flexGrow: 1, padding: 20 },
     formArea: { flexGrow: 1 },
     input: {

@@ -109,7 +109,7 @@ export default function UserRegisterScreen() {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#f2f0faff",
+        backgroundColor: "#FFFFFF",
     },
     welcomeText: {
         fontSize: 16,
