@@ -267,14 +267,18 @@ export default function ProjectScreen() {
       await new Promise((r) => setTimeout(r, 200));
       await ImageService.create(projectCode, formData);
 
-      const updatedImages = await ImageService.findAllByProjectCode(
-        projectCode
-      );
-      setImages(updatedImages || []);
+      reloadImages();
       setShowImageModal(false);
       showToast("success", "Imagens adicionadas com sucesso!");
     } catch (error: any) {
       showToast("error", error.formattedMessage);
+    }
+  };
+
+  const reloadImages = async () => {
+    if (projectCode) {
+      const updatedImages = await ImageService.findAllByProjectCode(projectCode);
+      setImages(updatedImages || []);
     }
   };
 
@@ -285,14 +289,18 @@ export default function ProjectScreen() {
         await LinkService.create(form);
         setShowLinkModal(false);
 
-        const updatedLinks = await LinkService.findAllByProjectCode(
-          projectCode
-        );
-        setLinks(updatedLinks || []);
+        reloadLinks();
         showToast("success", "Links adicionados com sucesso!");
       } catch (error: any) {
         showToast("error", error.formattedMessage);
       }
+    }
+  };
+
+  const reloadLinks = async () => {
+    if (projectCode) {
+      const updatedLinks = await LinkService.findAllByProjectCode(projectCode);
+      setLinks(updatedLinks || []);
     }
   };
 
@@ -303,14 +311,18 @@ export default function ProjectScreen() {
         await NoteService.create(form);
         setShowSketchModal(false);
 
-        const updatedNotes = await NoteService.findAllByProjectCode(
-          projectCode
-        );
-        setNotes(updatedNotes || []); //Atualiza o estado de um "prop.images" no componente visual
+        reloadNotes(); //Atualiza o estado de um "prop.images" no componente visual
         showToast("success", "Anotação registrada!");
       } catch (error: any) {
         showToast("error", error.formattedMessage);
       }
+    }
+  };
+
+  const reloadNotes = async () => {
+    if (projectCode) {
+      const updatedNotes = await NoteService.findAllByProjectCode(projectCode);
+      setNotes(updatedNotes || []);
     }
   };
 
@@ -409,33 +421,6 @@ export default function ProjectScreen() {
     }
   };
 
-  //Abrir tela de links
-  const handleOpenLinks = () => {
-    setIsModalVisible(false);
-    console.log(project?.code?.toString() || "");
-    router.push({
-      pathname: "/main/project/links-screen",
-      params: { projectCode: project?.code?.toString() || "" },
-    });
-  };
-
-  //Abrir tela de notas
-  const handleOpenNotes = () => {
-    setIsModalVisible(false);
-    console.log(project?.code?.toString() || "");
-    router.push({
-      pathname: "/main/project/notes-screen",
-      params: { projectCode: project?.code?.toString() || "" },
-    });
-  };
-
-  //Abrir tela de I.A.
-  const handleOpenAiFeatures = () => {
-    setIsModalVisible(false);
-    console.log(project?.code?.toString() || "");
-    router.push("/main/project/ai-features");
-  };
-
   //Define a view ativa
   const renderCurrentView = () => {
     switch (currentView) {
@@ -474,6 +459,9 @@ export default function ProjectScreen() {
             links={links}
             notes={notes}
             checklists={checklists}
+            onUpdateNote={reloadNotes}
+            onUpdateLinks={reloadLinks}
+            onUpdateImages={reloadImages}
           />
         );
       default:

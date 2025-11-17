@@ -32,7 +32,7 @@ class WebSocketService {
 
         this.socket.on('notification', (data: any) => {
             console.log('Nova notificação:', data);
-            showToast('info', 'Nova notificação', data.message);
+            showToast('info', data.title, data.message);
         });
 
         this.socket.on('authenticated', (data: any) => {
