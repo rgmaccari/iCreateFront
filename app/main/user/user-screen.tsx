@@ -296,7 +296,7 @@ export default function UserScreen() {
 
         {/* Stats Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Estatísticas</Text>
+          <Text style={styles.sectionTitle}>Arquivos</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>{userStats.images}</Text>
