@@ -51,15 +51,17 @@ export default function MainLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Configurações",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="gear" size={24} color={color} />
-          ),
-        }}
-      />
+      {/*
+<Tabs.Screen
+  name="settings"
+  options={{
+    title: "Configurações",
+    tabBarIcon: ({ color }) => (
+      <FontAwesome name="gear" size={24} color={color} />
+    ),
+  }}
+/>
+*/}
     </Tabs>
   );
 }

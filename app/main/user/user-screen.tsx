@@ -29,6 +29,8 @@ export default function UserScreen() {
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showChecklistsModal, setShowChecklistsModal] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const userCode = userData?.code;
 
   //Sem Dto ainda
   const [userStats, setUserStats] = useState({
@@ -37,8 +39,6 @@ export default function UserScreen() {
     sketchs: 0,
     projects: 0,
   });
-
-  const userCode = userData?.code;
 
   const loadUserStats = useCallback(async () => {
     try {
@@ -65,7 +65,9 @@ export default function UserScreen() {
     try {
       console.log("try");
       const preferences = await PreferencesService.find();
+      console.log('preferences ', preferences)
       setInterests(preferences.interests || []);
+      setNotificationsEnabled(preferences.notifications || true);
     } catch (error: any) {
       console.log("catch");
       setInterests([]);
@@ -114,8 +116,18 @@ export default function UserScreen() {
     setShowNotesModal(true);
   };
 
-  const handleOpenChecklistsModal = () => {
-    setShowChecklistsModal(true);
+  const enableNotifications = async () => {
+    const newStatus = !notificationsEnabled;
+    setNotificationsEnabled(newStatus);
+
+    try {
+      await PreferencesService.enableNotifications(newStatus);
+      showToast("info", `Notificações ${newStatus ? 'habilitadas' : 'desabilitadas'}`);
+    } catch (error: any) {
+      showToast("error", "Erro ao alterar configurações");
+      // Reverte em caso de erro
+      setNotificationsEnabled(!newStatus);
+    }
   };
 
   const popularInterests = [
@@ -262,12 +274,23 @@ export default function UserScreen() {
 
           <TouchableOpacity
             style={styles.actionCard}
-            onPress={handleOpenChecklistsModal}
+            onPress={enableNotifications}
           >
-            <View style={[styles.actionIcon]}>
-              <Ionicons name="list" size={30} color="#FF9500" />
+            <View style={[styles.actionIcon,
+            notificationsEnabled && styles.actionIconEnabled
+            ]}>
+              <Ionicons
+                name={notificationsEnabled ? "notifications" : "notifications-off"}
+                size={30}
+                color={notificationsEnabled ? "#2b2d64" : "#666"}
+              />
             </View>
-            <Text style={styles.actionTitle}>Checklists</Text>
+            <Text style={styles.actionTitle}>
+              {notificationsEnabled ? "Notificações" : "Notificações"}
+            </Text>
+            <Text style={styles.notificationStatus}>
+              {notificationsEnabled ? "Ativado" : "Desativado"}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -591,6 +614,15 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 16,
     color: "#eb2121ff",
+    fontWeight: "500",
+  },
+  actionIconEnabled: {
+
+  },
+  notificationStatus: {
+    fontSize: 10,
+    color: "#666",
+    marginTop: 4,
     fontWeight: "500",
   },
 });

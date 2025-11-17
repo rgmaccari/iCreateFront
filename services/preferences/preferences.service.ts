@@ -13,4 +13,13 @@ export class PreferencesService {
     const response = await api.get(`/preferences`);
     return response.data;
   }
+
+  static async enableNotifications(enable: boolean): Promise<void> {
+    console.log('enableNotifications acionado com ', enable);
+    await api.put('/preferences/notifications', { enable: enable }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
