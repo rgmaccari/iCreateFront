@@ -11,6 +11,7 @@ import ProjectViewTabs, {
 import ComponentSelectorModal from "@/components/selector-modal";
 import SketchModal from "@/components/sketch-modal";
 import { showToast } from "@/constants/showToast";
+import { AuthService } from "@/services/api/auth.service";
 import { Checklist } from "@/services/checklist/checklist";
 import { ChecklistDto } from "@/services/checklist/checklist.dto";
 import { ChecklistService } from "@/services/checklist/checklist.service";
@@ -147,7 +148,7 @@ export default function ProjectScreen() {
 
       const LAST_VIEW_KEY = `project_last_view_${projectCode}`;
       try {
-        const savedView = await AsyncStorage.getItem(LAST_VIEW_KEY);
+        const savedView = await AuthService.safeGetItem(LAST_VIEW_KEY);
         if (savedView && ["form", "board", "document"].includes(savedView)) {
           setCurrentView(savedView as ProjectViewMode);
         } else {
@@ -178,16 +179,17 @@ export default function ProjectScreen() {
 
   const loadProjectItems = async (code: number) => {
     try {
-      const [loadedImages, loadedLinks, loadedNotes, loadedChecklists] = await Promise.all([
-        ImageService.findAllByProjectCode(code),
-        LinkService.findAllByProjectCode(code),
-        NoteService.findAllByProjectCode(code),
-        ChecklistService.findAllByProjectCode(code)
-      ]);
+      const [loadedImages, loadedLinks, loadedNotes, loadedChecklists] =
+        await Promise.all([
+          ImageService.findAllByProjectCode(code),
+          LinkService.findAllByProjectCode(code),
+          NoteService.findAllByProjectCode(code),
+          ChecklistService.findAllByProjectCode(code),
+        ]);
       setImages(loadedImages || []);
       setLinks(loadedLinks || []);
       setNotes(loadedNotes || []);
-      setChecklists(loadedChecklists || [])
+      setChecklists(loadedChecklists || []);
     } catch (err) {
       console.error("Erro ao carregar itens do projeto:", err);
     }
@@ -279,7 +281,9 @@ export default function ProjectScreen() {
 
   const reloadImages = async () => {
     if (projectCode) {
-      const updatedImages = await ImageService.findAllByProjectCode(projectCode);
+      const updatedImages = await ImageService.findAllByProjectCode(
+        projectCode
+      );
       setImages(updatedImages || []);
     }
   };
@@ -348,7 +352,9 @@ export default function ProjectScreen() {
 
   const reloadChecklists = async () => {
     if (projectCode) {
-      const updatedChecklists = await ChecklistService.findAllByProjectCode(projectCode);
+      const updatedChecklists = await ChecklistService.findAllByProjectCode(
+        projectCode
+      );
       setChecklists(updatedChecklists || []);
     }
   };
@@ -408,26 +414,28 @@ export default function ProjectScreen() {
     if (task === "archive") {
       if (type === "image") {
         await ImageService.deleteByCode(code);
-        setImages(prev => prev.filter(img => img.code !== code));
+        setImages((prev) => prev.filter((img) => img.code !== code));
         showToast("success", "Imagem removida!");
       }
 
       if (type === "link") {
         await LinkService.deleteByCode(code);
-        setLinks(prev => prev.filter(link => link.code !== code));
+        setLinks((prev) => prev.filter((link) => link.code !== code));
         showToast("success", "Link removido!");
       }
 
       if (type === "checklist") {
         await ChecklistService.deleteByCode(code);
-        setChecklists(prev => prev.filter(checklist => checklist.code !== code));
+        setChecklists((prev) =>
+          prev.filter((checklist) => checklist.code !== code)
+        );
         showToast("success", "Checklist removido!");
       }
 
       if (type === "note") {
         console.log("acessou aqui");
         await NoteService.deleteByCode(code);
-        setNotes(prev => prev.filter(note => note.code !== code));
+        setNotes((prev) => prev.filter((note) => note.code !== code));
         showToast("success", "Anotação removida!");
       }
       return;
@@ -560,8 +568,8 @@ export default function ProjectScreen() {
         project={project}
         visible={showIaModal}
         onClose={() => setShowIaModal(false)}
-      //onSaveNote={createNote}
-      //onSaveChecklist={createChecklist}
+        //onSaveNote={createNote}
+        //onSaveChecklist={createChecklist}
       />
     </SafeAreaView>
   );
@@ -604,4 +612,3 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
-

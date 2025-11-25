@@ -7,7 +7,10 @@ export class AuthService {
   private static currentUser: User | null = null;
 
   static async login(nickname: string, password: string): Promise<User> {
-    const response = await api.post<{ access_token: string; user: User }>(`/auth/login`, { nickname, password });
+    const response = await api.post<{ access_token: string; user: User }>(
+      `/auth/login`,
+      { nickname, password }
+    );
     const { access_token, user } = response.data;
     // salvar token e usuário
     await AuthService.registerInMemory(user, access_token);
@@ -17,8 +20,9 @@ export class AuthService {
 
   static async logout(): Promise<void> {
     websocketService.disconnect();
-    await AsyncStorage.removeItem('access_token');
-    await AsyncStorage.removeItem('current_user');
+    await AsyncStorage.removeItem("access_token");
+    await AsyncStorage.removeItem("current_user");
+    await AsyncStorage.clear();
     AuthService.currentUser = null;
   }
 
@@ -26,51 +30,106 @@ export class AuthService {
     return AuthService.currentUser;
   }
 
-  static async registerInMemory(user: User, accessToken: string): Promise<void> {
-    await AsyncStorage.setItem('access_token', accessToken);
-    await AsyncStorage.setItem('current_user', JSON.stringify(user));
+  static async registerInMemory(
+    user: User,
+    accessToken: string
+  ): Promise<void> {
+    await AsyncStorage.setItem("access_token", accessToken);
+
+    const userString = JSON.stringify(user);
+    const size = new Blob([userString]).size;
+    console.log("Tamanho do user ao salvar (bytes):", size);
+
+    if (size > 1500000) {
+      // Limite seguro <2MB
+      console.warn("User muito grande; salvando versão minimal");
+      const minimalUser = {
+        id: user.code,
+        nickname: user.nickname,
+        code: user.code,
+      }; // Ajuste campos essenciais
+      await AsyncStorage.setItem("current_user", JSON.stringify(minimalUser));
+    } else {
+      await AsyncStorage.setItem("current_user", userString);
+    }
+
     AuthService.currentUser = user;
   }
 
   static async loadUserFromStorage(): Promise<User | null> {
-    const token = await AsyncStorage.getItem('access_token');
-    const userString = await AsyncStorage.getItem('current_user');
+    try {
+      const token = await AuthService.safeGetItem("access_token");
+      const userString = await AuthService.safeGetItem("current_user");
+      console.log(
+        "Tamanho do userString (bytes):",
+        userString ? new Blob([userString]).size : 0
+      );
 
-    if (token && userString) {
-      const user = JSON.parse(userString);
-      AuthService.currentUser = user;
-      return user
+      if (token && userString) {
+        const user = JSON.parse(userString);
+        AuthService.currentUser = user;
+        return user;
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro ao ler storage:", error);
+      await AuthService.safeRemoveItem("current_user"); // Use safeRemoveItem (adicione abaixo)
+      return null;
     }
-
-    return null;
   }
 
   static async getToken(): Promise<string | null> {
-    return AsyncStorage.getItem('access_token');
+    return AuthService.safeGetItem("access_token");
   }
 
-  static async checkNickname(nickname: string): Promise<{ question: string; answer: string }> {
+  static async checkNickname(
+    nickname: string
+  ): Promise<{ question: string; answer: string }> {
     const response = await api.post<{
       valid: boolean;
       questions: { question: string; answer: string };
-    }>('/auth/recovery/check-nickname', { nickname });
+    }>("/auth/recovery/check-nickname", { nickname });
 
     //Se chegou aqui, valid é true (caso contrário o beck já lançou exceção)
     return response.data.questions;
   }
 
-  static async validateSecurityAnswers(nickname: string, securityAnswersJson: string): Promise<any> {
-    const response = await api.post('/auth/recovery/validate-answers', {
+  static async validateSecurityAnswers(
+    nickname: string,
+    securityAnswersJson: string
+  ): Promise<any> {
+    const response = await api.post("/auth/recovery/validate-answers", {
       nickname,
-      securityAnswers: securityAnswersJson
+      securityAnswers: securityAnswersJson,
     });
     return response.data;
   }
 
-  static async resetPasswordBySecurity(nickname: string, newPassword: string): Promise<void> {
-    await api.post('/auth/recovery/reset-password', {
+  static async resetPasswordBySecurity(
+    nickname: string,
+    newPassword: string
+  ): Promise<void> {
+    await api.post("/auth/recovery/reset-password", {
       nickname,
-      newPassword
+      newPassword,
     });
+  }
+
+  static async safeGetItem(key: string): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(key); // Mude aqui: chame AsyncStorage direto, sem recursão
+    } catch (error) {
+      console.error(`Erro ao ler ${key}:`, error);
+      await AuthService.safeRemoveItem(key); // Use safeRemoveItem
+      return null;
+    }
+  }
+
+  static async safeRemoveItem(key: string): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Erro ao remover ${key}:`, error);
+    }
   }
 }

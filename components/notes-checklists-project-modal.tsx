@@ -111,7 +111,6 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
           {new Date(note.createdAt).toLocaleDateString("pt-BR")}
         </Text>
       )}
-
     </TouchableOpacity>
   );
 
@@ -138,9 +137,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
         </View>
         <View style={styles.checklistProgress}>
           <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${progress}%` }]}
-            />
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <Text style={styles.progressText}>
             {completed}/{total} concluídos
@@ -151,12 +148,13 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             {new Date(checklist.updatedAt).toLocaleDateString("pt-BR")}
           </Text>
         )}
-
       </TouchableOpacity>
     );
   };
 
   const handleAddToBoard = async (item: Note | Checklist) => {
+    console.log("PREVIEW ITEM =", item);
+    console.log("DESCRIPTION =", (item as any).description);
     if (item.projectCode !== props.project?.code && props.project?.code) {
       if ("description" in item) {
         const dto: NoteCreateDto = {
@@ -252,11 +250,13 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             <Ionicons name="list-outline" size={24} color="#FFB300" />
             <Text style={styles.title}>Anotações e Checklists</Text>
 
-            <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={props.onClose}
+              style={styles.closeButton}
+            >
               <Ionicons name="close" size={26} color="#6B7280" />
             </TouchableOpacity>
           </View>
-
 
           {/* Abas */}
           <View style={styles.tabBar}>
@@ -295,7 +295,10 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             {renderProjectSection()}
             {renderAllSection()}
           </ScrollView>
@@ -318,6 +321,16 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
               <Ionicons name="close" size={24} color="#6B7280" />
             </TouchableOpacity>
 
+            {previewItem && (
+              <>
+                {console.log("====== PREVIEW CHECK ======")}
+                {console.log("previewItem =", previewItem)}
+                {console.log("tem itens? =", "itens" in previewItem)}
+                {console.log("é NOTE segundo isNote =", isNote(previewItem))}
+                {console.log("===========================")}
+              </>
+            )}
+
             {previewItem && isNote(previewItem) && (
               <>
                 <Text style={styles.previewTitle}>
@@ -338,7 +351,11 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
                   {previewItem.itens.map((it, index) => (
                     <View key={index} style={styles.previewChecklistItem}>
                       <Ionicons
-                        name={it.checked ? "checkmark-circle" : "checkmark-circle-outline"}
+                        name={
+                          it.checked
+                            ? "checkmark-circle"
+                            : "checkmark-circle-outline"
+                        }
                         size={20}
                         color={it.checked ? "#10B981" : "#9CA3AF"}
                       />
@@ -522,7 +539,7 @@ const styles = StyleSheet.create({
   },
 
   addButtonAdded: {
-    backgroundColor: "#4CAF50"
+    backgroundColor: "#4CAF50",
   },
   emptyText: {
     color: "#9CA3AF",
@@ -585,6 +602,5 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
 });
-
 
 export default NotesChecklistsProjectModal;

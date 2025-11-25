@@ -3,6 +3,7 @@ import ImagesProjectModal from "@/components/images-project-modal";
 import LinksProjectModal from "@/components/links-project-modal";
 import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
 import { showToast } from "@/constants/showToast";
+import { AuthService } from "@/services/api/auth.service";
 import { Checklist } from "@/services/checklist/checklist";
 import { Image } from "@/services/image/image";
 import { BaseItemDto } from "@/services/item/base-item.dto";
@@ -97,7 +98,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     const loadZoom = async () => {
       if (!props.project?.code) return;
       const key = `project_zoom_${props.project.code}`;
-      const savedZoom = await AsyncStorage.getItem(key);
+      const savedZoom = await AuthService.safeGetItem(key);
       if (savedZoom) setScale(parseFloat(savedZoom));
     };
     loadZoom();
@@ -559,7 +560,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         onClose={() => setShowProjectNotes(false)}
         onAddToBoard={async (data: any) => {
           if (!props.project) return;
-          handleAddNote(data);
+
+          if ("description" in data) {
+            await handleAddNote(data);
+          } else {
+            await handleAddChecklist(data);
+          }
+
           setShowProjectNotes(false);
         }}
       />

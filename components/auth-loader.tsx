@@ -10,28 +10,38 @@ export default function AuthLoader() {
 
   useEffect(() => {
     const checkToken = async () => {
-      //Verificar token
       const token = await AuthService.getToken();
       if (token) {
         const user = await AuthService.loadUserFromStorage();
-        console.log('Usuário carregado:', user?.nickname);
-        console.log('Chamando WebSocketService.connect()...');
-        WebSocketService.connect();
-
-        router.replace({
-          pathname: '/main/project/all-projects-screen',
-          params: { username: user?.nickname },
-        });
+        if (user) {
+          // Adicione esta condição
+          console.log("Usuário carregado:", user.nickname);
+          console.log("Chamando WebSocketService.connect()...");
+          WebSocketService.connect();
+          router.replace({
+            pathname: "/main/project/all-projects-screen",
+            params: { username: user.nickname },
+          });
+        } else {
+          console.log("User não carregado, redirecionando para login.");
+          WebSocketService.disconnect();
+          router.replace("/login");
+        }
       } else {
-        console.log('Sem token, desconectando do WebSocket.');
+        console.log("Sem token, desconectando do WebSocket.");
         WebSocketService.disconnect();
-        router.replace('/login');
+        router.replace("/login");
       }
       setLoading(false);
     };
     checkToken();
   }, []);
 
-  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator size="large" /></View>;
+  if (loading)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   return null;
 }
