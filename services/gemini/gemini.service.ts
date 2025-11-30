@@ -13,7 +13,6 @@ export class GeminiService {
     const response = await api.post("gemini/audiotranscription", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("service - transcribe audio ", response.data);
     return response.data;
   }
 

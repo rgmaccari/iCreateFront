@@ -41,11 +41,8 @@ export class AuthService {
     console.log("Acionando o AuthService - registerInMemory()");
     await AsyncStorage.setItem("access_token", accessToken);
 
-    console.log("User de entrada em registerInMemory:", user); // Adicione esta linha
     const userString = JSON.stringify(user);
-    console.log("UserString gerado:", userString);
     const size = new Blob([userString]).size;
-    console.log("Tamanho do user ao salvar (bytes):", size);
 
     if (size > 1500000) {
       // Limite seguro <2MB
@@ -61,7 +58,6 @@ export class AuthService {
     }
 
     AuthService.currentUser = user;
-    console.log("CurrentUser após set:", AuthService.currentUser);
   }
 
   static async loadUserFromStorage(): Promise<User | null> {
@@ -69,7 +65,7 @@ export class AuthService {
       console.log("Acionando o AuthService - loadUserFromStorage()");
       const token = await AuthService.safeGetItem("access_token");
       const userString = await AuthService.safeGetItem("current_user");
-      console.log(
+      console.warn(
         "Tamanho do userString (bytes):",
         userString ? new Blob([userString]).size : 0
       );

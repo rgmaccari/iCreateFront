@@ -44,7 +44,6 @@ export default function RecoverPasswordSecurityScreen() {
     setIsLoading(true);
     try {
       const data = await AuthService.checkNickname(nickname);
-      console.log("data ", data);
       setSecurityData(data);
       setUserAnswer("");
       setStep(2);

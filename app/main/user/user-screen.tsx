@@ -52,14 +52,10 @@ export default function UserScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("foco no user screen");
-
       const currentUser = AuthService.getUser();
       setUserData(currentUser);
-      console.log("User no foco do UserScreen:", currentUser);
 
       if (!currentUser) {
-        console.log("carrega do storage");
         loadUserFromStorage();
         return;
       }
@@ -77,15 +73,11 @@ export default function UserScreen() {
   );
 
   const loadUserInterests = useCallback(async () => {
-    console.log("loadUserInterests");
     try {
-      console.log("try");
       const preferences = await PreferencesService.find();
-      console.log("preferences ", preferences);
       setInterests(preferences.interests || []);
       setNotificationsEnabled(preferences.notifications || true);
     } catch (error: any) {
-      console.log("catch");
       setInterests([]);
     }
   }, []);
@@ -117,7 +109,6 @@ export default function UserScreen() {
   };
 
   const handleEditUser = () => {
-    console.log("tem user?", userCode);
     router.push("/user-register-screen");
   };
 

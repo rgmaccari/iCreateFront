@@ -41,7 +41,6 @@ export class ItemService {
 
   static async delete(code: number): Promise<void> {
     console.log("Acionando o ItemService - delete()");
-    console.log("ih code ", code);
     await api.delete(`/items/${code}`);
   }
 }

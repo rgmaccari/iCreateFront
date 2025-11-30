@@ -17,7 +17,6 @@ export class PreferencesService {
 
   static async enableNotifications(enable: boolean): Promise<void> {
     console.log("Acionando o PreferencesService - enableNotifications()");
-    console.log("enableNotifications acionado com ", enable);
     await api.put(
       "/preferences/notifications",
       { enable: enable },

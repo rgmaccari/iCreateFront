@@ -27,7 +27,6 @@ export default function UserRegisterScreen() {
     try {
       if (!userData) return;
       const updatedUser = await UserService.update(userData.code!, formData);
-      console.log("User após update no RegisterScreen:", AuthService.getUser());
       setUserData(updatedUser);
       showToast("success", "Sucesso!", "Dados atualizados com sucesso.");
       router.back();

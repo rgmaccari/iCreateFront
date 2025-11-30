@@ -59,10 +59,6 @@ const ImageModal = (props: ImageModalProps) => {
       if (isCoverIndex === null && newImages.length > 0) {
         setIsCoverIndex(selectedImages.length);
       }
-    } else {
-      console.log(
-        "[ImageModal] Seleção de imagens cancelada ou sem resultados"
-      );
     }
   };
 

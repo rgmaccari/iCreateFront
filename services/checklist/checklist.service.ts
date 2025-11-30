@@ -6,7 +6,6 @@ export class ChecklistService {
   static async create(note: ChecklistDto): Promise<Checklist> {
     console.log("Acionando o ChecklistService - create()");
     const response = await api.post<Checklist>(`/checklists`, note);
-    console.log("response mn", JSON.stringify(response.data, null, 2));
     return response.data;
   }
 

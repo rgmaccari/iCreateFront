@@ -153,8 +153,6 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
   };
 
   const handleAddToBoard = async (item: Note | Checklist) => {
-    console.log("PREVIEW ITEM =", item);
-    console.log("DESCRIPTION =", (item as any).description);
     if (item.projectCode !== props.project?.code && props.project?.code) {
       if ("description" in item) {
         const dto: NoteCreateDto = {
@@ -321,15 +319,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
               <Ionicons name="close" size={24} color="#6B7280" />
             </TouchableOpacity>
 
-            {previewItem && (
-              <>
-                {console.log("====== PREVIEW CHECK ======")}
-                {console.log("previewItem =", previewItem)}
-                {console.log("tem itens? =", "itens" in previewItem)}
-                {console.log("é NOTE segundo isNote =", isNote(previewItem))}
-                {console.log("===========================")}
-              </>
-            )}
+            {previewItem && <></>}
 
             {previewItem && isNote(previewItem) && (
               <>

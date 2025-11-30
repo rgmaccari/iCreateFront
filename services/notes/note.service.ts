@@ -23,7 +23,6 @@ export class NoteService {
 
   static async findAllByProjectCode(projectCode: number): Promise<Note[]> {
     console.log("Acionando o NoteService - findAllByProjectCode()");
-    console.log(`Buscando notas para o projeto com código: ${projectCode}`);
     const response = await api.get(`/notes/all/${projectCode}`);
     return response.data;
   }
