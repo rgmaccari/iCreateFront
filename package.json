@@ -5,6 +5,7 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -68,6 +69,7 @@
     "metro": "^0.83.2",
     "metro-config": "^0.83.2",
     "metro-react-native-babel-preset": "^0.77.0",
+    "prettier": "^3.7.3",
     "typescript": "~5.9.2"
   },
   "private": true
