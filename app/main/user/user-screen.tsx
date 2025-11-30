@@ -172,12 +172,16 @@ export default function UserScreen() {
   };
 
   const addInterest = async (interest: string) => {
-    if (interest.trim() && !interests.includes(interest.trim())) {
-      const updatedInterests = [...interests, interest.trim()];
+    const trimmed = interest.trim();
+    if (trimmed.length < 2) {
+      showToast("info", "Interesse inválido!");
+      return;
+    }
+    if (!interests.includes(trimmed)) {
+      const updatedInterests = [...interests, trimmed];
       setInterests(updatedInterests);
       setNewInterest("");
       setSuggestions([]);
-
       try {
         await PreferencesService.update({ interests: updatedInterests });
       } catch (error: any) {
@@ -190,12 +194,14 @@ export default function UserScreen() {
     const updatedInterests = interests.filter(
       (interest) => interest !== interestToRemove
     );
-    setInterests(updatedInterests);
-
     try {
-      await PreferencesService.update({ interests: updatedInterests });
+      const newInterests = await PreferencesService.update({
+        interests: updatedInterests,
+      });
+      setInterests(updatedInterests);
     } catch (error: any) {
-      showToast("error", "Erro ao remover interesse");
+      console.log("error", error.formattedMessage);
+      showToast("error", error.formattedMessage);
     }
   };
 
@@ -340,6 +346,7 @@ export default function UserScreen() {
           <View style={styles.interestsInputContainer}>
             <TextInput
               style={styles.interestsInput}
+              maxLength={50}
               placeholder="Digite um interesse..."
               value={newInterest}
               onChangeText={handleInterestInput}

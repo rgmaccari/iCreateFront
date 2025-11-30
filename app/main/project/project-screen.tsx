@@ -433,7 +433,6 @@ export default function ProjectScreen() {
       }
 
       if (type === "note") {
-        console.log("acessou aqui");
         await NoteService.deleteByCode(code);
         setNotes((prev) => prev.filter((note) => note.code !== code));
         showToast("success", "Anotação removida!");
