@@ -527,6 +527,7 @@ export default function ProjectScreen() {
       />
 
       <IaToolsModal
+        onUpdated={reloadNotes}
         project={project}
         visible={showIaModal}
         onClose={() => setShowIaModal(false)}

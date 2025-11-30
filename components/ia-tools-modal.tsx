@@ -6,7 +6,7 @@ import { Project } from '@/services/project/project';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -29,6 +29,7 @@ interface IaToolsProps {
   visible: boolean;
   onClose: () => void;
   project?: Project;
+  onUpdated: () => void;
 }
 
 export default function IaToolsModal(props: IaToolsProps) {
@@ -40,6 +41,7 @@ export default function IaToolsModal(props: IaToolsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [recordingTimer, setRecordingTimer] = useState<ReturnType<typeof setInterval> | null>(null);
+  let currentRecording = useRef<Audio.Recording | null>(null);
 
   //Anotacoes
   const [resultText, setResultText] = useState('');
@@ -74,8 +76,8 @@ export default function IaToolsModal(props: IaToolsProps) {
 
   //Inicializa
   async function startRecording() {
-    const hasPermission = await requestAudioPermissions();
-    if (!hasPermission) return;
+    if (currentRecording.current) return; //Já existe gravação preparada
+    setAudioUri(null);
 
     try {
       await Audio.setAudioModeAsync({
@@ -87,39 +89,51 @@ export default function IaToolsModal(props: IaToolsProps) {
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
       );
 
+      currentRecording.current = recording;
       setRecording(recording);
       setIsRecording(true);
       setRecordingDuration(0);
 
-      //Timer para duração da gravação
-      const timer = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
-      }, 1000);
+      const timer = setInterval(() => setRecordingDuration((prev) => prev + 1), 1000);
       setRecordingTimer(timer);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       showToast('error', 'Não foi possível iniciar a gravação.');
-      console.error(error);
+      //Garante que não fica um objeto parcial
+      currentRecording.current = null;
+      setRecording(null);
+      setIsRecording(false);
     }
   }
 
-  //Encerra
   async function stopRecording() {
-    if (!recording) return;
+    if (!currentRecording.current) return;
 
-    setIsRecording(false);
     if (recordingTimer) {
       clearInterval(recordingTimer);
       setRecordingTimer(null);
     }
 
     try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      //Tenta parar e descarregar a gravação atual
+      await currentRecording.current.stopAndUnloadAsync();
+      const uri = currentRecording.current.getURI();
       if (uri) setAudioUri(uri);
+    } catch (err) {
+      console.error('Erro ao finalizar gravação:', err);
+      showToast('error', 'Erro ao finalizar a gravação.');
+    } finally {
+      //Cleanup garantido
+      try {
+        //Se o objeto ainda existir, tenta garantir que esteja parado (silenciosamente)
+        if (currentRecording.current) {
+          //Algumas plataformas pode já ter sido descarregado; ignoramos erros
+          await currentRecording.current.stopAndUnloadAsync().catch(() => {});
+        }
+      } catch (_) {}
+      currentRecording.current = null;
       setRecording(null);
-    } catch (error) {
-      showToast('error', 'Não foi possível iniciar a gravação.');
-      console.error(error);
+      setIsRecording(false);
     }
   }
 
@@ -170,6 +184,8 @@ export default function IaToolsModal(props: IaToolsProps) {
       };
 
       await NoteService.create(dto);
+      props.onUpdated();
+      props.onClose();
 
       showToast('success', 'Anotação criada!');
 
@@ -254,7 +270,10 @@ export default function IaToolsModal(props: IaToolsProps) {
     }
   }
 
-  const canExecute = mode && ((mode === 'readImage' && imageUri) || (mode === 'audio' && audioUri));
+  const canExecute =
+    mode &&
+    ((mode === 'readImage' && imageUri) ||
+      (mode === 'audio' && audioUri && !isRecording && recordingDuration >= 3));
 
   return (
     <Modal
@@ -359,8 +378,16 @@ export default function IaToolsModal(props: IaToolsProps) {
 
                     {audioUri && !isRecording && (
                       <View style={styles.audioPreview}>
-                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                        <Text style={styles.audioPreviewText}>Áudio pronto para processamento</Text>
+                        <Ionicons
+                          name={recordingDuration >= 3 ? 'checkmark-circle' : 'alert-circle'}
+                          size={20}
+                          color={recordingDuration >= 3 ? '#10B981' : '#F59E0B'}
+                        />
+                        <Text style={styles.audioPreviewText}>
+                          {recordingDuration >= 3
+                            ? 'Áudio pronto para processamento'
+                            : 'Áudio muito curto (mínimo 3s)'}
+                        </Text>
                       </View>
                     )}
                   </View>
