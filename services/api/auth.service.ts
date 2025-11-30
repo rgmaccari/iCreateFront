@@ -7,6 +7,8 @@ export class AuthService {
   private static currentUser: User | null = null;
 
   static async login(nickname: string, password: string): Promise<User> {
+    console.log("Acionando o AuthService - login()");
+
     const response = await api.post<{ access_token: string; user: User }>(
       `/auth/login`,
       { nickname, password }
@@ -19,6 +21,7 @@ export class AuthService {
   }
 
   static async logout(): Promise<void> {
+    console.log("Acionando o AuthService - logout()");
     websocketService.disconnect();
     await AsyncStorage.removeItem("access_token");
     await AsyncStorage.removeItem("current_user");
@@ -27,6 +30,7 @@ export class AuthService {
   }
 
   static getUser(): User | null {
+    console.log("Acionando o AuthService - getUser()");
     return AuthService.currentUser;
   }
 
@@ -34,6 +38,7 @@ export class AuthService {
     user: User,
     accessToken: string
   ): Promise<void> {
+    console.log("Acionando o AuthService - registerInMemory()");
     await AsyncStorage.setItem("access_token", accessToken);
 
     console.log("User de entrada em registerInMemory:", user); // Adicione esta linha
@@ -61,6 +66,7 @@ export class AuthService {
 
   static async loadUserFromStorage(): Promise<User | null> {
     try {
+      console.log("Acionando o AuthService - loadUserFromStorage()");
       const token = await AuthService.safeGetItem("access_token");
       const userString = await AuthService.safeGetItem("current_user");
       console.log(
@@ -82,12 +88,14 @@ export class AuthService {
   }
 
   static async getToken(): Promise<string | null> {
+    console.log("Acionando o AuthService - getToken()");
     return AuthService.safeGetItem("access_token");
   }
 
   static async checkNickname(
     nickname: string
   ): Promise<{ question: string; answer: string }> {
+    console.log("Acionando o AuthService - checkNickname()");
     const response = await api.post<{
       valid: boolean;
       questions: { question: string; answer: string };
@@ -101,6 +109,7 @@ export class AuthService {
     nickname: string,
     securityAnswersJson: string
   ): Promise<any> {
+    console.log("Acionando o AuthService - validateSecurityAnswers()");
     const response = await api.post("/auth/recovery/validate-answers", {
       nickname,
       securityAnswers: securityAnswersJson,
@@ -112,6 +121,7 @@ export class AuthService {
     nickname: string,
     newPassword: string
   ): Promise<void> {
+    console.log("Acionando o AuthService - resetPasswordBySecurity()");
     await api.post("/auth/recovery/reset-password", {
       nickname,
       newPassword,
@@ -119,6 +129,7 @@ export class AuthService {
   }
 
   static async safeGetItem(key: string): Promise<string | null> {
+    console.log("Acionando o AuthService - safeGetItem()");
     try {
       return await AsyncStorage.getItem(key); // Mude aqui: chame AsyncStorage direto, sem recursão
     } catch (error) {
@@ -129,6 +140,7 @@ export class AuthService {
   }
 
   static async safeRemoveItem(key: string): Promise<void> {
+    console.log("Acionando o AuthService - safeRemoveItem()");
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {

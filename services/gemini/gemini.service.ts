@@ -2,6 +2,7 @@ import api from "../api/api";
 
 export class GeminiService {
   async transcribeAudio(fileUri: string) {
+    console.log("Acionando o GeminiService - transcribeAudio()");
     const formData = new FormData();
     formData.append("file", {
       uri: fileUri,
@@ -17,6 +18,7 @@ export class GeminiService {
   }
 
   async transcribeImage(fileUri: string) {
+    console.log("Acionando o GeminiService - transcribeImage()");
     const formData = new FormData();
     formData.append("file", {
       uri: fileUri,

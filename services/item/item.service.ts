@@ -5,21 +5,31 @@ import { BaseItem, ProjectItem } from "./project-item";
 
 export class ItemService {
   static async create(item: BaseItemDto): Promise<ItemResponseDto> {
+    console.log("Acionando o ItemService - create()");
     const response = await api.post<ItemResponseDto>(`/items`, item);
     return response.data;
   }
 
   static async update(code: number, item: BaseItemDto): Promise<BaseItem> {
+    console.log("Acionando o ItemService - update()");
     const response = await api.put<BaseItem>(`/items/${code}`);
     return response.data;
   }
 
   static async getComponents(projectCode: number): Promise<ProjectItem[]> {
+    console.log("Acionando o ItemService - getComponents()");
     const response = await api.get<ProjectItem[]>(`/items/all/${projectCode}`);
     return response.data;
   }
 
-  static async updatePosition(code: number, x?: number, y?: number, width?: number, height?: number) {
+  static async updatePosition(
+    code: number,
+    x?: number,
+    y?: number,
+    width?: number,
+    height?: number
+  ) {
+    console.log("Acionando o ItemService - updatePosition()");
     const response = await api.patch(`/items/${code}/position`, {
       x,
       y,
@@ -29,9 +39,9 @@ export class ItemService {
     return response.data;
   }
 
-
   static async delete(code: number): Promise<void> {
-    console.log('ih code ', code)
+    console.log("Acionando o ItemService - delete()");
+    console.log("ih code ", code);
     await api.delete(`/items/${code}`);
   }
 }
