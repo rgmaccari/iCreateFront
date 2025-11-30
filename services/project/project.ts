@@ -1,11 +1,10 @@
-
 export interface Project {
-    code: number;
-    title: string;
-    sketch: string;
-    createdAt: string;
-    alteratedAt: string;
-    userCode: number;
+  code: number;
+  title: string;
+  sketch: string;
+  createdAt: string;
+  alteratedAt: string;
+  userCode: number;
 }
 
 /*

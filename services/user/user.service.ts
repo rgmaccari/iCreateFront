@@ -1,21 +1,15 @@
-import api from "../api/api";
-import { AuthService } from "../api/auth.service";
-import { User } from "./user";
+import api from '../api/api';
+import { AuthService } from '../api/auth.service';
+import { User } from './user';
 
 export class UserService {
-  static async create(
-    user: Omit<FormData, "code" | "createdAt" | "alteratedAt">
-  ): Promise<User> {
-    console.log("Acionando o UserService - create()");
-    const response = await api.post<{ access_token: string; user: User }>(
-      "/users",
-      user,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+  static async create(user: Omit<FormData, 'code' | 'createdAt' | 'alteratedAt'>): Promise<User> {
+    console.log('Acionando o UserService - create()');
+    const response = await api.post<{ access_token: string; user: User }>('/users', user, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
     const { access_token, user: userData } = response.data;
 
@@ -27,25 +21,22 @@ export class UserService {
   }
 
   static async update(code: number, user: FormData): Promise<User> {
-    console.log("Acionando o UserService - update()");
+    console.log('Acionando o UserService - update()');
     const response = await api.put<User>(`/users/${code}`, user, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
 
     if (response && response.data) {
-      await AuthService.registerInMemory(
-        response.data,
-        (await AuthService.getToken()) || ""
-      );
+      await AuthService.registerInMemory(response.data, (await AuthService.getToken()) || '');
     }
 
     return response.data;
   }
 
   static async delete(code: number): Promise<void> {
-    console.log("Acionando o UserService - delete()");
+    console.log('Acionando o UserService - delete()');
     await api.delete(`/users/${code}`);
   }
 }

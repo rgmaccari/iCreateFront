@@ -1,5 +1,5 @@
-import { Image } from "@/services/image/image";
-import React, { useState } from "react";
+import { Image } from '@/services/image/image';
+import React, { useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -8,10 +8,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import ImageViewing from "react-native-image-viewing";
+} from 'react-native';
+import ImageViewing from 'react-native-image-viewing';
 
-type ViewMode = "list" | "grid" | "carousel";
+type ViewMode = 'list' | 'grid' | 'carousel';
 
 interface ImageViewerProps {
   images: Image[];
@@ -20,7 +20,7 @@ interface ImageViewerProps {
   onAddToBoard?: (image: Image) => void;
 }
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get('window');
 const CAROUSEL_IMAGE_WIDTH = 300;
 const CAROUSEL_IMAGE_HEIGHT = 300;
 
@@ -126,11 +126,11 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
 
   const renderView = () => {
     switch (props.viewMode) {
-      case "grid":
+      case 'grid':
         return renderGrid();
-      case "carousel":
+      case 'carousel':
         return renderCarousel();
-      case "list":
+      case 'list':
       default:
         return renderList();
     }
@@ -152,15 +152,15 @@ export default function ImageViewerPanel(props: ImageViewerProps) {
 
 const styles = StyleSheet.create({
   scroll: {
-    width: "100%",
+    width: '100%',
     padding: 10,
   },
   listItemRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
     padding: 10,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
   },
   thumbnail: {
@@ -170,22 +170,22 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   filename: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   coverBadge: {
-    color: "green",
+    color: 'green',
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   gridContent: {
     paddingHorizontal: 8,
     paddingBottom: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   gridItem: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     margin: 4,
   },
   gridImage: {
@@ -195,24 +195,24 @@ const styles = StyleSheet.create({
   },
   carouselItem: {
     width: screenWidth,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   carouselTouchable: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   centeredImage: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
   },
   controls: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 30,
   },
   controlButton: {
@@ -220,54 +220,54 @@ const styles = StyleSheet.create({
   },
   controlText: {
     fontSize: 24,
-    color: "#333",
-    fontWeight: "bold",
+    color: '#333',
+    fontWeight: 'bold',
   },
 
   carouselContainer: {
-    width: "100%",
+    width: '100%',
     height: 340,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   imageRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
   navButton: {
     width: 50,
     height: CAROUSEL_IMAGE_HEIGHT,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   navArrow: {
     fontSize: 36,
-    color: "#555",
-    fontWeight: "600",
+    color: '#555',
+    fontWeight: '600',
   },
   imageWrapper: {
     width: CAROUSEL_IMAGE_WIDTH,
     height: CAROUSEL_IMAGE_HEIGHT,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "#f5f5f5",
-    shadowColor: "#000",
+    overflow: 'hidden',
+    backgroundColor: '#f5f5f5',
+    shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 3,
   },
   carouselImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   counter: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
 });

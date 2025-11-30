@@ -1,7 +1,7 @@
-import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { TextInput } from "react-native-paper";
+import { FontAwesome } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { TextInput } from 'react-native-paper';
 
 interface PageHeaderProps {
   title: string;
@@ -42,7 +42,7 @@ export default function PageHeader(props: PageHeaderProps) {
         ) : (
           <TouchableOpacity onPress={props.onEditTitlePress}>
             <Text numberOfLines={1} style={styles.titleText}>
-              {props.title || "Sem título"}
+              {props.title || 'Sem título'}
             </Text>
           </TouchableOpacity>
         )}
@@ -67,35 +67,35 @@ export default function PageHeader(props: PageHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 6,
     marginBottom: 3,
     borderBottomWidth: 1,
-    borderBottomColor: "#9191d8ff",
+    borderBottomColor: '#9191d8ff',
   },
   headerButton: {
     width: 40, // Largura fiza
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 8,
   },
   titleContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   titleText: {
     fontSize: 12,
-    fontWeight: "bold",
-    color: "#362946",
-    textAlign: "center",
+    fontWeight: 'bold',
+    color: '#362946',
+    textAlign: 'center',
   },
   titleInput: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     height: 40,
     paddingHorizontal: 0,
-    textAlign: "center",
-    width: "100%",
+    textAlign: 'center',
+    width: '100%',
   },
 });

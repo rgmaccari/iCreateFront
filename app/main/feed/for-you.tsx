@@ -1,7 +1,7 @@
-import { User } from "@/services/user/user";
-import { router, useLocalSearchParams } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { User } from '@/services/user/user';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ForYou() {
   const { user } = useLocalSearchParams();
@@ -15,7 +15,7 @@ export default function ForYou() {
     if (screen === 3) router.push('/main/feed/sla');
 
     if (screen === 4) router.push('/main/feed/lucid');
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,13 +38,13 @@ export default function ForYou() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 20,
   },
   text: {
@@ -52,12 +52,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "#362946",
+    backgroundColor: '#362946',
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

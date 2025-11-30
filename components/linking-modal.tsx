@@ -1,6 +1,6 @@
-import { LinkCreateDto } from "@/services/link/link.create.dto";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { LinkCreateDto } from '@/services/link/link.create.dto';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -10,7 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
 interface LinkModalProps {
   visible: boolean;
@@ -20,8 +20,8 @@ interface LinkModalProps {
 }
 
 const LinkModal = (props: LinkModalProps) => {
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
 
   //Só pegar os campos do form
   const handleSave = async () => {
@@ -37,8 +37,8 @@ const LinkModal = (props: LinkModalProps) => {
   };
 
   const handleClose = () => {
-    setTitle("");
-    setUrl("");
+    setTitle('');
+    setUrl('');
     props.onClose();
   };
 
@@ -51,7 +51,7 @@ const LinkModal = (props: LinkModalProps) => {
     >
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
           <Ionicons name="link" size={24} color="#81c091ff" />
@@ -89,10 +89,7 @@ const LinkModal = (props: LinkModalProps) => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.saveButton,
-              !url.trim() && styles.saveButtonDisabled,
-            ]}
+            style={[styles.saveButton, !url.trim() && styles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={!url.trim()}
           >
@@ -107,20 +104,20 @@ const LinkModal = (props: LinkModalProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   closeButton: {
     padding: 4,
@@ -134,32 +131,32 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
   },
   saveButton: {
-    backgroundColor: "#81c091ff",
+    backgroundColor: '#81c091ff',
     padding: 16,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
   },
   saveButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
   },
   saveButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });
 

@@ -1,9 +1,9 @@
-import { showToast } from "@/constants/showToast";
-import { AuthService } from "@/services/api/auth.service";
-import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { showToast } from '@/constants/showToast';
+import { AuthService } from '@/services/api/auth.service';
+import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -13,11 +13,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
 export default function LoginScreen() {
-  const [nickname, setNickname] = useState("");
-  const [password, setPassword] = useState("");
+  const [nickname, setNickname] = useState('');
+  const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const router = useRouter();
@@ -33,38 +33,38 @@ export default function LoginScreen() {
     setPasswordError(missingPassword);
 
     if (missingNickname || missingPassword) {
-      showToast("info", "Preencha todos os campos obrigatórios");
+      showToast('info', 'Preencha todos os campos obrigatórios');
       return;
     }
 
     if (nickname.length < 3) {
-      showToast("info", "Apelido inválido.");
+      showToast('info', 'Apelido inválido.');
       return;
     }
 
     if (password.length < 6) {
-      showToast("info", "Senha inválida.");
+      showToast('info', 'Senha inválida.');
       return;
     }
 
     try {
       const user = await AuthService.login(nickname, password);
-      if (user) router.replace("/main/user/user-screen");
+      if (user) router.replace('/main/user/user-screen');
     } catch (error: any) {
       showToast(
-        "error",
-        error.formattedMessage || "Erro inesperado!",
-        "Verifique suas informações."
+        'error',
+        error.formattedMessage || 'Erro inesperado!',
+        'Verifique suas informações.',
       );
     }
   };
 
   const handleCreate = () => {
-    router.push("/user-register-screen");
+    router.push('/user-register-screen');
   };
 
   const handleForgotPassword = () => {
-    router.push("/recover-password-security");
+    router.push('/recover-password-security');
   };
 
   const togglePasswordVisibility = () => {
@@ -74,12 +74,12 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Image
-          source={require("@/assets/images/icon-with-name.png")}
+          source={require('@/assets/images/icon-with-name.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -99,9 +99,7 @@ export default function LoginScreen() {
         />
 
         {/* Password com olho */}
-        <View
-          style={[styles.inputContainer, passwordError && styles.inputError]}
-        >
+        <View style={[styles.inputContainer, passwordError && styles.inputError]}>
           <TextInput
             style={styles.passwordInput}
             placeholder="Senha"
@@ -116,26 +114,14 @@ export default function LoginScreen() {
             }}
           />
 
-          <TouchableOpacity
-            onPress={togglePasswordVisibility}
-            style={styles.eyeIcon}
-          >
-            <Feather
-              name={isPasswordVisible ? "eye-off" : "eye"}
-              size={20}
-              color="#7A7A7A"
-            />
+          <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIcon}>
+            <Feather name={isPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#7A7A7A" />
           </TouchableOpacity>
         </View>
 
         {/* Esqueci minha senha */}
-        <TouchableOpacity
-          style={styles.forgotPasswordLink}
-          onPress={handleForgotPassword}
-        >
-          <Text style={{ fontSize: 12, textDecorationLine: "underline" }}>
-            Esqueceu a senha?
-          </Text>
+        <TouchableOpacity style={styles.forgotPasswordLink} onPress={handleForgotPassword}>
+          <Text style={{ fontSize: 12, textDecorationLine: 'underline' }}>Esqueceu a senha?</Text>
         </TouchableOpacity>
 
         {/* Botão Entrar */}
@@ -146,8 +132,7 @@ export default function LoginScreen() {
         {/* Cadastro */}
         <TouchableOpacity style={styles.options} onPress={handleCreate}>
           <Text style={styles.linkText}>
-            Primeiro acesso?{" "}
-            <Text style={styles.underlinedLinkText}>Cadastre-se</Text>
+            Primeiro acesso? <Text style={styles.underlinedLinkText}>Cadastre-se</Text>
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -158,12 +143,12 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f0faff",
+    backgroundColor: '#f2f0faff',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
   },
 
@@ -174,28 +159,28 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    width: "100%",
-    backgroundColor: "#FFF",
+    width: '100%',
+    backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: "#E8DCCE",
+    borderColor: '#E8DCCE',
     padding: 12,
     marginBottom: 16,
     borderRadius: 10,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
 
   inputError: {
-    borderColor: "#ff4d4d",
+    borderColor: '#ff4d4d',
   },
 
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    backgroundColor: "#FFF",
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: "#E8DCCE",
+    borderColor: '#E8DCCE',
     borderRadius: 10,
     marginBottom: 19,
   },
@@ -203,45 +188,45 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   eyeIcon: {
     padding: 12,
   },
 
   forgotPasswordLink: {
-    width: "100%",
-    alignItems: "flex-start",
+    width: '100%',
+    alignItems: 'flex-start',
     marginBottom: 10,
     marginTop: -15,
   },
 
   button: {
-    backgroundColor: "#9191d8ff",
+    backgroundColor: '#9191d8ff',
     paddingVertical: 14,
     borderRadius: 10,
-    width: "100%",
-    alignItems: "center",
-    shadowColor: "#000",
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
     marginTop: 25,
   },
   buttonText: {
-    color: "#fdfdfdff",
+    color: '#fdfdfdff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 
   options: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   linkText: {
-    color: "#505063ff",
+    color: '#505063ff',
     fontSize: 12,
     marginTop: 14,
   },
   underlinedLinkText: {
-    textDecorationLine: "underline",
+    textDecorationLine: 'underline',
   },
 });

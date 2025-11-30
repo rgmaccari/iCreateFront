@@ -1,12 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ComponentSelectorModalProps {
   visible: boolean;
@@ -43,11 +37,11 @@ const ComponentSelectorModal = (props: ComponentSelectorModalProps) => {
       description: 'Explore ferramentas com I.A.',
       icon: 'hardware-chip-outline' as const,
       color: '#d67370ff',
-    }
+    },
   ];
 
   //Calcula a altura dinâmica baseada no número de componentes -> ver depois...
-  const modalHeight = 100 + (components.length * 90);
+  const modalHeight = 100 + components.length * 90;
 
   return (
     <Modal
@@ -56,11 +50,7 @@ const ComponentSelectorModal = (props: ComponentSelectorModalProps) => {
       transparent={true}
       onRequestClose={props.onClose}
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={props.onClose}
-      >
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={props.onClose}>
         <View style={[styles.modalContainer, { height: modalHeight }]}>
           {/*Conteúdo do modal*/}
           <View style={styles.header}>
@@ -82,9 +72,7 @@ const ComponentSelectorModal = (props: ComponentSelectorModalProps) => {
                 </View>
                 <View style={styles.textContainer}>
                   <Text style={styles.componentTitle}>{component.title}</Text>
-                  <Text style={styles.componentDescription}>
-                    {component.description}
-                  </Text>
+                  <Text style={styles.componentDescription}>{component.description}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#ccc" />
               </TouchableOpacity>

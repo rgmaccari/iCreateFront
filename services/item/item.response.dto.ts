@@ -1,8 +1,8 @@
-import { ChecklistItem } from "../checklist/checklist-item";
+import { ChecklistItem } from '../checklist/checklist-item';
 
 export interface ItemResponseDto {
   code: number;
-  type: "image" | "note" | "link" | "checklist";
+  type: 'image' | 'note' | 'link' | 'checklist';
   componentCode: number;
   x: number;
   y: number;

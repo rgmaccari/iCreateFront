@@ -1,11 +1,11 @@
-import { Checklist } from "@/services/checklist/checklist";
-import { Image } from "@/services/image/image";
-import { Link } from "@/services/link/link";
-import { LinkService } from "@/services/link/link.service";
-import { Note } from "@/services/notes/note";
-import { Project } from "@/services/project/project";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Checklist } from '@/services/checklist/checklist';
+import { Image } from '@/services/image/image';
+import { Link } from '@/services/link/link';
+import { LinkService } from '@/services/link/link.service';
+import { Note } from '@/services/notes/note';
+import { Project } from '@/services/project/project';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -17,21 +17,18 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import {
-  GestureHandlerRootView,
-  ScrollView,
-} from "react-native-gesture-handler";
+} from 'react-native';
+import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 
-import { showToast } from "@/constants/showToast";
-import { ChecklistDto } from "@/services/checklist/checklist.dto";
-import { ChecklistService } from "@/services/checklist/checklist.service";
-import { NoteService } from "@/services/notes/note.service";
-import * as Clipboard from "expo-clipboard";
-import ImageViewing from "react-native-image-viewing";
+import { showToast } from '@/constants/showToast';
+import { ChecklistDto } from '@/services/checklist/checklist.dto';
+import { ChecklistService } from '@/services/checklist/checklist.service';
+import { NoteService } from '@/services/notes/note.service';
+import * as Clipboard from 'expo-clipboard';
+import ImageViewing from 'react-native-image-viewing';
 
 type CombinedItem = (Image | Link | Note | Checklist) & {
-  __type: "image" | "link" | "note" | "checklist";
+  __type: 'image' | 'link' | 'note' | 'checklist';
 };
 
 interface ProjectGridProps {
@@ -45,37 +42,30 @@ interface ProjectGridProps {
   onUpdateLinks?: () => void;
   onUpdateImages?: () => void;
   onUpdateChecklists?: () => void;
-  onDelete?: (
-    code: number,
-    type: "image" | "link" | "note" | "checklist"
-  ) => void;
+  onDelete?: (code: number, type: 'image' | 'link' | 'note' | 'checklist') => void;
 }
 
 export default function ProjectGrid(props: ProjectGridProps) {
   const [form, setForm] = useState<Partial<Project>>({
-    title: props.project?.title || "",
-    sketch: props.project?.sketch || "",
+    title: props.project?.title || '',
+    sketch: props.project?.sketch || '',
   }); //Title e Description do Project
-  const [selectedItem, setSelectedItem] = useState<
-    Image | Link | Note | Checklist | null
-  >(null); //Item acessado
+  const [selectedItem, setSelectedItem] = useState<Image | Link | Note | Checklist | null>(null); //Item acessado
   const [modalVisible, setModalVisible] = useState(false); //Visibilidade do modal
-  const [activeFilters, setActiveFilters] = useState<
-    ("image" | "link" | "note" | "checklist")[]
-  >([]); //Filtros ativos
+  const [activeFilters, setActiveFilters] = useState<('image' | 'link' | 'note' | 'checklist')[]>(
+    [],
+  ); //Filtros ativos
 
   // No componente ProjectGrid, adicionar APENAS estes estados:
-  const [editableTitle, setEditableTitle] = useState("");
+  const [editableTitle, setEditableTitle] = useState('');
   const [isEditingLink, setIsEditingLink] = useState(false);
-  const [editableNoteTitle, setEditableNoteTitle] = useState("");
-  const [editableNoteDescription, setEditableNoteDescription] = useState("");
+  const [editableNoteTitle, setEditableNoteTitle] = useState('');
+  const [editableNoteDescription, setEditableNoteDescription] = useState('');
   const [isEditingNote, setIsEditingNote] = useState(false);
 
   // Estados para edição do checklist
-  const [editingChecklist, setEditingChecklist] = useState<Checklist | null>(
-    null
-  );
-  const [newChecklistItem, setNewChecklistItem] = useState("");
+  const [editingChecklist, setEditingChecklist] = useState<Checklist | null>(null);
+  const [newChecklistItem, setNewChecklistItem] = useState('');
   const [isEditingChecklist, setIsEditingChecklist] = useState(false);
   const lastChecklistItemRef = useRef<TextInput | null>(null);
 
@@ -90,32 +80,32 @@ export default function ProjectGrid(props: ProjectGridProps) {
     setModalVisible(true);
 
     // Se for um checklist, inicializa os estados de edição
-    if ("itens" in item) {
+    if ('itens' in item) {
       setEditingChecklist(JSON.parse(JSON.stringify(item)));
-      setEditableTitle(item.title || "");
+      setEditableTitle(item.title || '');
       setIsEditingChecklist(false);
     }
   };
 
   // Alternar filtros (permitindo múltiplos)
-  const toggleFilter = (type: "image" | "link" | "note" | "checklist") => {
+  const toggleFilter = (type: 'image' | 'link' | 'note' | 'checklist') => {
     setActiveFilters((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
   };
 
   // Junta todos os itens em um único array ordenado por data
   const combinedItems = useMemo<CombinedItem[]>(() => {
     const all: CombinedItem[] = [
-      ...props.images.map((i) => ({ ...i, __type: "image" as const })),
-      ...props.links.map((l) => ({ ...l, __type: "link" as const })),
-      ...props.notes.map((n) => ({ ...n, __type: "note" as const })),
-      ...props.checklists.map((n) => ({ ...n, __type: "checklist" as const })),
+      ...props.images.map((i) => ({ ...i, __type: 'image' as const })),
+      ...props.links.map((l) => ({ ...l, __type: 'link' as const })),
+      ...props.notes.map((n) => ({ ...n, __type: 'note' as const })),
+      ...props.checklists.map((n) => ({ ...n, __type: 'checklist' as const })),
     ];
 
     return all.sort((a, b) => {
-      const da = (a as any).updatedAt || (a as any).createdAt || "";
-      const db = (b as any).updatedAt || (b as any).createdAt || "";
+      const da = (a as any).updatedAt || (a as any).createdAt || '';
+      const db = (b as any).updatedAt || (b as any).createdAt || '';
       return new Date(db).getTime() - new Date(da).getTime();
     });
   }, [props.images, props.links, props.notes, props.checklists]);
@@ -128,16 +118,16 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
   const getItemTypeName = (type: string) => {
     switch (type) {
-      case "image":
-        return "imagem";
-      case "link":
-        return "link";
-      case "note":
-        return "nota";
-      case "checklist":
-        return "checklist";
+      case 'image':
+        return 'imagem';
+      case 'link':
+        return 'link';
+      case 'note':
+        return 'nota';
+      case 'checklist':
+        return 'checklist';
       default:
-        return "item";
+        return 'item';
     }
   };
 
@@ -147,9 +137,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
     setEditingChecklist((prev) => ({
       ...prev!,
-      itens: prev!.itens.map((item, i) =>
-        i === index ? { ...item, text } : item
-      ),
+      itens: prev!.itens.map((item, i) => (i === index ? { ...item, text } : item)),
     }));
     setIsEditingChecklist(true);
   };
@@ -160,7 +148,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
     setEditingChecklist((prev) => ({
       ...prev!,
       itens: prev!.itens.map((item, i) =>
-        i === index ? { ...item, checked: !item.checked } : item
+        i === index ? { ...item, checked: !item.checked } : item,
       ),
     }));
     setIsEditingChecklist(true);
@@ -210,7 +198,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
       ],
     }));
 
-    setNewChecklistItem("");
+    setNewChecklistItem('');
     setIsEditingChecklist(true);
 
     setTimeout(() => {
@@ -223,7 +211,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
     try {
       const dto: ChecklistDto = {
-        title: editableTitle.trim() || "Checklist",
+        title: editableTitle.trim() || 'Checklist',
         itens: editingChecklist.itens.map((item, index) => ({
           text: item.text.trim(),
           checked: item.checked,
@@ -233,7 +221,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
       };
 
       await ChecklistService.update(editingChecklist.code, dto);
-      showToast("success", "Checklist atualizado com sucesso!");
+      showToast('success', 'Checklist atualizado com sucesso!');
       setIsEditingChecklist(false);
 
       if (props.onUpdateChecklists) {
@@ -242,43 +230,39 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
       setModalVisible(false);
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro ao salvar checklist");
+      showToast('error', error.formattedMessage || 'Erro ao salvar checklist');
     }
   };
 
   //Renderizar o item de grid (imagem, link, nota ou checklist)
   const renderGridItem = ({ item }: { item: any }) => {
     let imageUri: string | undefined;
-    if (item.__type === "image") imageUri = item.url;
-    if (item.__type === "link") imageUri = item.previewImageUrl || undefined;
+    if (item.__type === 'image') imageUri = item.url;
+    if (item.__type === 'link') imageUri = item.previewImageUrl || undefined;
     //checklists e notas não têm imagem
 
     const iconName =
-      item.__type === "image"
-        ? "image"
-        : item.__type === "link"
-        ? "link"
-        : item.__type === "checklist"
-        ? "check-square"
-        : "sticky-note";
+      item.__type === 'image'
+        ? 'image'
+        : item.__type === 'link'
+          ? 'link'
+          : item.__type === 'checklist'
+            ? 'check-square'
+            : 'sticky-note';
 
     const handleLongPress = () => {
-      Alert.alert(
-        "Excluir item",
-        `Deseja excluir este(a) ${getItemTypeName(item.__type)}?`,
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Excluir",
-            style: "destructive",
-            onPress: () => {
-              if (props.onDelete && item.code) {
-                props.onDelete(item.code, item.__type);
-              }
-            },
+      Alert.alert('Excluir item', `Deseja excluir este(a) ${getItemTypeName(item.__type)}?`, [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: () => {
+            if (props.onDelete && item.code) {
+              props.onDelete(item.code, item.__type);
+            }
           },
-        ]
-      );
+        },
+      ]);
     };
 
     return (
@@ -293,18 +277,14 @@ export default function ProjectGrid(props: ProjectGridProps) {
           <RNImage source={{ uri: imageUri }} style={styles.gridImage} />
         ) : (
           <View
-            style={[
-              styles.placeholder,
-              item.__type === "checklist" && styles.checklistPlaceholder,
-            ]}
+            style={[styles.placeholder, item.__type === 'checklist' && styles.checklistPlaceholder]}
           >
             <FontAwesome name={iconName} size={30} color="#888" />
             {/* Mostrar progresso do checklist no grid */}
-            {item.__type === "checklist" && (
+            {item.__type === 'checklist' && (
               <View style={styles.checklistBadge}>
                 <Text style={styles.checklistBadgeText}>
-                  {item.itens?.filter((i: any) => i.checked).length || 0}/
-                  {item.itens?.length || 0}
+                  {item.itens?.filter((i: any) => i.checked).length || 0}/{item.itens?.length || 0}
                 </Text>
               </View>
             )}
@@ -319,8 +299,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
   // Nova função para renderizar modal do checklist editável
   const renderChecklistModal = (checklist: Checklist) => {
-    const completed =
-      editingChecklist?.itens?.filter((i) => i.checked).length || 0;
+    const completed = editingChecklist?.itens?.filter((i) => i.checked).length || 0;
     const total = editingChecklist?.itens?.length || 0;
     const progress = total > 0 ? (completed / total) * 100 : 0;
 
@@ -328,14 +307,14 @@ export default function ProjectGrid(props: ProjectGridProps) {
       <View style={styles.previewOverlay}>
         <View style={styles.previewCard}>
           {/* Header com título à esquerda e botão fechar à direita */}
-          <View style={[styles.modalHeader, { alignItems: "flex-start" }]}>
+          <View style={[styles.modalHeader, { alignItems: 'flex-start' }]}>
             <TextInput
               style={[
                 styles.checklistTitleInput,
                 { flex: 1 },
-                !editableTitle && { color: "#9CA3AF" },
+                !editableTitle && { color: '#9CA3AF' },
               ]}
-              value={editableTitle || ""}
+              value={editableTitle || ''}
               onChangeText={(text) => {
                 setEditableTitle(text);
                 setIsEditingChecklist(true);
@@ -350,19 +329,15 @@ export default function ProjectGrid(props: ProjectGridProps) {
               style={styles.previewCloseButton}
               onPress={() => {
                 if (isEditingChecklist) {
-                  Alert.alert(
-                    "Alterações não salvas",
-                    "Deseja salvar as alterações?",
-                    [
-                      { text: "Cancelar", style: "cancel" },
-                      {
-                        text: "Não salvar",
-                        style: "destructive",
-                        onPress: () => setModalVisible(false),
-                      },
-                      { text: "Salvar", onPress: handleSaveChecklist },
-                    ]
-                  );
+                  Alert.alert('Alterações não salvas', 'Deseja salvar as alterações?', [
+                    { text: 'Cancelar', style: 'cancel' },
+                    {
+                      text: 'Não salvar',
+                      style: 'destructive',
+                      onPress: () => setModalVisible(false),
+                    },
+                    { text: 'Salvar', onPress: handleSaveChecklist },
+                  ]);
                 } else {
                   setModalVisible(false);
                 }
@@ -387,23 +362,14 @@ export default function ProjectGrid(props: ProjectGridProps) {
             {editingChecklist?.itens?.map((item, index) => (
               <View key={index} style={styles.checklistItem}>
                 <TouchableOpacity
-                  style={[
-                    styles.checkbox,
-                    item.checked && styles.checkboxChecked,
-                  ]}
+                  style={[styles.checkbox, item.checked && styles.checkboxChecked]}
                   onPress={() => toggleChecklistItem(index)}
                 >
-                  {item.checked && (
-                    <Ionicons name="checkmark" size={12} color="#fff" />
-                  )}
+                  {item.checked && <Ionicons name="checkmark" size={12} color="#fff" />}
                 </TouchableOpacity>
 
                 <TextInput
-                  ref={
-                    index === editingChecklist.itens.length - 1
-                      ? lastChecklistItemRef
-                      : null
-                  }
+                  ref={index === editingChecklist.itens.length - 1 ? lastChecklistItemRef : null}
                   style={[
                     styles.checklistItemInput,
                     item.checked && styles.checklistItemInputChecked,
@@ -461,24 +427,17 @@ export default function ProjectGrid(props: ProjectGridProps) {
             <TouchableOpacity
               style={[
                 styles.addChecklistItemButton,
-                (!newChecklistItem.trim() ||
-                  editingChecklist?.itens.length! >= 15) &&
+                (!newChecklistItem.trim() || editingChecklist?.itens.length! >= 15) &&
                   styles.addChecklistItemButtonDisabled,
               ]}
               onPress={addChecklistItem}
-              disabled={
-                !newChecklistItem.trim() ||
-                editingChecklist?.itens.length! >= 15
-              }
+              disabled={!newChecklistItem.trim() || editingChecklist?.itens.length! >= 15}
             >
               <Ionicons
                 name="add"
                 size={20}
                 color={
-                  newChecklistItem.trim() &&
-                  editingChecklist?.itens.length! < 15
-                    ? "#fff"
-                    : "#ccc"
+                  newChecklistItem.trim() && editingChecklist?.itens.length! < 15 ? '#fff' : '#ccc'
                 }
               />
             </TouchableOpacity>
@@ -486,14 +445,9 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
           {/* Botão salvar */}
           {isEditingChecklist && (
-            <TouchableOpacity
-              style={styles.saveChecklistButton}
-              onPress={handleSaveChecklist}
-            >
+            <TouchableOpacity style={styles.saveChecklistButton} onPress={handleSaveChecklist}>
               <Ionicons name="checkmark-outline" size={20} color="#FFFFFF" />
-              <Text style={styles.saveChecklistButtonText}>
-                Salvar Alterações
-              </Text>
+              <Text style={styles.saveChecklistButtonText}>Salvar Alterações</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -505,7 +459,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
   const renderItemModal = () => {
     if (!selectedItem) return null;
 
-    if ("url" in selectedItem && "filename" in selectedItem) {
+    if ('url' in selectedItem && 'filename' in selectedItem) {
       const imageSources = [{ uri: selectedItem.url }];
 
       return (
@@ -517,7 +471,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
           onRequestClose={() => setModalVisible(false)}
         />
       );
-    } else if ("url" in selectedItem && "title" in selectedItem) {
+    } else if ('url' in selectedItem && 'title' in selectedItem) {
       const handleSave = async () => {
         try {
           await LinkService.update(selectedItem.code!, {
@@ -528,31 +482,31 @@ export default function ProjectGrid(props: ProjectGridProps) {
           //Atualizar o item selecionado com o novo título
           setSelectedItem({ ...selectedItem, title: editableTitle });
 
-          showToast("success", "Nota atualizada!");
+          showToast('success', 'Nota atualizada!');
 
           if (props.onUpdateLinks) {
             props.onUpdateLinks();
           }
 
           setModalVisible(false);
-          setEditableTitle("");
+          setEditableTitle('');
         } catch (error: any) {
-          showToast("error", error.formattedMessage);
+          showToast('error', error.formattedMessage);
         }
       };
 
       const handleCopyLink = async () => {
         try {
           await Clipboard.setStringAsync(selectedItem.url!);
-          showToast("info", "Link copiado!");
+          showToast('info', 'Link copiado!');
         } catch (error) {
-          console.error("Erro ao copiar link:", error);
+          console.error('Erro ao copiar link:', error);
         }
       };
 
       const handleAccessLink = () => {
         Linking.openURL(selectedItem.url!).catch((err) =>
-          console.error("Erro ao abrir link:", err)
+          console.error('Erro ao abrir link:', err),
         );
       };
 
@@ -567,7 +521,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
                 onPress={() => {
                   setModalVisible(false);
                   setIsEditingLink(false);
-                  setEditableTitle("");
+                  setEditableTitle('');
                 }}
               >
                 <Ionicons name="close" size={24} color="#6B7280" />
@@ -587,7 +541,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
             <View style={styles.linkTitleContainer}>
               <TextInput
                 style={styles.linkTitleInput}
-                value={editableTitle || selectedItem.title || ""}
+                value={editableTitle || selectedItem.title || ''}
                 onChangeText={setEditableTitle}
                 placeholder="Título do link"
                 onFocus={() => setIsEditingLink(true)}
@@ -602,18 +556,12 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
             {/* Botões de ação */}
             <View style={styles.linkActions}>
-              <TouchableOpacity
-                style={styles.linkActionButton}
-                onPress={handleCopyLink}
-              >
+              <TouchableOpacity style={styles.linkActionButton} onPress={handleCopyLink}>
                 <Ionicons name="copy-outline" size={20} color="#6B7280" />
                 <Text style={styles.linkActionText}>Copiar</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.linkActionButton}
-                onPress={handleAccessLink}
-              >
+              <TouchableOpacity style={styles.linkActionButton} onPress={handleAccessLink}>
                 <Ionicons name="open-outline" size={20} color="#6B7280" />
                 <Text style={styles.linkActionText}>Acessar</Text>
               </TouchableOpacity>
@@ -623,21 +571,15 @@ export default function ProjectGrid(props: ProjectGridProps) {
                   style={[styles.linkActionButton, styles.saveButton]}
                   onPress={handleSave}
                 >
-                  <Ionicons
-                    name="checkmark-outline"
-                    size={20}
-                    color="#FFFFFF"
-                  />
-                  <Text style={[styles.linkActionText, styles.saveButtonText]}>
-                    Salvar
-                  </Text>
+                  <Ionicons name="checkmark-outline" size={20} color="#FFFFFF" />
+                  <Text style={[styles.linkActionText, styles.saveButtonText]}>Salvar</Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
         </View>
       );
-    } else if ("itens" in selectedItem) {
+    } else if ('itens' in selectedItem) {
       //É um Checklist
       return renderChecklistModal(selectedItem as Checklist);
     } else {
@@ -655,14 +597,14 @@ export default function ProjectGrid(props: ProjectGridProps) {
           setIsEditingNote(false);
           setModalVisible(false);
           // Atualizar o item selecionado
-          showToast("success", "Nota atualizada!");
+          showToast('success', 'Nota atualizada!');
 
           if (props.onUpdateNote) {
             props.onUpdateNote();
           }
         } catch (error: any) {
-          console.error("Erro ao atualizar nota:", error);
-          showToast("error", error.formattedMessage);
+          console.error('Erro ao atualizar nota:', error);
+          showToast('error', error.formattedMessage);
         }
       };
 
@@ -670,14 +612,14 @@ export default function ProjectGrid(props: ProjectGridProps) {
         <View style={styles.previewOverlay}>
           <View style={styles.previewCard}>
             {/* Header com título à esquerda e botão fechar à direita */}
-            <View style={[styles.modalHeader, { alignItems: "flex-start" }]}>
+            <View style={[styles.modalHeader, { alignItems: 'flex-start' }]}>
               <TextInput
                 style={[
                   styles.noteTitleInput,
                   { flex: 1 },
-                  !(editableNoteTitle || note.title) && { color: "#9CA3AF" },
+                  !(editableNoteTitle || note.title) && { color: '#9CA3AF' },
                 ]}
-                value={editableNoteTitle || note.title || ""}
+                value={editableNoteTitle || note.title || ''}
                 onChangeText={setEditableNoteTitle}
                 placeholder="Informe um título"
                 placeholderTextColor="#9CA3AF"
@@ -691,8 +633,8 @@ export default function ProjectGrid(props: ProjectGridProps) {
                 onPress={() => {
                   setModalVisible(false);
                   setIsEditingNote(false);
-                  setEditableNoteTitle("");
-                  setEditableNoteDescription("");
+                  setEditableNoteTitle('');
+                  setEditableNoteDescription('');
                 }}
               >
                 <Ionicons name="close" size={24} color="#6B7280" />
@@ -703,7 +645,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
             <ScrollView style={styles.previewBody}>
               <TextInput
                 style={styles.noteDescriptionInput}
-                value={editableNoteDescription || note.description || ""}
+                value={editableNoteDescription || note.description || ''}
                 onChangeText={setEditableNoteDescription}
                 placeholder="Conteúdo da nota..."
                 multiline
@@ -714,10 +656,7 @@ export default function ProjectGrid(props: ProjectGridProps) {
 
             {/* Botão salvar */}
             {isEditingNote && (
-              <TouchableOpacity
-                style={styles.noteSaveButton}
-                onPress={handleSaveNote}
-              >
+              <TouchableOpacity style={styles.noteSaveButton} onPress={handleSaveNote}>
                 <Ionicons name="checkmark-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.noteSaveButtonText}>Salvar</Text>
               </TouchableOpacity>
@@ -740,32 +679,30 @@ export default function ProjectGrid(props: ProjectGridProps) {
           maxLength={1000}
           numberOfLines={4}
           value={form.sketch}
-          onChangeText={(text) =>
-            setForm((prev) => ({ ...prev, sketch: text }))
-          }
+          onChangeText={(text) => setForm((prev) => ({ ...prev, sketch: text }))}
         />
 
         {/* Filtro por tipo */}
         <View style={styles.filterContainer}>
-          {(["image", "link", "note", "checklist"] as const).map((type) => {
+          {(['image', 'link', 'note', 'checklist'] as const).map((type) => {
             const iconName =
-              type === "image"
-                ? "image"
-                : type === "link"
-                ? "link"
-                : type === "checklist"
-                ? "checkbox"
-                : "document-text";
+              type === 'image'
+                ? 'image'
+                : type === 'link'
+                  ? 'link'
+                  : type === 'checklist'
+                    ? 'checkbox'
+                    : 'document-text';
 
             const isActive = activeFilters.includes(type);
             const color =
-              type === "image"
-                ? "#2196F3"
-                : type === "link"
-                ? "#4CAF50"
-                : type === "checklist"
-                ? "#9C27B0"
-                : "#FFB300";
+              type === 'image'
+                ? '#2196F3'
+                : type === 'link'
+                  ? '#4CAF50'
+                  : type === 'checklist'
+                    ? '#9C27B0'
+                    : '#FFB300';
 
             return (
               <TouchableOpacity
@@ -774,16 +711,12 @@ export default function ProjectGrid(props: ProjectGridProps) {
                 style={[
                   styles.filterButton,
                   isActive && {
-                    backgroundColor: color + "22",
+                    backgroundColor: color + '22',
                     borderColor: color,
                   },
                 ]}
               >
-                <Ionicons
-                  name={iconName}
-                  size={20}
-                  color={isActive ? color : "#666"}
-                />
+                <Ionicons name={iconName} size={20} color={isActive ? color : '#666'} />
               </TouchableOpacity>
             );
           })}
@@ -817,34 +750,34 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
 
   label: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 4,
-    color: "#1A1A1A",
+    color: '#1A1A1A',
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
-    backgroundColor: "#FFFFFF",
-    color: "#1A1A1A",
+    backgroundColor: '#FFFFFF',
+    color: '#1A1A1A',
   },
 
   multiline: {
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
     height: 100,
   },
 
   filterContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     marginBottom: 8,
   },
 
@@ -852,158 +785,158 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#E0E0E0',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginHorizontal: 6,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     borderRadius: 6,
   },
 
   filterButtonActive: {
-    backgroundColor: "#F8F9FA",
-    borderColor: "#C5C5C5",
+    backgroundColor: '#F8F9FA',
+    borderColor: '#C5C5C5',
   },
 
   gridContainer: {
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
 
   gridItem: {
     flex: 1 / 3,
     aspectRatio: 1,
     margin: 1,
-    position: "relative",
-    backgroundColor: "#F8F9FA",
+    position: 'relative',
+    backgroundColor: '#F8F9FA',
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
   },
 
   gridImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
 
   placeholder: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#E0E0E0",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E0E0E0',
   },
 
   checklistPlaceholder: {
-    backgroundColor: "#F3E5F5",
+    backgroundColor: '#F3E5F5',
   },
 
   checklistBadge: {
-    position: "absolute",
+    position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: 'rgba(0,0,0,0.7)',
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
 
   checklistBadgeText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 
   iconFooter: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 4,
     right: 4,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: 'rgba(0,0,0,0.35)',
     borderRadius: 6,
     padding: 2,
   },
 
   modalFullScreen: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
   },
 
   modalContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
 
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#1A1A1A",
+    fontWeight: 'bold',
+    color: '#1A1A1A',
     marginBottom: 8,
   },
 
   modalText: {
     fontSize: 16,
-    color: "#666666",
+    color: '#666666',
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   coverBadge: {
     fontSize: 14,
-    color: "#1A1A1A",
-    fontWeight: "600",
+    color: '#1A1A1A',
+    fontWeight: '600',
     marginBottom: 8,
   },
 
   fullImage: {
-    width: "100%",
-    height: "70%",
+    width: '100%',
+    height: '70%',
     borderRadius: 8,
     marginBottom: 16,
   },
 
   modalCloseButton: {
-    backgroundColor: "#7B1FA2",
+    backgroundColor: '#7B1FA2',
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
   },
 
   modalCloseText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   previewOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.85)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
   },
   previewCard: {
-    width: "100%",
-    maxHeight: "90%",
-    backgroundColor: "#FFFFFF",
+    width: '100%',
+    maxHeight: '90%',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    position: "relative",
+    position: 'relative',
   },
   previewHeader: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     marginBottom: 16,
   },
   previewCloseButton: {
     padding: 6,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: '#F3F4F6',
   },
   previewTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1F2937",
+    fontWeight: '700',
+    color: '#1F2937',
     marginBottom: 12,
     paddingRight: 40,
   },
@@ -1012,61 +945,61 @@ const styles = StyleSheet.create({
   },
   previewDescription: {
     fontSize: 15,
-    color: "#374151",
+    color: '#374151',
     lineHeight: 22,
   },
   // Header consistente para todos os modais
   modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   modalHeaderTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1F2937",
+    fontWeight: '700',
+    color: '#1F2937',
   },
   // Estilos para checklist
   checklistTitleInput: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontWeight: '600',
+    color: '#1F2937',
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: '#E5E7EB',
     paddingVertical: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   checklistProgress: {
     marginBottom: 16,
   },
   progressBar: {
     height: 6,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: '#E5E7EB',
     borderRadius: 3,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: 4,
   },
   progressFill: {
-    height: "100%",
-    backgroundColor: "#4CAF50",
+    height: '100%',
+    backgroundColor: '#4CAF50',
     borderRadius: 3,
   },
   progressText: {
     fontSize: 12,
-    color: "#6B7280",
-    fontWeight: "500",
+    color: '#6B7280',
+    fontWeight: '500',
   },
   checklistItemsContainer: {
     maxHeight: 400,
     marginBottom: 16,
   },
   checklistItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     marginBottom: 8,
     gap: 12,
@@ -1075,27 +1008,27 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 4,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: "#FF9500",
-    borderColor: "#FF9500",
+    backgroundColor: '#FF9500',
+    borderColor: '#FF9500',
   },
   checklistItemInput: {
     flex: 1,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   checklistItemInputChecked: {
-    textDecorationLine: "line-through",
-    color: "#666",
+    textDecorationLine: 'line-through',
+    color: '#666',
   },
   checklistItemActions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   moveButton: {
@@ -1105,79 +1038,79 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   newChecklistItemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
     marginBottom: 16,
   },
   newChecklistItemInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   addChecklistItemButton: {
     width: 40,
     height: 40,
-    backgroundColor: "#FF9500",
+    backgroundColor: '#FF9500',
     borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addChecklistItemButtonDisabled: {
-    backgroundColor: "#ddd",
+    backgroundColor: '#ddd',
   },
   saveChecklistButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "#FF9500",
+    backgroundColor: '#FF9500',
     gap: 8,
   },
   saveChecklistButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   emptyText: {
-    color: "#9CA3AF",
-    fontStyle: "italic",
+    color: '#9CA3AF',
+    fontStyle: 'italic',
     fontSize: 14,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 20,
   },
   // Estilos para link modal
   linkModalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.85)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   linkModalCard: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
+    width: '100%',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    maxHeight: "80%",
+    maxHeight: '80%',
   },
   linkModalHeader: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     marginBottom: 16,
   },
   linkModalCloseButton: {
     padding: 6,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: '#F3F4F6',
   },
   linkPreviewImage: {
-    width: "100%",
+    width: '100%',
     height: 200,
     borderRadius: 12,
     marginBottom: 16,
@@ -1187,74 +1120,74 @@ const styles = StyleSheet.create({
   },
   linkTitleInput: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontWeight: '600',
+    color: '#1F2937',
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: '#E5E7EB',
     paddingVertical: 8,
   },
   linkUrl: {
     fontSize: 14,
-    color: "#6B7280",
+    color: '#6B7280',
     marginBottom: 20,
   },
   linkActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     gap: 10,
   },
   linkActionButton: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: '#F3F4F6',
     gap: 6,
   },
   linkActionText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#6B7280",
+    fontWeight: '500',
+    color: '#6B7280',
   },
   saveButton: {
-    backgroundColor: "#10B981",
+    backgroundColor: '#10B981',
   },
   saveButtonText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   // Estilos para note
   noteTitleInput: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1F2937",
+    fontWeight: '700',
+    color: '#1F2937',
     marginBottom: 12,
     paddingRight: 40,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: '#E5E7EB',
     paddingVertical: 8,
   },
   noteDescriptionInput: {
     fontSize: 15,
-    color: "#374151",
+    color: '#374151',
     lineHeight: 22,
     minHeight: 200,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   noteSaveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#FF9500",
+    backgroundColor: '#FF9500',
     gap: 6,
     marginTop: 16,
   },
   noteSaveButtonText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#FFFFFF",
+    fontWeight: '500',
+    color: '#FFFFFF',
   },
 });

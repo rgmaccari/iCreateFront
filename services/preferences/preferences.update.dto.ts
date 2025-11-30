@@ -1,3 +1,3 @@
 export interface PreferencesUpdateDto {
-    interests: string[]
+  interests: string[];
 }

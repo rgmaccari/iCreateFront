@@ -1,12 +1,12 @@
-import ImageViewerPanel from "@/components/image-viewer-panel";
-import { showToast } from "@/constants/showToast";
-import { Image } from "@/services/image/image";
-import { ImageService } from "@/services/image/image.service";
-import { Project } from "@/services/project/project";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ImageViewerPanel from '@/components/image-viewer-panel';
+import { showToast } from '@/constants/showToast';
+import { Image } from '@/services/image/image';
+import { ImageService } from '@/services/image/image.service';
+import { Project } from '@/services/project/project';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ImagesProjectModalProps {
   project?: Project;
@@ -24,9 +24,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
   useEffect(() => {
     if (props.visible && props.userCode) {
       setLoading(true);
-      findAllImages().catch((error: any) =>
-        showToast("error", error.formattedMessage)
-      );
+      findAllImages().catch((error: any) => showToast('error', error.formattedMessage));
     }
   }, [props.visible]);
 
@@ -42,9 +40,7 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
       const allImages = await ImageService.findAllImages();
       setImages(allImages || []);
 
-      const projectImages = await ImageService.findAllByProjectCode(
-        props.project.code
-      );
+      const projectImages = await ImageService.findAllByProjectCode(props.project.code);
       setProjectImages(projectImages || []);
     }
     setLoading(false);
@@ -53,17 +49,15 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
   const handleAddToBoard = async (image: Image) => {
     if (image.projectCode != props.project?.code) {
       const formData = new FormData();
-      formData.append("images", {
+      formData.append('images', {
         uri: image.url,
-        type: image.mimeType || "image/jpeg",
+        type: image.mimeType || 'image/jpeg',
         name: image.filename || `clone_${Date.now()}.jpg`,
       } as any);
-      formData.append("isCover", String(false));
+      formData.append('isCover', String(false));
 
       await ImageService.create(props.project?.code!, formData);
-      const [newImage] = await ImageService.findAllByProjectCode(
-        props.project?.code!
-      );
+      const [newImage] = await ImageService.findAllByProjectCode(props.project?.code!);
       props.onAddToBoard?.(newImage);
     } else {
       props.onAddToBoard?.(image);
@@ -96,14 +90,12 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
                 <ImageViewerPanel
                   images={projectImages}
                   viewMode="carousel"
-                  onDelete={() => console.log("aopa")}
+                  onDelete={() => console.log('aopa')}
                   onAddToBoard={props.project ? handleAddToBoard : undefined}
                 />
               </View>
             ) : (
-              <Text style={styles.emptyText}>
-                Nenhuma imagem associada a este projeto.
-              </Text>
+              <Text style={styles.emptyText}>Nenhuma imagem associada a este projeto.</Text>
             )}
           </View>
         )}
@@ -111,20 +103,18 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
         {/* Seção de Todas as Imagens */}
         <View style={styles.scrollSection}>
           <Text style={styles.sectionTitle}>
-            {props.project?.code ? "Todas as imagens" : "Minhas imagens"}
+            {props.project?.code ? 'Todas as imagens' : 'Minhas imagens'}
           </Text>
           {images.length > 0 ? (
             <ImageViewerPanel
               images={images}
               viewMode="grid"
-              onDelete={() => console.log("aopa")}
+              onDelete={() => console.log('aopa')}
               onAddToBoard={props.project ? handleAddToBoard : undefined}
             />
           ) : (
             <Text style={styles.emptyText}>
-              {props.project?.code
-                ? "Nenhuma imagem encontrada."
-                : "Nenhuma imagem encontrada."}
+              {props.project?.code ? 'Nenhuma imagem encontrada.' : 'Nenhuma imagem encontrada.'}
             </Text>
           )}
         </View>
@@ -136,36 +126,36 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    backgroundColor: "#f8f9fa",
+    borderBottomColor: '#e0e0e0',
+    backgroundColor: '#f8f9fa',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   closeButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#f0f0f0',
   },
   fixedSection: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    backgroundColor: "#fafafa",
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fafafa',
   },
   carouselWrapper: {
-    width: "100%",
-    alignItems: "center",
+    width: '100%',
+    alignItems: 'center',
   },
   scrollSection: {
     flex: 1,
@@ -173,16 +163,16 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#362946",
+    fontWeight: 'bold',
+    color: '#362946',
     marginBottom: 16,
   },
   emptyText: {
-    color: "#777",
-    fontStyle: "italic",
+    color: '#777',
+    fontStyle: 'italic',
     fontSize: 14,
     marginTop: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 

@@ -11,7 +11,7 @@ export type BaseItem = {
 };
 
 export type LinkItem = BaseItem & {
-  type: "link"; // literal fixo
+  type: 'link'; // literal fixo
   title: string;
   url: string;
   previewImageUrl?: string;
@@ -19,14 +19,14 @@ export type LinkItem = BaseItem & {
 };
 
 export type ChecklistBoardItem = BaseItem & {
-  type: 'checklist',
-  title: string,
-  items: ChecklistItem[]
-  updatedAt: string
-}
+  type: 'checklist';
+  title: string;
+  items: ChecklistItem[];
+  updatedAt: string;
+};
 
 export type ImageItem = BaseItem & {
-  type: "image"; // literal fixo
+  type: 'image'; // literal fixo
   filename?: string;
   isCover?: boolean;
   source: string;
@@ -34,7 +34,7 @@ export type ImageItem = BaseItem & {
 };
 
 export type NoteItem = BaseItem & {
-  type: "note"; // literal fixo
+  type: 'note'; // literal fixo
   title?: string;
   description: string;
   sort: number;

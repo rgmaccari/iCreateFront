@@ -1,49 +1,40 @@
-import ProjectBoard from "@/app/main/project/project-board";
-import AddButton from "@/components/add-button";
-import IaToolsModal from "@/components/ia-tools-modal";
-import ImageModal from "@/components/image-modal";
-import LinkModal from "@/components/linking-modal";
-import PageHeader from "@/components/page-header";
-import ProjectGrid from "@/components/project-grid";
-import ProjectViewTabs, {
-  ProjectViewMode,
-} from "@/components/project-view-tabs";
-import ComponentSelectorModal from "@/components/selector-modal";
-import SketchModal from "@/components/sketch-modal";
-import { showToast } from "@/constants/showToast";
-import { AuthService } from "@/services/api/auth.service";
-import { Checklist } from "@/services/checklist/checklist";
-import { ChecklistDto } from "@/services/checklist/checklist.dto";
-import { ChecklistService } from "@/services/checklist/checklist.service";
-import { Image } from "@/services/image/image";
-import { ImageCreateDto } from "@/services/image/image.create.dto";
-import { ImageService } from "@/services/image/image.service";
-import { Link } from "@/services/link/link";
-import { LinkCreateDto } from "@/services/link/link.create.dto";
-import { LinkService } from "@/services/link/link.service";
-import { Note } from "@/services/notes/note";
-import { NoteCreateDto } from "@/services/notes/note.create.dto";
-import { NoteService } from "@/services/notes/note.service";
-import { Project } from "@/services/project/project";
-import { ProjectInfoDto } from "@/services/project/project.create.dto";
-import { ProjectService } from "@/services/project/project.service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from "expo-file-system/legacy";
-import {
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-} from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ProjectBoard from '@/app/main/project/project-board';
+import AddButton from '@/components/add-button';
+import IaToolsModal from '@/components/ia-tools-modal';
+import ImageModal from '@/components/image-modal';
+import LinkModal from '@/components/linking-modal';
+import PageHeader from '@/components/page-header';
+import ProjectGrid from '@/components/project-grid';
+import ProjectViewTabs, { ProjectViewMode } from '@/components/project-view-tabs';
+import ComponentSelectorModal from '@/components/selector-modal';
+import SketchModal from '@/components/sketch-modal';
+import { showToast } from '@/constants/showToast';
+import { AuthService } from '@/services/api/auth.service';
+import { Checklist } from '@/services/checklist/checklist';
+import { ChecklistDto } from '@/services/checklist/checklist.dto';
+import { ChecklistService } from '@/services/checklist/checklist.service';
+import { Image } from '@/services/image/image';
+import { ImageCreateDto } from '@/services/image/image.create.dto';
+import { ImageService } from '@/services/image/image.service';
+import { Link } from '@/services/link/link';
+import { LinkCreateDto } from '@/services/link/link.create.dto';
+import { LinkService } from '@/services/link/link.service';
+import { Note } from '@/services/notes/note';
+import { NoteCreateDto } from '@/services/notes/note.create.dto';
+import { NoteService } from '@/services/notes/note.service';
+import { Project } from '@/services/project/project';
+import { ProjectInfoDto } from '@/services/project/project.create.dto';
+import { ProjectService } from '@/services/project/project.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProjectScreen() {
   const params = useLocalSearchParams<{ projectCode?: string }>();
-  const projectCode = params.projectCode
-    ? parseInt(params.projectCode, 10)
-    : undefined;
+  const projectCode = params.projectCode ? parseInt(params.projectCode, 10) : undefined;
   const navigation = useNavigation();
 
   const [project, setProject] = useState<Project | undefined>(undefined);
@@ -79,7 +70,7 @@ export default function ProjectScreen() {
           //Carrega os itens do projeto
           await loadProjectItems(projectCode);
         } catch (error: any) {
-          showToast("error", error.formattedMessage);
+          showToast('error', error.formattedMessage);
         }
       }
       setLoading(false);
@@ -90,8 +81,7 @@ export default function ProjectScreen() {
   //Detecta mudanças no projeto
   useEffect(() => {
     if (project) {
-      const isChanged =
-        project.title !== formData.title || project.sketch !== formData.sketch;
+      const isChanged = project.title !== formData.title || project.sketch !== formData.sketch;
       setIsDirty(isChanged);
     } else {
       setIsDirty(!!formData.title || !!formData.sketch);
@@ -108,54 +98,47 @@ export default function ProjectScreen() {
 
         e.preventDefault();
 
-        Alert.alert(
-          "Salvar projeto",
-          "Deseja salvar as alterações antes de voltar?",
-          [
-            {
-              text: "Não",
-              onPress: () => {
-                setIsDirty(false);
-                navigation.dispatch(e.data.action);
-              },
+        Alert.alert('Salvar projeto', 'Deseja salvar as alterações antes de voltar?', [
+          {
+            text: 'Não',
+            onPress: () => {
+              setIsDirty(false);
+              navigation.dispatch(e.data.action);
             },
-            {
-              text: "Sim",
-              onPress: () => {
-                handleSubmitProject();
-              },
+          },
+          {
+            text: 'Sim',
+            onPress: () => {
+              handleSubmitProject();
             },
-            { text: "Cancelar", style: "cancel" },
-          ]
-        );
+          },
+          { text: 'Cancelar', style: 'cancel' },
+        ]);
       };
 
-      const unsubscribe = navigation.addListener(
-        "beforeRemove",
-        onBeforeRemove
-      );
+      const unsubscribe = navigation.addListener('beforeRemove', onBeforeRemove);
       return unsubscribe;
-    }, [navigation, isDirty])
+    }, [navigation, isDirty]),
   );
 
   //Carrega a última ViewForm ativa
   useEffect(() => {
     const loadLastView = async () => {
       if (!projectCode) {
-        setCurrentView("form"); //Fallback se não tem projeto...
+        setCurrentView('form'); //Fallback se não tem projeto...
         return;
       }
 
       const LAST_VIEW_KEY = `project_last_view_${projectCode}`;
       try {
         const savedView = await AuthService.safeGetItem(LAST_VIEW_KEY);
-        if (savedView && ["form", "board", "document"].includes(savedView)) {
+        if (savedView && ['form', 'board', 'document'].includes(savedView)) {
           setCurrentView(savedView as ProjectViewMode);
         } else {
-          setCurrentView("form"); //Fallback se inválido
+          setCurrentView('form'); //Fallback se inválido
         }
       } catch (error) {
-        setCurrentView("form"); //Para qualquer efeito...
+        setCurrentView('form'); //Para qualquer efeito...
       }
     };
 
@@ -170,7 +153,7 @@ export default function ProjectScreen() {
       try {
         await AsyncStorage.setItem(LAST_VIEW_KEY, currentView);
       } catch (error) {
-        console.error("Erro ao salvar última view:", error);
+        console.error('Erro ao salvar última view:', error);
       }
     };
 
@@ -179,19 +162,18 @@ export default function ProjectScreen() {
 
   const loadProjectItems = async (code: number) => {
     try {
-      const [loadedImages, loadedLinks, loadedNotes, loadedChecklists] =
-        await Promise.all([
-          ImageService.findAllByProjectCode(code),
-          LinkService.findAllByProjectCode(code),
-          NoteService.findAllByProjectCode(code),
-          ChecklistService.findAllByProjectCode(code),
-        ]);
+      const [loadedImages, loadedLinks, loadedNotes, loadedChecklists] = await Promise.all([
+        ImageService.findAllByProjectCode(code),
+        LinkService.findAllByProjectCode(code),
+        NoteService.findAllByProjectCode(code),
+        ChecklistService.findAllByProjectCode(code),
+      ]);
       setImages(loadedImages || []);
       setLinks(loadedLinks || []);
       setNotes(loadedNotes || []);
       setChecklists(loadedChecklists || []);
     } catch (err) {
-      console.error("Erro ao carregar itens do projeto:", err);
+      console.error('Erro ao carregar itens do projeto:', err);
     }
   };
 
@@ -203,7 +185,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast("error", error.formattedMessage);
+      showToast('error', error.formattedMessage);
     }
   };
 
@@ -216,7 +198,7 @@ export default function ProjectScreen() {
       setIsDirty(false);
       setTimeout(() => router.back(), 300);
     } catch (error: any) {
-      showToast("error", error.formattedMessage);
+      showToast('error', error.formattedMessage);
     }
   };
 
@@ -237,19 +219,19 @@ export default function ProjectScreen() {
   //Função para salvar imagens
   const createImages = async (forms: ImageCreateDto[]) => {
     if (!projectCode) {
-      Alert.alert("Erro", "Projeto não carregado.");
+      Alert.alert('Erro', 'Projeto não carregado.');
       return;
     }
 
     for (const form of forms) {
       if (!form.uri) {
-        console.warn("Imagem sem URI:", form);
+        console.warn('Imagem sem URI:', form);
         continue;
       }
 
       const info = await FileSystem.getInfoAsync(form.uri as string);
       if (!info.exists) {
-        console.warn("Arquivo ainda não acessível:", form.uri);
+        console.warn('Arquivo ainda não acessível:', form.uri);
         await new Promise((r) => setTimeout(r, 500));
       }
     }
@@ -257,15 +239,15 @@ export default function ProjectScreen() {
     const formData = new FormData();
     forms.forEach((form, i) => {
       if (!form.uri) return;
-      formData.append("images", {
-        uri: form.uri.startsWith("file://") ? form.uri : `file://${form.uri}`,
-        type: form.mimeType ?? "image/jpeg",
+      formData.append('images', {
+        uri: form.uri.startsWith('file://') ? form.uri : `file://${form.uri}`,
+        type: form.mimeType ?? 'image/jpeg',
         name: form.filename ?? `image_${Date.now()}_${i}.jpg`,
       } as any);
     });
 
-    formData.append("isCover", String(forms.some((f) => f.isCover)));
-    formData.append("projectCode", String(projectCode));
+    formData.append('isCover', String(forms.some((f) => f.isCover)));
+    formData.append('projectCode', String(projectCode));
 
     try {
       await new Promise((r) => setTimeout(r, 200));
@@ -273,17 +255,15 @@ export default function ProjectScreen() {
 
       reloadImages();
       setShowImageModal(false);
-      showToast("success", "Imagens adicionadas com sucesso!");
+      showToast('success', 'Imagens adicionadas com sucesso!');
     } catch (error: any) {
-      showToast("error", error.formattedMessage);
+      showToast('error', error.formattedMessage);
     }
   };
 
   const reloadImages = async () => {
     if (projectCode) {
-      const updatedImages = await ImageService.findAllByProjectCode(
-        projectCode
-      );
+      const updatedImages = await ImageService.findAllByProjectCode(projectCode);
       setImages(updatedImages || []);
     }
   };
@@ -296,9 +276,9 @@ export default function ProjectScreen() {
         setShowLinkModal(false);
 
         reloadLinks();
-        showToast("success", "Links adicionados com sucesso!");
+        showToast('success', 'Links adicionados com sucesso!');
       } catch (error: any) {
-        showToast("error", error.formattedMessage);
+        showToast('error', error.formattedMessage);
       }
     }
   };
@@ -318,9 +298,9 @@ export default function ProjectScreen() {
         setShowSketchModal(false);
 
         reloadNotes(); //Atualiza o estado de um "prop.images" no componente visual
-        showToast("success", "Anotação registrada!");
+        showToast('success', 'Anotação registrada!');
       } catch (error: any) {
-        showToast("error", error.formattedMessage);
+        showToast('error', error.formattedMessage);
       }
     }
   };
@@ -339,22 +319,18 @@ export default function ProjectScreen() {
         await ChecklistService.create(form);
         setShowSketchModal(false);
 
-        const updatedChecklist = await ChecklistService.findAllByProjectCode(
-          projectCode
-        );
+        const updatedChecklist = await ChecklistService.findAllByProjectCode(projectCode);
         setChecklists(updatedChecklist || []);
-        showToast("success", "Checklist criada!");
+        showToast('success', 'Checklist criada!');
       } catch (error: any) {
-        showToast("error", error.formattedMessage);
+        showToast('error', error.formattedMessage);
       }
     }
   };
 
   const reloadChecklists = async () => {
     if (projectCode) {
-      const updatedChecklists = await ChecklistService.findAllByProjectCode(
-        projectCode
-      );
+      const updatedChecklists = await ChecklistService.findAllByProjectCode(projectCode);
       setChecklists(updatedChecklists || []);
     }
   };
@@ -365,19 +341,19 @@ export default function ProjectScreen() {
   };
 
   //Manipular seleção de componente
-  const handleOptions = (componentType: "link" | "image" | "sketch" | "ia") => {
+  const handleOptions = (componentType: 'link' | 'image' | 'sketch' | 'ia') => {
     setShowComponentSelector(false);
     switch (componentType) {
-      case "link":
+      case 'link':
         setShowLinkModal(true);
         break;
-      case "image":
+      case 'image':
         setShowImageModal(true);
         break;
-      case "sketch":
+      case 'sketch':
         setShowSketchModal(true);
         break;
-      case "ia":
+      case 'ia':
         setShowIaModal(true);
         break;
     }
@@ -386,56 +362,50 @@ export default function ProjectScreen() {
   //Retornar para a tela anterior
   const handleReturn = () => {
     if (isDirty) {
-      Alert.alert(
-        "Salvar alterações",
-        "Deseja salvar as alterações antes de sair?",
-        [
-          {
-            text: "Não",
-            onPress: () => {
-              setIsDirty(false);
-              router.back();
-            },
-            style: "cancel",
+      Alert.alert('Salvar alterações', 'Deseja salvar as alterações antes de sair?', [
+        {
+          text: 'Não',
+          onPress: () => {
+            setIsDirty(false);
+            router.back();
           },
-          { text: "Sim", onPress: handleSubmitProject },
-        ]
-      );
+          style: 'cancel',
+        },
+        { text: 'Sim', onPress: handleSubmitProject },
+      ]);
     } else {
       router.back();
     }
   };
 
   const handleDelete = async (code: number, task: string, type?: string) => {
-    if (task === "item") {
-      showToast("success", "Item removido!");
+    if (task === 'item') {
+      showToast('success', 'Item removido!');
     }
 
-    if (task === "archive") {
-      if (type === "image") {
+    if (task === 'archive') {
+      if (type === 'image') {
         await ImageService.deleteByCode(code);
         setImages((prev) => prev.filter((img) => img.code !== code));
-        showToast("success", "Imagem removida!");
+        showToast('success', 'Imagem removida!');
       }
 
-      if (type === "link") {
+      if (type === 'link') {
         await LinkService.deleteByCode(code);
         setLinks((prev) => prev.filter((link) => link.code !== code));
-        showToast("success", "Link removido!");
+        showToast('success', 'Link removido!');
       }
 
-      if (type === "checklist") {
+      if (type === 'checklist') {
         await ChecklistService.deleteByCode(code);
-        setChecklists((prev) =>
-          prev.filter((checklist) => checklist.code !== code)
-        );
-        showToast("success", "Checklist removido!");
+        setChecklists((prev) => prev.filter((checklist) => checklist.code !== code));
+        showToast('success', 'Checklist removido!');
       }
 
-      if (type === "note") {
+      if (type === 'note') {
         await NoteService.deleteByCode(code);
         setNotes((prev) => prev.filter((note) => note.code !== code));
-        showToast("success", "Anotação removida!");
+        showToast('success', 'Anotação removida!');
       }
       return;
     }
@@ -444,25 +414,21 @@ export default function ProjectScreen() {
   //Define a view ativa
   const renderCurrentView = () => {
     switch (currentView) {
-      case "document":
+      case 'document':
         return (
           <View style={styles.viewContent}>
             <Text style={styles.viewTitle}>Visualização em Documento</Text>
-            <Text style={styles.viewText}>
-              Projeto: {formData.title || "Sem título"}
-            </Text>
-            <Text style={styles.viewText}>
-              Aqui será implementada a visualização em documento
-            </Text>
+            <Text style={styles.viewText}>Projeto: {formData.title || 'Sem título'}</Text>
+            <Text style={styles.viewText}>Aqui será implementada a visualização em documento</Text>
           </View>
         );
-      case "board":
+      case 'board':
         return (
           <ProjectBoard
             project={project}
-            onAddImage={() => console.log("aopa")}
-            onAddLink={() => console.log("aopa")}
-            onAddNote={() => console.log("aopa")}
+            onAddImage={() => console.log('aopa')}
+            onAddLink={() => console.log('aopa')}
+            onAddNote={() => console.log('aopa')}
             onDelete={(code, task, type) => handleDelete(code, task, type)}
             images={images}
             links={links}
@@ -470,7 +436,7 @@ export default function ProjectScreen() {
             checklists={checklists}
           />
         );
-      case "form":
+      case 'form':
         return (
           <ProjectGrid
             project={project}
@@ -483,7 +449,7 @@ export default function ProjectScreen() {
             onUpdateLinks={reloadLinks}
             onUpdateImages={reloadImages}
             onUpdateChecklists={reloadChecklists}
-            onDelete={(code, type) => handleDelete(code, "archive", type)}
+            onDelete={(code, type) => handleDelete(code, 'archive', type)}
           />
         );
       default:
@@ -499,7 +465,7 @@ export default function ProjectScreen() {
             onUpdateLinks={reloadLinks}
             onUpdateImages={reloadImages}
             onUpdateChecklists={reloadChecklists}
-            onDelete={(code, type) => handleDelete(code, "archive", type)}
+            onDelete={(code, type) => handleDelete(code, 'archive', type)}
           />
         );
     }
@@ -514,9 +480,9 @@ export default function ProjectScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <PageHeader
-        title={formData.title || ""}
+        title={formData.title || ''}
         onBack={handleReturn}
         onSave={handleSubmitProject}
         onTitleChange={handleTitleChange}
@@ -526,10 +492,7 @@ export default function ProjectScreen() {
         showSaveButton={true}
       />
 
-      <ProjectViewTabs
-        currentView={currentView!}
-        onViewChange={setCurrentView}
-      />
+      <ProjectViewTabs currentView={currentView!} onViewChange={setCurrentView} />
 
       <View style={styles.contentContainer}>{renderCurrentView()}</View>
 
@@ -577,37 +540,37 @@ export default function ProjectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
 
   contentContainer: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
 
   viewContent: {
     flex: 1,
     padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F8F9FA",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
     margin: 16,
   },
 
   viewTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#1A1A1A",
+    fontWeight: 'bold',
+    color: '#1A1A1A',
     marginBottom: 10,
   },
 
   viewText: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 5,
   },
 });

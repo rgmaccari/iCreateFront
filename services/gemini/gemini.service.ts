@@ -1,34 +1,34 @@
-import api from "../api/api";
+import api from '../api/api';
 
 export class GeminiService {
   async transcribeAudio(fileUri: string) {
-    console.log("Acionando o GeminiService - transcribeAudio()");
+    console.log('Acionando o GeminiService - transcribeAudio()');
     const formData = new FormData();
-    formData.append("file", {
+    formData.append('file', {
       uri: fileUri,
-      type: "audio/m4a",
-      name: "audio.m4a",
+      type: 'audio/m4a',
+      name: 'audio.m4a',
     } as any);
 
-    const response = await api.post("gemini/audiotranscription", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    const response = await api.post('gemini/audiotranscription', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   }
 
   async transcribeImage(fileUri: string) {
-    console.log("Acionando o GeminiService - transcribeImage()");
+    console.log('Acionando o GeminiService - transcribeImage()');
     const formData = new FormData();
-    formData.append("file", {
+    formData.append('file', {
       uri: fileUri,
-      type: "image/jpeg",
-      name: "image.jpg",
+      type: 'image/jpeg',
+      name: 'image.jpg',
     } as any);
 
-    const response = await api.post("gemini/imagetranscription", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    const response = await api.post('gemini/imagetranscription', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log("service - transcribe image", response.data);
+    console.log('service - transcribe image', response.data);
     return response.data.content;
   }
 }

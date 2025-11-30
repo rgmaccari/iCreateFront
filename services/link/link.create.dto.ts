@@ -1,5 +1,5 @@
 export class LinkCreateDto {
-    title?: string;
-    url?: string;
-    projectCode?: number;
+  title?: string;
+  url?: string;
+  projectCode?: number;
 }

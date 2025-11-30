@@ -1,22 +1,15 @@
-import { showToast } from "@/constants/showToast";
-import { Checklist } from "@/services/checklist/checklist";
-import { ChecklistDto } from "@/services/checklist/checklist.dto";
-import { ChecklistService } from "@/services/checklist/checklist.service";
-import { Note } from "@/services/notes/note";
-import { NoteCreateDto } from "@/services/notes/note.create.dto";
-import { NoteService } from "@/services/notes/note.service";
-import { Project } from "@/services/project/project";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { showToast } from '@/constants/showToast';
+import { Checklist } from '@/services/checklist/checklist';
+import { ChecklistDto } from '@/services/checklist/checklist.dto';
+import { ChecklistService } from '@/services/checklist/checklist.service';
+import { Note } from '@/services/notes/note';
+import { NoteCreateDto } from '@/services/notes/note.create.dto';
+import { NoteService } from '@/services/notes/note.service';
+import { Project } from '@/services/project/project';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface NotesChecklistsModalProps {
   project?: Project;
@@ -33,16 +26,14 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
   const [projectChecklists, setProjectChecklists] = useState<Checklist[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"notes" | "checklists">("notes");
+  const [activeTab, setActiveTab] = useState<'notes' | 'checklists'>('notes');
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewItem, setPreviewItem] = useState<Note | Checklist | null>(null);
 
   useEffect(() => {
     if (props.visible && props.userCode) {
       setLoading(true);
-      findAllData().catch((error: any) =>
-        showToast("error", error.formattedMessage)
-      );
+      findAllData().catch((error: any) => showToast('error', error.formattedMessage));
     }
   }, [props.visible]);
 
@@ -65,12 +56,8 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
       setNotes(allNotes || []);
       setChecklists(allChecklists || []);
 
-      const projNotes = await NoteService.findAllByProjectCode(
-        props.project.code
-      );
-      const projChecklists = await ChecklistService.findAllByProjectCode(
-        props.project.code
-      );
+      const projNotes = await NoteService.findAllByProjectCode(props.project.code);
+      const projChecklists = await ChecklistService.findAllByProjectCode(props.project.code);
 
       setProjectNotes(projNotes || []);
       setProjectChecklists(projChecklists || []);
@@ -100,16 +87,14 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
           <Ionicons name="document-text-outline" size={20} color="#FFB300" />
         </View>
         <Text style={styles.itemTitle} numberOfLines={1}>
-          {note.title || "Sem título"}
+          {note.title || 'Sem título'}
         </Text>
       </View>
       <Text style={styles.itemDescription} numberOfLines={3}>
-        {note.description || "Sem conteúdo"}
+        {note.description || 'Sem conteúdo'}
       </Text>
       {note.createdAt && (
-        <Text style={styles.itemDate}>
-          {new Date(note.createdAt).toLocaleDateString("pt-BR")}
-        </Text>
+        <Text style={styles.itemDate}>{new Date(note.createdAt).toLocaleDateString('pt-BR')}</Text>
       )}
     </TouchableOpacity>
   );
@@ -132,7 +117,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             <Ionicons name="checkbox-outline" size={20} color="#FFB300" />
           </View>
           <Text style={styles.itemTitle} numberOfLines={1}>
-            {checklist.title || "Sem título"}
+            {checklist.title || 'Sem título'}
           </Text>
         </View>
         <View style={styles.checklistProgress}>
@@ -145,7 +130,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
         </View>
         {checklist.updatedAt && (
           <Text style={styles.itemDate}>
-            {new Date(checklist.updatedAt).toLocaleDateString("pt-BR")}
+            {new Date(checklist.updatedAt).toLocaleDateString('pt-BR')}
           </Text>
         )}
       </TouchableOpacity>
@@ -154,28 +139,24 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
 
   const handleAddToBoard = async (item: Note | Checklist) => {
     if (item.projectCode !== props.project?.code && props.project?.code) {
-      if ("description" in item) {
+      if ('description' in item) {
         const dto: NoteCreateDto = {
-          title: (item.title || "Sem título").slice(0, 50),
-          description: item.description || "",
+          title: (item.title || 'Sem título').slice(0, 50),
+          description: item.description || '',
           projectCode: props.project.code,
         };
         await NoteService.create(dto);
-        const [newNote] = await NoteService.findAllByProjectCode(
-          props.project.code
-        );
+        const [newNote] = await NoteService.findAllByProjectCode(props.project.code);
         props.onAddToBoard?.(newNote);
       } else {
         const checklist = item as Checklist;
         const dto: ChecklistDto = {
-          title: (checklist.title || "Sem título").slice(0, 50),
+          title: (checklist.title || 'Sem título').slice(0, 50),
           itens: checklist.itens,
           projectCode: props.project.code,
         };
         await ChecklistService.create(dto);
-        const [newChecklist] = await ChecklistService.findAllByProjectCode(
-          props.project.code
-        );
+        const [newChecklist] = await ChecklistService.findAllByProjectCode(props.project.code);
         props.onAddToBoard?.(newChecklist);
       }
     } else {
@@ -192,20 +173,16 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Deste projeto</Text>
-        {activeTab === "notes" ? (
+        {activeTab === 'notes' ? (
           hasProjectNotes ? (
             projectNotes.map(renderNote)
           ) : (
-            <Text style={styles.emptyText}>
-              Nenhuma anotação associada a este projeto.
-            </Text>
+            <Text style={styles.emptyText}>Nenhuma anotação associada a este projeto.</Text>
           )
         ) : hasProjectChecklists ? (
           projectChecklists.map(renderChecklist)
         ) : (
-          <Text style={styles.emptyText}>
-            Nenhum checklist associado a este projeto.
-          </Text>
+          <Text style={styles.emptyText}>Nenhum checklist associado a este projeto.</Text>
         )}
       </View>
     );
@@ -218,9 +195,9 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          {props.project?.code ? "Todos" : "Minhas anotações e checklists"}
+          {props.project?.code ? 'Todos' : 'Minhas anotações e checklists'}
         </Text>
-        {activeTab === "notes" ? (
+        {activeTab === 'notes' ? (
           hasNotes ? (
             notes.map(renderNote)
           ) : (
@@ -248,10 +225,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             <Ionicons name="list-outline" size={24} color="#FFB300" />
             <Text style={styles.title}>Anotações e Checklists</Text>
 
-            <TouchableOpacity
-              onPress={props.onClose}
-              style={styles.closeButton}
-            >
+            <TouchableOpacity onPress={props.onClose} style={styles.closeButton}>
               <Ionicons name="close" size={26} color="#6B7280" />
             </TouchableOpacity>
           </View>
@@ -259,33 +233,24 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
           {/* Abas */}
           <View style={styles.tabBar}>
             <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "notes" && styles.tabButtonActive,
-              ]}
-              onPress={() => setActiveTab("notes")}
+              style={[styles.tabButton, activeTab === 'notes' && styles.tabButtonActive]}
+              onPress={() => setActiveTab('notes')}
             >
               <Text
-                style={[
-                  styles.tabButtonText,
-                  activeTab === "notes" && styles.tabButtonTextActive,
-                ]}
+                style={[styles.tabButtonText, activeTab === 'notes' && styles.tabButtonTextActive]}
               >
                 Anotações
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "checklists" && styles.tabButtonActive,
-              ]}
-              onPress={() => setActiveTab("checklists")}
+              style={[styles.tabButton, activeTab === 'checklists' && styles.tabButtonActive]}
+              onPress={() => setActiveTab('checklists')}
             >
               <Text
                 style={[
                   styles.tabButtonText,
-                  activeTab === "checklists" && styles.tabButtonTextActive,
+                  activeTab === 'checklists' && styles.tabButtonTextActive,
                 ]}
               >
                 Checklists
@@ -293,10 +258,7 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             {renderProjectSection()}
             {renderAllSection()}
           </ScrollView>
@@ -323,12 +285,10 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
 
             {previewItem && isNote(previewItem) && (
               <>
-                <Text style={styles.previewTitle}>
-                  {previewItem.title || "Sem título"}
-                </Text>
+                <Text style={styles.previewTitle}>{previewItem.title || 'Sem título'}</Text>
                 <ScrollView style={styles.previewBody}>
                   <Text style={styles.previewDescription}>
-                    {previewItem.description || "Sem conteúdo"}
+                    {previewItem.description || 'Sem conteúdo'}
                   </Text>
                 </ScrollView>
               </>
@@ -341,13 +301,9 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
                   {previewItem.itens.map((it, index) => (
                     <View key={index} style={styles.previewChecklistItem}>
                       <Ionicons
-                        name={
-                          it.checked
-                            ? "checkmark-circle"
-                            : "checkmark-circle-outline"
-                        }
+                        name={it.checked ? 'checkmark-circle' : 'checkmark-circle-outline'}
                         size={20}
-                        color={it.checked ? "#10B981" : "#9CA3AF"}
+                        color={it.checked ? '#10B981' : '#9CA3AF'}
                       />
                       <Text
                         style={[
@@ -372,54 +328,54 @@ const NotesChecklistsProjectModal = (props: NotesChecklistsModalProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-    backgroundColor: "#FFFFFF",
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#1F2937",
+    fontWeight: '700',
+    color: '#1F2937',
   },
   closeButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: '#F3F4F6',
   },
   tabBar: {
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: '#E5E7EB',
   },
 
   tabButton: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
     gap: 6,
   },
   tabButtonActive: {
-    backgroundColor: "#FFF8E1",
+    backgroundColor: '#FFF8E1',
     borderBottomWidth: 2,
-    borderBottomColor: "#FFB300",
+    borderBottomColor: '#FFB300',
   },
   tabButtonText: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#6B7280",
+    fontWeight: '600',
+    color: '#6B7280',
   },
   tabButtonTextActive: {
-    color: "#FFB300",
+    color: '#FFB300',
   },
   content: {
     flex: 1,
@@ -433,61 +389,61 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "600",
-    color: "#4B5563",
+    fontWeight: '600',
+    color: '#4B5563',
     marginBottom: 14,
     paddingLeft: 4,
   },
 
   itemCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    shadowColor: "#000",
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 2,
-    position: "relative",
+    position: 'relative',
   },
 
   itemHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 6,
     gap: 8,
   },
   noteIcon: {
     width: 36,
     height: 36,
-    backgroundColor: "#FFF8E1",
+    backgroundColor: '#FFF8E1',
     borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   checklistIcon: {
     width: 36,
     height: 36,
-    backgroundColor: "#FFF8E1",
+    backgroundColor: '#FFF8E1',
     borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   itemTitle: {
     flex: 1,
     fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
+    fontWeight: '600',
+    color: '#111827',
   },
 
   itemDescription: {
     fontSize: 13,
-    color: "#6B7280",
+    color: '#6B7280',
     lineHeight: 18,
     marginBottom: 6,
   },
@@ -496,76 +452,76 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 6,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: '#E5E7EB',
     borderRadius: 3,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: 4,
   },
   progressFill: {
-    height: "100%",
-    backgroundColor: "#4CAF50",
+    height: '100%',
+    backgroundColor: '#4CAF50',
     borderRadius: 3,
   },
   progressText: {
     fontSize: 12,
-    color: "#6B7280",
-    fontWeight: "500",
+    color: '#6B7280',
+    fontWeight: '500',
   },
   itemDate: {
     fontSize: 11,
-    color: "#9CA3AF",
+    color: '#9CA3AF',
     marginTop: 4,
   },
   addButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     right: 12,
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#FFB300",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#FFB300',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   addButtonAdded: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
   },
   emptyText: {
-    color: "#9CA3AF",
-    fontStyle: "italic",
+    color: '#9CA3AF',
+    fontStyle: 'italic',
     fontSize: 14,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 12,
   },
   previewOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.85)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
   },
   previewCard: {
-    width: "100%",
-    maxHeight: "80%",
-    backgroundColor: "#FFFFFF",
+    width: '100%',
+    maxHeight: '80%',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    position: "relative",
+    position: 'relative',
   },
   previewCloseButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     right: 12,
     padding: 6,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: '#F3F4F6',
     zIndex: 1,
   },
   previewTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1F2937",
+    fontWeight: '700',
+    color: '#1F2937',
     marginBottom: 12,
     paddingRight: 40,
   },
@@ -574,22 +530,22 @@ const styles = StyleSheet.create({
   },
   previewDescription: {
     fontSize: 15,
-    color: "#374151",
+    color: '#374151',
     lineHeight: 22,
   },
   previewChecklistItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
     gap: 8,
   },
   previewChecklistItemText: {
     fontSize: 15,
-    color: "#374151",
+    color: '#374151',
   },
   previewChecklistItemTextChecked: {
-    textDecorationLine: "line-through",
-    color: "#6B7280",
+    textDecorationLine: 'line-through',
+    color: '#6B7280',
   },
 });
 

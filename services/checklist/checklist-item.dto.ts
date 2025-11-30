@@ -1,7 +1,7 @@
 export interface ChecklistItemDto {
-    text: string;
+  text: string;
 
-    checked: boolean;
+  checked: boolean;
 
-    sort: number;
+  sort: number;
 }

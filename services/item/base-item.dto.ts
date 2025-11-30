@@ -1,5 +1,5 @@
 export interface BaseItemDto {
-  type: "link" | "image" | "note" | "checklist";
+  type: 'link' | 'image' | 'note' | 'checklist';
   componentCode?: number;
   x: number;
   y: number;

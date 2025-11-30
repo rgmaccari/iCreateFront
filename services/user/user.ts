@@ -7,5 +7,3 @@ export interface User {
   avatarBase64?: string;
   avatarMimeType?: string;
 }
-
-

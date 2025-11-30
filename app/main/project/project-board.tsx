@@ -1,26 +1,26 @@
-import DraggableItem from "@/components/drag-item";
-import ImagesProjectModal from "@/components/images-project-modal";
-import LinksProjectModal from "@/components/links-project-modal";
-import NotesChecklistsProjectModal from "@/components/notes-checklists-project-modal";
-import { showToast } from "@/constants/showToast";
-import { AuthService } from "@/services/api/auth.service";
-import { Checklist } from "@/services/checklist/checklist";
-import { Image } from "@/services/image/image";
-import { BaseItemDto } from "@/services/item/base-item.dto";
-import { ItemService } from "@/services/item/item.service";
+import DraggableItem from '@/components/drag-item';
+import ImagesProjectModal from '@/components/images-project-modal';
+import LinksProjectModal from '@/components/links-project-modal';
+import NotesChecklistsProjectModal from '@/components/notes-checklists-project-modal';
+import { showToast } from '@/constants/showToast';
+import { AuthService } from '@/services/api/auth.service';
+import { Checklist } from '@/services/checklist/checklist';
+import { Image } from '@/services/image/image';
+import { BaseItemDto } from '@/services/item/base-item.dto';
+import { ItemService } from '@/services/item/item.service';
 import {
   ChecklistBoardItem,
   ImageItem,
   LinkItem,
   NoteItem,
   ProjectItem,
-} from "@/services/item/project-item";
-import { Link } from "@/services/link/link";
-import { Note } from "@/services/notes/note";
-import { Project } from "@/services/project/project";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useRef, useState } from "react";
+} from '@/services/item/project-item';
+import { Link } from '@/services/link/link';
+import { Note } from '@/services/notes/note';
+import { Project } from '@/services/project/project';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -29,9 +29,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
+} from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
 
 interface ProjectBoardProps {
   project?: Project;
@@ -73,23 +73,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
   const handleDeleteItem = () => {
     if (!selectedItem) return;
-    deleteItem(
-      selectedItem.code,
-      selectedItem.componentCode,
-      "item",
-      selectedItem.type
-    );
+    deleteItem(selectedItem.code, selectedItem.componentCode, 'item', selectedItem.type);
     clearSelection();
   };
 
   const handleDeleteArchive = () => {
     if (!selectedItem) return;
-    deleteItem(
-      selectedItem.code,
-      selectedItem.componentCode,
-      "archive",
-      selectedItem.type
-    );
+    deleteItem(selectedItem.code, selectedItem.componentCode, 'archive', selectedItem.type);
     clearSelection();
   };
 
@@ -119,7 +109,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         const components = await ItemService.getComponents(props.project.code);
         setItems(components);
       } catch (error: any) {
-        showToast("error", error.formattedMessage);
+        showToast('error', error.formattedMessage);
       }
     };
     findByCode();
@@ -132,7 +122,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
     const newNotes = props.notes.filter(
-      (note) => !lastNotes.some((oldNote) => oldNote.code === note.code)
+      (note) => !lastNotes.some((oldNote) => oldNote.code === note.code),
     );
     newNotes.forEach((note) => {
       if (note.code) handleAddNote(note);
@@ -147,7 +137,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
     const newLinks = props.links.filter(
-      (link) => !lastLinks.some((oldLink) => oldLink.code === link.code)
+      (link) => !lastLinks.some((oldLink) => oldLink.code === link.code),
     );
     newLinks.forEach((link) => {
       if (link.code) handleAddLink(link);
@@ -162,7 +152,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
     const newImages = props.images.filter(
-      (image) => !lastImages.some((oldImage) => oldImage.code === image.code)
+      (image) => !lastImages.some((oldImage) => oldImage.code === image.code),
     );
     newImages.forEach((image) => {
       if (image.code) handleAddImage(image);
@@ -177,10 +167,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       return;
     }
     const newChecklists = props.checklists.filter(
-      (checklist) =>
-        !lastChecklists.some(
-          (oldChecklist) => oldChecklist.code === checklist.code
-        )
+      (checklist) => !lastChecklists.some((oldChecklist) => oldChecklist.code === checklist.code),
     );
     newChecklists.forEach((checklist) => {
       if (checklist.code) handleAddChecklist(checklist);
@@ -191,7 +178,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
   const handleAddNote = async (noteData: Note) => {
     try {
       const baseItemDto: BaseItemDto = {
-        type: "note",
+        type: 'note',
         componentCode: noteData.code,
         x: 50,
         y: 50,
@@ -202,7 +189,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       const response = await ItemService.create(baseItemDto);
       const noteItem: NoteItem = {
         code: response.code,
-        type: response.type as "note",
+        type: response.type as 'note',
         componentCode: response.componentCode,
         x: response.x,
         y: response.y,
@@ -216,14 +203,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       };
       setItems((prev) => [...prev, noteItem]);
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro desconhecido!");
+      showToast('error', error.formattedMessage || 'Erro desconhecido!');
     }
   };
 
   const handleAddChecklist = async (checklistData: Checklist) => {
     try {
       const baseItemDto: BaseItemDto = {
-        type: "checklist",
+        type: 'checklist',
         componentCode: checklistData.code,
         x: 50,
         y: 50,
@@ -234,7 +221,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       const response = await ItemService.create(baseItemDto);
       const checklistBoardItem: ChecklistBoardItem = {
         code: response.code,
-        type: response.type as "checklist",
+        type: response.type as 'checklist',
         componentCode: response.componentCode,
         x: response.x,
         y: response.y,
@@ -246,14 +233,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       };
       setItems((prev) => [...prev, checklistBoardItem]);
     } catch (error: any) {
-      showToast("error", error.formattedMessage);
+      showToast('error', error.formattedMessage);
     }
   };
 
   const handleAddLink = async (linkData: Link) => {
     try {
       const baseItemDto: BaseItemDto = {
-        type: "link",
+        type: 'link',
         componentCode: linkData.code,
         x: 50,
         y: 50,
@@ -264,7 +251,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       const response = await ItemService.create(baseItemDto);
       const linkItem: LinkItem = {
         code: response.code,
-        type: response.type as "link",
+        type: response.type as 'link',
         componentCode: response.componentCode,
         x: response.x,
         y: response.y,
@@ -278,14 +265,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       };
       setItems((prev) => [...prev, linkItem]);
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro desconhecido!");
+      showToast('error', error.formattedMessage || 'Erro desconhecido!');
     }
   };
 
   const handleAddImage = async (imageData: Image) => {
     try {
       const baseItemDto: BaseItemDto = {
-        type: "image",
+        type: 'image',
         componentCode: imageData.code,
         x: 50,
         y: 50,
@@ -296,7 +283,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       const response = await ItemService.create(baseItemDto);
       const imageItem: ImageItem = {
         code: response.code,
-        type: response.type as "image",
+        type: response.type as 'image',
         componentCode: response.componentCode,
         x: response.x,
         y: response.y,
@@ -310,15 +297,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       };
       setItems((prev) => [...prev, imageItem]);
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro desconhecido!");
+      showToast('error', error.formattedMessage || 'Erro desconhecido!');
     }
   };
 
   const updateItemPosition = (code: number, x: number, y: number) => {
     setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.code === code ? { ...item, x, y } : item
-      )
+      currentItems.map((item) => (item.code === code ? { ...item, x, y } : item)),
     );
   };
 
@@ -326,10 +311,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     itemCode: number,
     componentCode: number,
     task: string,
-    type?: string
+    type?: string,
   ) => {
     try {
-      if (task === "archive") {
+      if (task === 'archive') {
         await ItemService.delete(itemCode);
         props.onDelete?.(componentCode, task, type);
       } else {
@@ -337,7 +322,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
       }
       setItems((prev) => prev.filter((item) => item.code !== itemCode));
     } catch (error: any) {
-      showToast("error", error.formattedMessage);
+      showToast('error', error.formattedMessage);
     }
   };
 
@@ -345,12 +330,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
       <Svg width="100%" height="100%">
         <Defs>
-          <Pattern
-            id="dots"
-            patternUnits="userSpaceOnUse"
-            width="24"
-            height="24"
-          >
+          <Pattern id="dots" patternUnits="userSpaceOnUse" width="24" height="24">
             <Circle cx="1.5" cy="1.5" r="0.8" fill="#7b7bc0ff" />
           </Pattern>
         </Defs>
@@ -410,10 +390,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         {renderDotsBackground()}
         <ScrollView
           style={StyleSheet.absoluteFill}
-          contentContainerStyle={[
-            styles.canvasContent,
-            { transform: [{ scale }] },
-          ]}
+          contentContainerStyle={[styles.canvasContent, { transform: [{ scale }] }]}
           pointerEvents="box-none"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
@@ -442,12 +419,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
             activeOpacity={1}
             onPress={closeModal}
           />
-          <Animated.View
-            style={[
-              styles.modalContent,
-              { transform: [{ scale: modalScale }] },
-            ]}
-          >
+          <Animated.View style={[styles.modalContent, { transform: [{ scale: modalScale }] }]}>
             <View style={styles.modalButtonRow}>
               <TouchableOpacity
                 onPress={() => {
@@ -456,12 +428,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
                 }}
                 style={styles.modalButton}
               >
-                <View
-                  style={[
-                    styles.modalIconWrapper,
-                    { backgroundColor: "#ff4d4d" },
-                  ]}
-                >
+                <View style={[styles.modalIconWrapper, { backgroundColor: '#ff4d4d' }]}>
                   <Ionicons name="trash" size={26} color="#fff" />
                 </View>
                 <Text style={styles.modalLabel}>Excluir</Text>
@@ -474,21 +441,14 @@ const ProjectBoard = (props: ProjectBoardProps) => {
                 }}
                 style={styles.modalButton}
               >
-                <View
-                  style={[
-                    styles.modalIconWrapper,
-                    { backgroundColor: "#e2d40e" },
-                  ]}
-                >
+                <View style={[styles.modalIconWrapper, { backgroundColor: '#e2d40e' }]}>
                   <Ionicons name="archive-outline" size={26} color="#fff" />
                 </View>
                 <Text style={styles.modalLabel}>Arquivar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={closeModal} style={styles.modalButton}>
-                <View
-                  style={[styles.modalIconWrapper, { backgroundColor: "#888" }]}
-                >
+                <View style={[styles.modalIconWrapper, { backgroundColor: '#888' }]}>
                   <Ionicons name="close" size={26} color="#fff" />
                 </View>
                 <Text style={styles.modalLabel}>Cancelar</Text>
@@ -500,10 +460,10 @@ const ProjectBoard = (props: ProjectBoardProps) => {
 
       <View
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 25,
           right: 25,
-          alignItems: "center",
+          alignItems: 'center',
           gap: 30,
         }}
       >
@@ -520,22 +480,13 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         </View>
 
         <View style={styles.archiveControls}>
-          <TouchableOpacity
-            onPress={() => setShowProjectImages(true)}
-            style={styles.zoomButton}
-          >
+          <TouchableOpacity onPress={() => setShowProjectImages(true)} style={styles.zoomButton}>
             <Ionicons name="image" size={18} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowProjectLinks(true)}
-            style={styles.zoomButton}
-          >
+          <TouchableOpacity onPress={() => setShowProjectLinks(true)} style={styles.zoomButton}>
             <Ionicons name="link" size={18} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowProjectNotes(true)}
-            style={styles.zoomButton}
-          >
+          <TouchableOpacity onPress={() => setShowProjectNotes(true)} style={styles.zoomButton}>
             <Ionicons name="document-text" size={18} color="#333" />
           </TouchableOpacity>
         </View>
@@ -561,7 +512,7 @@ const ProjectBoard = (props: ProjectBoardProps) => {
         onAddToBoard={async (data: any) => {
           if (!props.project) return;
 
-          if ("description" in data) {
+          if ('description' in data) {
             await handleAddNote(data);
           } else {
             await handleAddChecklist(data);
@@ -591,79 +542,79 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 0,
     marginBottom: 0,
-    backgroundColor: "#e8e8e8ff",
+    backgroundColor: '#e8e8e8ff',
   },
   zoomControls: {
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
     gap: 8,
   },
   archiveControls: {
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
     gap: 8,
   },
   zoomButton: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#ffffffcc",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffcc',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
   },
   canvas: {
     flex: 1,
-    backgroundColor: "#e8e8e8ff",
-    overflow: "hidden",
+    backgroundColor: '#e8e8e8ff',
+    overflow: 'hidden',
   },
   canvasContent: {
     flexGrow: 1,
-    minHeight: "100%",
-    minWidth: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    minHeight: '100%',
+    minWidth: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "transparent", // remove o fundo branco
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'transparent', // remove o fundo branco
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalButtonRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 35,
   },
   modalButton: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
   modalIconWrapper: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
   },
   modalLabel: {
     fontSize: 14,
-    color: "#fff",
-    fontWeight: "600",
+    color: '#fff',
+    fontWeight: '600',
     marginTop: 6,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 

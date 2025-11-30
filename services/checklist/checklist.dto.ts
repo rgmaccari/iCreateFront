@@ -1,9 +1,9 @@
-import { ChecklistItemDto } from "./checklist-item.dto";
+import { ChecklistItemDto } from './checklist-item.dto';
 
 export interface ChecklistDto {
-    title: string;
+  title: string;
 
-    itens: ChecklistItemDto[];
+  itens: ChecklistItemDto[];
 
-    projectCode: number | null;
+  projectCode: number | null;
 }

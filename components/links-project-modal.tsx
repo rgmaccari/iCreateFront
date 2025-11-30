@@ -1,10 +1,10 @@
-import { showToast } from "@/constants/showToast";
-import { Link } from "@/services/link/link";
-import { LinkCreateDto } from "@/services/link/link.create.dto";
-import { LinkService } from "@/services/link/link.service";
-import { Project } from "@/services/project/project";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { showToast } from '@/constants/showToast';
+import { Link } from '@/services/link/link';
+import { LinkCreateDto } from '@/services/link/link.create.dto';
+import { LinkService } from '@/services/link/link.service';
+import { Project } from '@/services/project/project';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   Linking,
@@ -14,8 +14,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface LinksProjectModalProps {
   project?: Project;
@@ -33,9 +33,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
   useEffect(() => {
     if (props.visible && props.userCode) {
       setLoading(true);
-      findAllLinks().catch((error: any) =>
-        showToast("error", error.formattedMessage)
-      );
+      findAllLinks().catch((error: any) => showToast('error', error.formattedMessage));
     }
   }, [props.visible]);
 
@@ -51,9 +49,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
       const allLinks = await LinkService.findAllLinks();
       setLinks(allLinks || []);
 
-      const projectLinks = await LinkService.findAllByProjectCode(
-        props.project.code
-      );
+      const projectLinks = await LinkService.findAllByProjectCode(props.project.code);
       setProjectLinks(projectLinks || []);
     }
     setLoading(false);
@@ -61,9 +57,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
 
   const openLink = (url?: string) => {
     if (!url) return;
-    Linking.openURL(url).catch(() =>
-      showToast("error", "Não foi possível abrir o link.")
-    );
+    Linking.openURL(url).catch(() => showToast('error', 'Não foi possível abrir o link.'));
   };
 
   const renderLinkCard = (link: Link) => (
@@ -75,10 +69,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
       onLongPress={() => props.project && handleAddToBoard(link)}
     >
       {link.previewImageUrl ? (
-        <Image
-          source={{ uri: link.previewImageUrl }}
-          style={styles.thumbnail}
-        />
+        <Image source={{ uri: link.previewImageUrl }} style={styles.thumbnail} />
       ) : (
         <View style={styles.thumbnailPlaceholder}>
           <Ionicons name="link-outline" size={28} color="#888" />
@@ -87,23 +78,18 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
 
       <View style={styles.linkInfo}>
         <Text style={styles.linkTitle} numberOfLines={1}>
-          {link.title || "Sem título"}
+          {link.title || 'Sem título'}
         </Text>
         <Text style={styles.linkUrl} numberOfLines={1}>
-          {link.url || "Sem URL"}
+          {link.url || 'Sem URL'}
         </Text>
         <Text style={styles.linkDate}>
-          {link.createdAt
-            ? new Date(link.createdAt).toLocaleDateString()
-            : "Sem data"}
+          {link.createdAt ? new Date(link.createdAt).toLocaleDateString() : 'Sem data'}
         </Text>
       </View>
 
       {props.project?.code && (
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => props.onAddToBoard?.(link)}
-        >
+        <TouchableOpacity style={styles.addButton} onPress={() => props.onAddToBoard?.(link)}>
           <Ionicons name="add" size={20} color="#fff" />
         </TouchableOpacity>
       )}
@@ -113,14 +99,12 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
   const handleAddToBoard = async (link: Link) => {
     if (link.projectCode !== props.project?.code && props.project?.code) {
       const dto = new LinkCreateDto();
-      (dto.title = link.title?.slice(0, 50)),
+      ((dto.title = link.title?.slice(0, 50)),
         (dto.url = link.url),
-        (dto.projectCode = props.project.code);
+        (dto.projectCode = props.project.code));
 
       await LinkService.create(dto);
-      const [newLink] = await LinkService.findAllByProjectCode(
-        props.project.code
-      );
+      const [newLink] = await LinkService.findAllByProjectCode(props.project.code);
       props.onAddToBoard?.(newLink);
     } else {
       props.onAddToBoard?.(link);
@@ -151,9 +135,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
               {projectLinks.length > 0 ? (
                 projectLinks.map(renderLinkCard)
               ) : (
-                <Text style={styles.emptyText}>
-                  Nenhum link associado a este projeto.
-                </Text>
+                <Text style={styles.emptyText}>Nenhum link associado a este projeto.</Text>
               )}
             </View>
           )}
@@ -161,7 +143,7 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
           {/* Todas */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {props.project?.code ? "Todos os links" : "Meus links"}
+              {props.project?.code ? 'Todos os links' : 'Meus links'}
             </Text>
             {links.length > 0 ? (
               links.map(renderLinkCard)
@@ -178,26 +160,26 @@ const LinksProjectModal = (props: LinksProjectModalProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    backgroundColor: "#f8f9fa",
+    borderBottomColor: '#e0e0e0',
+    backgroundColor: '#f8f9fa',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   closeButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#f0f0f0',
   },
   content: {
     flex: 1,
@@ -208,34 +190,34 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#362946",
+    fontWeight: 'bold',
+    color: '#362946',
     marginBottom: 16,
   },
   linkCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9f9fb",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9f9fb',
     borderRadius: 12,
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#ececec",
+    borderColor: '#ececec',
     elevation: 2,
   },
   thumbnail: {
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: "#ddd",
+    backgroundColor: '#ddd',
   },
   thumbnailPlaceholder: {
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: "#efefef",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#efefef',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   linkInfo: {
     flex: 1,
@@ -243,33 +225,33 @@ const styles = StyleSheet.create({
   },
   linkTitle: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#1a1a1a",
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   linkUrl: {
     fontSize: 13,
-    color: "#81c091ff",
+    color: '#81c091ff',
     marginTop: 2,
   },
   linkDate: {
     fontSize: 12,
-    color: "#777",
+    color: '#777',
     marginTop: 4,
   },
   addButton: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#81c091ff",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#81c091ff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyText: {
-    color: "#777",
-    fontStyle: "italic",
+    color: '#777',
+    fontStyle: 'italic',
     fontSize: 14,
     marginTop: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 
