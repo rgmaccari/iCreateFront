@@ -1,3 +1,4 @@
+import { showToast } from "@/constants/showToast";
 import { ChecklistItem } from "@/services/checklist/checklist-item";
 import { ChecklistDto } from "@/services/checklist/checklist.dto";
 import { NoteCreateDto } from "@/services/notes/note.create.dto";
@@ -78,22 +79,12 @@ const SketchModal = (props: SketchModalProps) => {
     }
   };
 
-  // //Add item no checklist
-  // const addChecklistItem = () => {
-  //   if (newItemText.trim()) { //Tem novo item?
-
-  //     const newItem: ChecklistItem = { //Cria o objeto
-  //       text: newItemText.trim(),
-  //       checked: false,
-  //       sort: checklistItems.length
-  //     }; //Insere nos itens
-  //     setChecklistItems(prev => [...prev, newItem]);
-  //     setNewItemText(''); //Reseta o campo
-  //   }
-  // };
-
   const addChecklistItem = () => {
     if (!newItemText.trim()) return;
+    if (checklistItems.length >= 15) {
+      showToast("info", "Limite de 20 itens atingido.");
+      return;
+    }
 
     setChecklistItems((prev) => {
       const updated = [
@@ -274,6 +265,7 @@ const SketchModal = (props: SketchModalProps) => {
               <TextInput
                 style={[styles.textInput, styles.descriptionInput]}
                 value={description}
+                maxLength={1000}
                 onChangeText={setDescription}
                 placeholder={getPlaceholder()}
                 placeholderTextColor="#999"
@@ -315,6 +307,7 @@ const SketchModal = (props: SketchModalProps) => {
                           item.checked && styles.checklistInputChecked,
                         ]}
                         value={item.text}
+                        maxLength={30}
                         onChangeText={(text) =>
                           updateChecklistItem(index, text)
                         }
@@ -369,21 +362,29 @@ const SketchModal = (props: SketchModalProps) => {
                     onChangeText={setNewItemText}
                     placeholder={getPlaceholder()}
                     placeholderTextColor="#999"
+                    maxLength={30}
                     onSubmitEditing={addChecklistItem}
                     returnKeyType="done"
                   />
                   <TouchableOpacity
                     style={[
                       styles.addButton,
-                      !newItemText.trim() && styles.addButtonDisabled,
+                      (!newItemText.trim() || checklistItems.length >= 15) &&
+                        styles.addButtonDisabled,
                     ]}
                     onPress={addChecklistItem}
-                    disabled={!newItemText.trim()}
+                    disabled={
+                      !newItemText.trim() || checklistItems.length >= 15
+                    }
                   >
                     <Ionicons
                       name="add"
                       size={20}
-                      color={newItemText.trim() ? "#fff" : "#ccc"}
+                      color={
+                        newItemText.trim() && checklistItems.length < 15
+                          ? "#fff"
+                          : "#ccc"
+                      }
                     />
                   </TouchableOpacity>
                 </View>

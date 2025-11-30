@@ -70,6 +70,7 @@ const LinkModal = (props: LinkModalProps) => {
               onChangeText={setTitle}
               placeholder="Digite o título do link"
               placeholderTextColor="#999"
+              maxLength={150}
             />
           </View>
 
@@ -83,6 +84,7 @@ const LinkModal = (props: LinkModalProps) => {
               placeholderTextColor="#999"
               keyboardType="url"
               autoCapitalize="none"
+              maxLength={500}
             />
           </View>
 

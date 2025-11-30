@@ -66,7 +66,6 @@ const ImagesProjectModal = (props: ImagesProjectModalProps) => {
       );
       props.onAddToBoard?.(newImage);
     } else {
-      console.log("project");
       props.onAddToBoard?.(image);
     }
   };

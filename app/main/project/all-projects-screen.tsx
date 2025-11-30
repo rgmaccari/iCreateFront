@@ -38,7 +38,6 @@ export default function AllProjectsScreen() {
 
   //Carregar user e projetos (preview)
   const loadUserAndProjects = async () => {
-    setRefreshing(true);
     try {
       await AuthService.loadUserFromStorage();
       setUserData(AuthService.getUser());

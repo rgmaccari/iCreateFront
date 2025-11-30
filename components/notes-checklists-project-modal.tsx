@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     paddingRight: 40,
   },
   previewBody: {
-    maxHeight: 500,
+    flex: 1,
   },
   previewDescription: {
     fontSize: 15,

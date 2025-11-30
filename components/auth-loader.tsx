@@ -14,21 +14,16 @@ export default function AuthLoader() {
       if (token) {
         const user = await AuthService.loadUserFromStorage();
         if (user) {
-          // Adicione esta condição
-          console.log("Usuário carregado:", user.nickname);
-          console.log("Chamando WebSocketService.connect()...");
           WebSocketService.connect();
           router.replace({
             pathname: "/main/project/all-projects-screen",
             params: { username: user.nickname },
           });
         } else {
-          console.log("User não carregado, redirecionando para login.");
           WebSocketService.disconnect();
           router.replace("/login");
         }
       } else {
-        console.log("Sem token, desconectando do WebSocket.");
         WebSocketService.disconnect();
         router.replace("/login");
       }
