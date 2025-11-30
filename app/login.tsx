@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function LoginScreen() {
@@ -37,11 +37,25 @@ export default function LoginScreen() {
       return;
     }
 
+    if (nickname.length < 3) {
+      showToast("info", "Apelido inválido.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showToast("info", "Senha inválida.");
+      return;
+    }
+
     try {
       const user = await AuthService.login(nickname, password);
       if (user) router.replace("/main/user/user-screen");
     } catch (error: any) {
-      showToast("error", error.formattedMessage || "Erro inesperado!", "Verifique suas informações.");
+      showToast(
+        "error",
+        error.formattedMessage || "Erro inesperado!",
+        "Verifique suas informações."
+      );
     }
   };
 
@@ -86,10 +100,7 @@ export default function LoginScreen() {
 
         {/* Password com olho */}
         <View
-          style={[
-            styles.inputContainer,
-            passwordError && styles.inputError,
-          ]}
+          style={[styles.inputContainer, passwordError && styles.inputError]}
         >
           <TextInput
             style={styles.passwordInput}

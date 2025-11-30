@@ -36,7 +36,9 @@ export class AuthService {
   ): Promise<void> {
     await AsyncStorage.setItem("access_token", accessToken);
 
+    console.log("User de entrada em registerInMemory:", user); // Adicione esta linha
     const userString = JSON.stringify(user);
+    console.log("UserString gerado:", userString);
     const size = new Blob([userString]).size;
     console.log("Tamanho do user ao salvar (bytes):", size);
 
@@ -54,6 +56,7 @@ export class AuthService {
     }
 
     AuthService.currentUser = user;
+    console.log("CurrentUser após set:", AuthService.currentUser);
   }
 
   static async loadUserFromStorage(): Promise<User | null> {

@@ -10,118 +10,123 @@ import { Alert, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserRegisterScreen() {
-    const router = useRouter();
-    const [userData, setUserData] = useState(AuthService.getUser());
+  const router = useRouter();
+  const [userData, setUserData] = useState(AuthService.getUser());
 
-    const create = async (formData: FormData) => {
-        try {
-            await UserService.create(formData); //Não atualiza userData aqui
-            showToast("success", "Sucesso!", "Seja bem vindo!");
-            router.replace("/main/user/user-screen"); //Navega sem atualizar userData localmente
-        } catch (error: any) {
-            showToast("error", error.formattedMessage, "Falha ao criar usuário.");
-        }
-    };
+  const create = async (formData: FormData) => {
+    try {
+      await UserService.create(formData); //Não atualiza userData aqui
+      showToast("success", "Sucesso!", "Seja bem vindo!");
+      router.replace("/main/user/user-screen"); //Navega sem atualizar userData localmente
+    } catch (error: any) {
+      showToast("error", error.formattedMessage, "Falha ao criar usuário.");
+    }
+  };
 
-    const update = async (formData: FormData) => {
-        try {
-            if (!userData) return;
-            const updatedUser = await UserService.update(userData.code!, formData);
-            setUserData(updatedUser);
-            showToast("success", "Sucesso!", "Dados atualizados com sucesso.");
-            router.back();
-        } catch (err) {
-            console.error("Erro ao atualizar usuário:", err);
-            showToast("error", "Erro!", "Falha ao atualizar usuário.");
-        }
-    };
+  const update = async (formData: FormData) => {
+    try {
+      if (!userData) return;
+      const updatedUser = await UserService.update(userData.code!, formData);
+      console.log("User após update no RegisterScreen:", AuthService.getUser());
+      setUserData(updatedUser);
+      showToast("success", "Sucesso!", "Dados atualizados com sucesso.");
+      router.back();
+    } catch (err) {
+      console.error("Erro ao atualizar usuário:", err);
+      showToast("error", "Erro!", "Falha ao atualizar usuário.");
+    }
+  };
 
-    const deleteUser = (userCode: number) => {
-        Alert.alert(
-            "Excluir o usuário",
-            "Deseja realmente excluir o usuário?",
-            [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Excluir",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            const code = userData!.code;
-                            await UserService.delete(code);
-                            AuthService.logout();
-                            showToast("success", "Sucesso", "Usuário excluído com sucesso!");
-                            router.navigate('/login');
-                        } catch (err) {
-                            console.error("Erro ao excluir usuário:", err);
-                            showToast("error", "Erro", "Falha ao excluir usuário.");
-                        }
-                    },
-                },
-            ]
-        );
-    };
+  const deleteUser = (userCode: number) => {
+    Alert.alert("Excluir o usuário", "Deseja realmente excluir o usuário?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const code = userData!.code;
+            await UserService.delete(code);
+            AuthService.logout();
+            showToast("success", "Sucesso", "Usuário excluído com sucesso!");
+            router.navigate("/login");
+          } catch (err) {
+            console.error("Erro ao excluir usuário:", err);
+            showToast("error", "Erro", "Falha ao excluir usuário.");
+          }
+        },
+      },
+    ]);
+  };
 
-    const handleSubmit = async (form: UserDto) => {
-        if (!form.name?.trim() || !form.nickname?.trim() || (!userData && !form.password?.trim())) {
-            Alert.alert("Erro", "Preencha todos os campos obrigatórios");
-            return;
-        }
+  const handleSubmit = async (form: UserDto) => {
+    if (
+      !form.name?.trim() ||
+      !form.nickname?.trim() ||
+      (!userData && !form.password?.trim())
+    ) {
+      Alert.alert("Erro", "Preencha todos os campos obrigatórios");
+      return;
+    }
 
-        const formData = new FormData();
+    const formData = new FormData();
 
-        if (form.name) formData.append("name", form.name);
-        if (form.nickname) formData.append("nickname", form.nickname);
-        if (form.password) formData.append("password", form.password);
+    if (form.name) formData.append("name", form.name);
+    if (form.nickname) formData.append("nickname", form.nickname);
+    if (form.password) formData.append("password", form.password);
 
-        if (!userData) {
-            if (form.securityQuestion) formData.append("securityQuestion", form.securityQuestion);
-            if (form.securityAnswer) formData.append("securityAnswer", form.securityAnswer);
-        }
+    if (!userData) {
+      if (form.securityQuestion)
+        formData.append("securityQuestion", form.securityQuestion);
+      if (form.securityAnswer)
+        formData.append("securityAnswer", form.securityAnswer);
+    }
 
-        if (form.avatar) {
-            formData.append("avatar", {
-                uri: form.avatar.uri,
-                type: form.avatar.mimeType,
-                name: form.avatar.name,
-            } as any);
-        }
+    if (form.avatar) {
+      formData.append("avatar", {
+        uri: form.avatar.uri,
+        type: form.avatar.mimeType,
+        name: form.avatar.name,
+      } as any);
+    }
 
-        if (userData) {
-            await update(formData);
-        } else {
-            await create(formData);
-        }
-    };
+    if (userData) {
+      await update(formData);
+    } else {
+      await create(formData);
+    }
+  };
 
-    const handleReturn = async () => {
-        router.back();
-    };
+  const handleReturn = async () => {
+    router.back();
+  };
 
-    return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#f2f0faff" }}>
-            <PageHeader title={!userData ? "Cadastro" : "Edição"} onBack={handleReturn} />
-            {!userData && <Text style={styles.welcomeText}>Seja bem vindo!</Text>}
-            <UserForm
-                onSubmit={handleSubmit}
-                hasUser={!!userData}
-                onDelete={userData ? () => deleteUser(userData.code) : undefined}
-            />
-        </SafeAreaView>
-
-    );
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f2f0faff" }}>
+      <PageHeader
+        title={!userData ? "Cadastro" : "Edição"}
+        onBack={handleReturn}
+      />
+      {!userData && <Text style={styles.welcomeText}>Seja bem vindo!</Text>}
+      <UserForm
+        onSubmit={handleSubmit}
+        hasUser={!!userData}
+        onDelete={userData ? () => deleteUser(userData.code) : undefined}
+      />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: "#FFFFFF",
-    },
-    welcomeText: {
-        fontSize: 16,
-        fontWeight: "light",
-        color: "#333",
-        marginTop: 35,
-        marginBottom: 15,
-        textAlign: "center",
-    },
+  container: {
+    backgroundColor: "#FFFFFF",
+  },
+  welcomeText: {
+    fontSize: 16,
+    fontWeight: "light",
+    color: "#333",
+    marginTop: 35,
+    marginBottom: 15,
+    textAlign: "center",
+  },
 });

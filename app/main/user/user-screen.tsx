@@ -31,6 +31,7 @@ export default function UserScreen() {
   const [showChecklistsModal, setShowChecklistsModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const userCode = userData?.code;
+  const [lastLoadTime, setLastLoadTime] = useState<string | null>(null);
 
   //Sem Dto ainda
   const [userStats, setUserStats] = useState({
@@ -51,13 +52,28 @@ export default function UserScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!userData) {
+      console.log("foco no user screen");
+
+      const currentUser = AuthService.getUser();
+      setUserData(currentUser);
+      console.log("User no foco do UserScreen:", currentUser);
+
+      if (!currentUser) {
+        console.log("carrega do storage");
         loadUserFromStorage();
-      } else {
+        return;
+      }
+
+      if (
+        currentUser.alteratedAt &&
+        (!lastLoadTime ||
+          new Date(currentUser.alteratedAt) > new Date(lastLoadTime))
+      ) {
         loadUserStats();
         loadUserInterests();
+        setLastLoadTime(currentUser.alteratedAt);
       }
-    }, [userData, loadUserStats])
+    }, [userData, lastLoadTime]) // Dependências: adicione lastLoadTime aqui
   );
 
   const loadUserInterests = useCallback(async () => {
@@ -65,7 +81,7 @@ export default function UserScreen() {
     try {
       console.log("try");
       const preferences = await PreferencesService.find();
-      console.log('preferences ', preferences)
+      console.log("preferences ", preferences);
       setInterests(preferences.interests || []);
       setNotificationsEnabled(preferences.notifications || true);
     } catch (error: any) {
@@ -101,6 +117,7 @@ export default function UserScreen() {
   };
 
   const handleEditUser = () => {
+    console.log("tem user?", userCode);
     router.push("/user-register-screen");
   };
 
@@ -122,7 +139,10 @@ export default function UserScreen() {
 
     try {
       await PreferencesService.enableNotifications(newStatus);
-      showToast("info", `Notificações ${newStatus ? 'habilitadas' : 'desabilitadas'}`);
+      showToast(
+        "info",
+        `Notificações ${newStatus ? "habilitadas" : "desabilitadas"}`
+      );
     } catch (error: any) {
       showToast("error", "Erro ao alterar configurações");
       // Reverte em caso de erro
@@ -276,11 +296,16 @@ export default function UserScreen() {
             style={styles.actionCard}
             onPress={enableNotifications}
           >
-            <View style={[styles.actionIcon,
-            notificationsEnabled && styles.actionIconEnabled
-            ]}>
+            <View
+              style={[
+                styles.actionIcon,
+                notificationsEnabled && styles.actionIconEnabled,
+              ]}
+            >
               <Ionicons
-                name={notificationsEnabled ? "notifications" : "notifications-off"}
+                name={
+                  notificationsEnabled ? "notifications" : "notifications-off"
+                }
                 size={30}
                 color={notificationsEnabled ? "#2b2d64" : "#666"}
               />
@@ -616,9 +641,7 @@ const styles = StyleSheet.create({
     color: "#eb2121ff",
     fontWeight: "500",
   },
-  actionIconEnabled: {
-
-  },
+  actionIconEnabled: {},
   notificationStatus: {
     fontSize: 10,
     color: "#666",
