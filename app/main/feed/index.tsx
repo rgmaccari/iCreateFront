@@ -6,12 +6,13 @@ import { LinkService } from '@/services/link/link.service';
 import { ProjectPreview } from '@/services/project/project.preview';
 import { ProjectService } from '@/services/project/project.service';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
   Linking,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,6 +26,7 @@ export default function FeedScreen() {
   const [featuredItem, setFeaturedItem] = useState<FeedItem | null>(null);
   const [otherItems, setOtherItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [projects, setProjects] = useState<ProjectPreview[]>([]);
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -40,14 +42,15 @@ export default function FeedScreen() {
       const data = await FeedService.getFeedForUser();
       setFeedData(data);
 
-      // Sorteia um item para o topo
       if (data.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const featured = data[randomIndex];
-        const others = data.filter((_, index) => index !== randomIndex);
+        const featured = data[0];
+        const others = data.slice(1);
 
         setFeaturedItem(featured);
         setOtherItems(others);
+      } else {
+        setFeaturedItem(null);
+        setOtherItems([]);
       }
     } catch (error: any) {
       showToast('error', error.formattedMessage);
@@ -55,6 +58,12 @@ export default function FeedScreen() {
       setLoading(false);
     }
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadFeed();
+    setRefreshing(false);
+  }, []);
 
   const loadProjects = async () => {
     try {
@@ -109,12 +118,19 @@ export default function FeedScreen() {
 
   if (feedData.length === 0) {
     return (
-      <SafeAreaView style={styles.center}>
-        <Ionicons name="compass-outline" size={64} color="#CCCCCC" />
-        <Text style={styles.emptyText}>Nenhuma recomendação encontrada</Text>
-        <Text style={styles.emptySubtext}>
-          Movimente o app criando projetos e cadastrando interesses.
-        </Text>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.container}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          contentContainerStyle={styles.center}
+        >
+          <Ionicons name="compass-outline" size={64} color="#CCCCCC" />
+          <Text style={styles.emptyText}>Nenhuma recomendação encontrada</Text>
+          <Text style={styles.emptySubtext}>
+            Movimente o app criando projetos e cadastrando interesses.
+          </Text>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -129,7 +145,11 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {/*Item sorteado no topo*/}
         {featuredItem && (
           <View style={styles.featured}>
@@ -252,7 +272,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   center: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
