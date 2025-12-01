@@ -15,18 +15,32 @@ class WebSocketService {
 
     this.socket = io('http://192.168.1.8:3000', {
       transports: ['websocket'],
+      reconnectionAttempts: 3, //Limitar tentativas
+      reconnectionDelay: 1000,
+      timeout: 5000,
+      // @ts-ignore - propriedade não tipada
+      debug: false,
+      // @ts-ignore
+      logger: {
+        error: () => {},
+        warn: () => {},
+        info: () => {},
+        debug: () => {},
+      },
     });
 
     this.socket.on('connect', () => {
       console.log('WebSocket conectado');
       this.connected = true;
-      this.currentSocketId = this.socket?.id || null; //Armazenar socket ID
-      console.log('Socket ID:', this.currentSocketId);
+      this.currentSocketId = this.socket?.id || null;
       this.authenticate();
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket desconectado:', reason);
+      //Não logar desconexões normais
+      if (reason !== 'io client disconnect') {
+        console.log('WebSocket desconectado:', reason);
+      }
       this.connected = false;
     });
 
@@ -39,12 +53,16 @@ class WebSocketService {
       console.log('Resultado da autenticação:', data);
     });
 
-    this.socket.on('error', (error: any) => {
-      console.error('Erro no websocket1:', error);
+    //Substituir por função vazia ou logs condicionais
+    this.socket.on('error', () => {
+      //Silenciado erro (intencionalmente)
     });
 
     this.socket.on('connect_error', (error: any) => {
-      console.error('Erro no websocket2:', error);
+      //É importante? Loga...
+      if (error.message.includes('timeout') || error.message.includes('Network Error')) {
+        console.log('Falha na conexão WebSocket (esperado em modo offline)');
+      }
     });
   }
 
