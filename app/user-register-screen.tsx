@@ -19,7 +19,7 @@ export default function UserRegisterScreen() {
       showToast('success', 'Sucesso!', 'Seja bem vindo!');
       router.replace('/main/user/user-screen'); //Navega sem atualizar userData localmente
     } catch (error: any) {
-      showToast('error', error.formattedMessage, 'Falha ao criar usuário.');
+      showToast('error', 'Nome já utilizado!', 'Tente alterar os dados.');
     }
   };
 
