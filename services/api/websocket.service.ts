@@ -13,7 +13,7 @@ class WebSocketService {
       return;
     }
 
-    this.socket = io('http://192.168.0.138:3000', {
+    this.socket = io('http://192.168.1.8:3000', {
       transports: ['websocket'],
     });
 
