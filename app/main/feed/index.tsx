@@ -40,20 +40,34 @@ export default function FeedScreen() {
   const loadFeed = async () => {
     try {
       const data = await FeedService.getFeedForUser();
-      setFeedData(data);
 
-      if (data.length > 0) {
-        const featured = data[0];
-        const others = data.slice(1);
+      if (data && Array.isArray(data)) {
+        setFeedData(data);
 
-        setFeaturedItem(featured);
-        setOtherItems(others);
+        if (data.length > 0) {
+          const featured = data[0];
+          const others = data.slice(1);
+
+          setFeaturedItem(featured);
+          setOtherItems(others);
+        } else {
+          setFeaturedItem(null);
+          setOtherItems([]);
+        }
       } else {
-        setFeaturedItem(null);
-        setOtherItems([]);
+        showToast('error', 'Formato de dados inválido');
       }
     } catch (error: any) {
-      showToast('error', error.formattedMessage);
+      console.error('Erro ao carregar feed:', error);
+
+      const errorMessage =
+        error.formattedMessage || error.message || 'Erro ao carregar recomendações';
+      showToast('error', errorMessage);
+
+      // Limpa os dados em caso de erro
+      setFeedData([]);
+      setFeaturedItem(null);
+      setOtherItems([]);
     } finally {
       setLoading(false);
     }
