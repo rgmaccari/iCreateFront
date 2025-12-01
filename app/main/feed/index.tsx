@@ -40,7 +40,7 @@ export default function FeedScreen() {
       const data = await FeedService.getFeedForUser();
       setFeedData(data);
 
-      //Sorteia um item para o topo
+      // Sorteia um item para o topo
       if (data.length > 0) {
         const randomIndex = Math.floor(Math.random() * data.length);
         const featured = data[randomIndex];
@@ -103,6 +103,18 @@ export default function FeedScreen() {
       <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color="#666" />
         <Text style={styles.loadingText}>Carregando recomendações...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (feedData.length === 0) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <Ionicons name="compass-outline" size={64} color="#CCCCCC" />
+        <Text style={styles.emptyText}>Nenhuma recomendação encontrada</Text>
+        <Text style={styles.emptySubtext}>
+          Movimente o app criando projetos e cadastrando interesses.
+        </Text>
       </SafeAreaView>
     );
   }
@@ -243,6 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   loadingText: {
     marginTop: 10,
@@ -250,8 +263,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginTop: 16,
     textAlign: 'center',
   },
   sectionTitle: {
@@ -420,5 +435,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontWeight: '500',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    textAlign: 'center',
+    maxWidth: 300,
   },
 });
