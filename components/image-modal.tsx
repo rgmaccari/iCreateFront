@@ -26,6 +26,12 @@ const ImageModal = (props: ImageModalProps) => {
 
   //Seletor de imagens
   const pickImages = async () => {
+    //Limite de 3 imagens
+    if (selectedImages.length >= 3) {
+      Alert.alert('Limite atingido', 'Você pode selecionar no máximo 3 imagens.', [{ text: 'OK' }]);
+      return;
+    }
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
@@ -45,7 +51,18 @@ const ImageModal = (props: ImageModalProps) => {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newImages = result.assets.map((asset, index) => ({
+      const remainingSlots = 3 - selectedImages.length;
+      const assetsToAdd = result.assets.slice(0, remainingSlots);
+
+      if (result.assets.length > remainingSlots) {
+        Alert.alert(
+          'Limite excedido',
+          `Você tentou selecionar ${result.assets.length} imagens, mas só pode adicionar mais ${remainingSlots}.`,
+          [{ text: 'OK' }],
+        );
+      }
+
+      const newImages = assetsToAdd.map((asset, index) => ({
         uri: asset.uri,
         filename: asset.fileName || `image_${Date.now()}_${index}.jpg`,
         mimeType: asset.mimeType || 'image/jpeg',
@@ -110,7 +127,7 @@ const ImageModal = (props: ImageModalProps) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <Ionicons name="image" size={24} color="#70a1d6ff" />
-          <Text style={styles.title}>Nova imagem ({selectedImages.length})</Text>
+          <Text style={styles.title}>Nova imagem ({selectedImages.length}/3)</Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
@@ -120,12 +137,44 @@ const ImageModal = (props: ImageModalProps) => {
           <ScrollView style={styles.scrollView}>
             {/* Componente "Selecionar da Galeria" sempre visível */}
             <View style={styles.imageSection}>
-              <TouchableOpacity style={styles.imagePickerButton} onPress={pickImages}>
-                <Ionicons name="cloud-upload" size={32} color="#70A0D6" />
-                <Text style={styles.imagePickerText}>Selecionar da Galeria</Text>
-                <Text style={styles.imagePickerSubtext}>
-                  Toque para escolher uma ou várias imagens
+              <TouchableOpacity
+                style={[
+                  styles.imagePickerButton,
+                  selectedImages.length >= 3 && styles.imagePickerButtonDisabled,
+                ]}
+                onPress={pickImages}
+                disabled={selectedImages.length >= 3}
+              >
+                <Ionicons
+                  name="cloud-upload"
+                  size={32}
+                  color={selectedImages.length >= 3 ? '#cccccc' : '#70A0D6'}
+                />
+                <Text
+                  style={[
+                    styles.imagePickerText,
+                    selectedImages.length >= 3 && styles.imagePickerTextDisabled,
+                  ]}
+                >
+                  Selecionar da Galeria
                 </Text>
+                <Text
+                  style={[
+                    styles.imagePickerSubtext,
+                    selectedImages.length >= 3 && styles.imagePickerTextDisabled,
+                  ]}
+                >
+                  {/* CORREÇÃO: Mensagem informativa sobre o limite */}
+                  {selectedImages.length >= 3
+                    ? 'Limite de 3 imagens atingido'
+                    : 'Toque para escolher uma ou várias imagens'}
+                </Text>
+                {/* CORREÇÃO: Indicador de limite */}
+                {selectedImages.length > 0 && (
+                  <Text style={styles.limitText}>
+                    {selectedImages.length} de 3 imagens selecionadas
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
 
@@ -291,16 +340,31 @@ const styles = StyleSheet.create({
     borderColor: '#4870c0ff',
     borderStyle: 'dashed',
   },
+  // CORREÇÃO: Estilos para botão desabilitado
+  imagePickerButtonDisabled: {
+    backgroundColor: '#f9f9f9',
+    borderColor: '#e0e0e0',
+  },
   imagePickerText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
     marginTop: 8,
   },
+  // CORREÇÃO: Estilo para texto desabilitado
+  imagePickerTextDisabled: {
+    color: '#999999',
+  },
   imagePickerSubtext: {
     fontSize: 14,
     color: '#6B7280',
     marginTop: 4,
+  },
+  limitText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 8,
+    fontWeight: '500',
   },
 });
 
