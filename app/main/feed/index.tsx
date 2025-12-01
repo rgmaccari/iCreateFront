@@ -103,6 +103,7 @@ export default function FeedScreen() {
       showToast('info', 'Item adicionado ao projeto!');
       setShowProjectModal(false);
     } catch (error: any) {
+      console.log(error);
       showToast('error', error.formattedMessage || 'Não foi possível salvar o item');
     }
   };
